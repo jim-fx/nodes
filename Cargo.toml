@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = [
+  "packages/runtime_executor_rust",
+  "nodes/add",
+  "nodes/subtract",
+  "frontend/src-tauri",
+  "packages/node_registry_rust", "nodes/multiply",
+]
+
+[profile.release]
+lto = true

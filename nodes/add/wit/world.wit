@@ -1,0 +1,7 @@
+package component:add;
+
+/// An example world for the component to target.
+world example {
+    export execute: func(left: s32, right: s32) -> s32;
+    export get-definition: func() -> string;
+}
