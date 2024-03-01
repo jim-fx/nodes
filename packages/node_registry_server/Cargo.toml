@@ -1,0 +1,10 @@
+[package]
+name = "node_registry_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-std = { version = "1.6.0", features = ["attributes"] }
+node_registry_rust = { path = "../node_registry_rust" }
+serde = { version = "1.0.197", features = ["derive"] }
+tide = "0.16.0"
