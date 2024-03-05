@@ -1,4 +1,7 @@
-use std::fs;
+use std::{
+    ffi::{c_char, CStr},
+    fs,
+};
 use wasmtime::*;
 
 pub struct NodeRegistryCore {
@@ -17,10 +20,41 @@ impl NodeRegistryCore {
         _author: &str,
         _namespace: &str,
         node_id: &str,
-    ) -> Result<Vec<u8>, String> {
-        let bytes = self.get_node(_author, _namespace, node_id);
+    ) -> Result<String, String> {
+        let bytes = self.get_node(_author, _namespace, node_id)?;
 
         let engine = Engine::default();
+        let mut store = Store::new(&engine, ());
+        let module = Module::new(&engine, bytes).map_err(|err| {
+            println!("{}", err);
+            err.to_string()
+        })?;
+        let instance = Instance::new(&mut store, &module, &[]).map_err(|_| "asd".to_string())?;
+
+        let get_definition_len = instance
+            .get_func(&mut store, "get_definition_len")
+            .ok_or("Failed to find 'get_definition_len' function export")?;
+        let get_definition_len_func = get_definition_len
+            .typed::<(), i32>(&store)
+            .map_err(|err| err.to_string())?;
+        let len = get_definition_len_func
+            .call(&mut store, ())
+            .map_err(|err| err.to_string())?;
+
+        // Access the exports
+        let get_definition_ptr = instance
+            .get_func(&mut store, "get_definition")
+            .ok_or("Failed to find 'get_definition' function export")?;
+        let get_definition_func = get_definition_ptr
+            .typed::<(), i32>(&store)
+            .map_err(|err| err.to_string())?;
+        let ptr = get_definition_func
+            .call(&mut store, ())
+            .map_err(|err| err.to_string())?;
+
+        println!("{} {}", ptr, len);
+
+        Ok("Dude".to_string())
     }
 
     // Function that takes a string and returns bytes

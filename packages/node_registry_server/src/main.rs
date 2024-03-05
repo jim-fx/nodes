@@ -17,7 +17,13 @@ async fn get_node(req: Request<()>) -> tide::Result {
     let node_registry = NodeRegistryCore::new("../../target/wasm32-unknown-unknown/release");
 
     if node_id.ends_with(".json") {
-        Ok("asd".into())
+        let res =
+            node_registry.get_node_definition(author, namespace, &node_id.replace(".json", ""));
+
+        match res {
+            Ok(res) => Ok(format!("Hello {}", res).into()),
+            Err(er) => Ok(format!("Err: {}", er).into()),
+        }
     } else {
         let res = node_registry.get_node(author, namespace, node_id);
 
