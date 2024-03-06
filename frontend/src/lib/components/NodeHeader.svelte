@@ -42,7 +42,7 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 27 })}");
+      --path: path("${createPath({ depth: 5, height: 27, y: 48.2 })}");
       --hover-path: path("${createPath({ depth: 8, height: 24 })}");
     `}
   >

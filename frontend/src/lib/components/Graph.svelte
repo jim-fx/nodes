@@ -47,12 +47,9 @@
       (event.clientY - mouseDownY) / cameraPosition[2];
 
     if (event.ctrlKey) {
-      const targets = [1, 2, 4, 8];
-      const index = Math.floor(
-        ((cameraPosition[2] - 4) / (150 - 4)) * targets.length * 0.999,
-      );
-      newX = snapToGrid(newX, 5 / targets[index]);
-      newY = snapToGrid(newY, 5 / targets[index]);
+      const snapLevel = getSnapLevel();
+      newX = snapToGrid(newX, 5 / snapLevel);
+      newY = snapToGrid(newY, 5 / snapLevel);
     }
     node.position.x = newX;
     node.position.y = newY;
@@ -74,8 +71,31 @@
     node.tmp.downY = node.position.y;
   }
 
+  function getSnapLevel() {
+    const z = cameraPosition[2];
+    if (z > 66) {
+      return 8;
+    } else if (z > 55) {
+      return 4;
+    } else if (z > 11) {
+      return 2;
+    } else {
+    }
+    return 1;
+  }
+
   function handleMouseUp() {
     mouseDown = false;
+
+    const node = graph.getNode(activeNodeId);
+
+    if (!node) return;
+    const snapLevel = getSnapLevel();
+    node.position.x = snapToGrid(node.position.x, 5 / snapLevel);
+    node.position.y = snapToGrid(node.position.y, 5 / snapLevel);
+
+    graph.nodes = [...graph.nodes];
+    edges = [...edges];
   }
 </script>
 

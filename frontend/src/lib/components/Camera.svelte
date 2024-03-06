@@ -30,8 +30,11 @@
       controls.target0.copy(target0);
       controls.position0.copy(position0);
       controls.zoom0 = zoom0;
-      controls.reset();
+    } else {
+      controls.zoom0 = 30;
     }
+
+    controls.reset();
   };
 
   const saveControls = () => {
