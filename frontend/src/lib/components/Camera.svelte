@@ -17,9 +17,32 @@
     position[0] = camera.position.x;
     position[1] = camera.position.z;
     position[2] = camera.zoom;
+    saveControls();
   }
 
+  const loadControls = () => {
+    if (!controls) return;
+    const stateJSON = localStorage.getItem(`orbitControls`);
+
+    if (stateJSON) {
+      const { target0, position0, zoom0 } = JSON.parse(stateJSON);
+      controls.target0.copy(target0);
+      controls.position0.copy(position0);
+      controls.zoom0 = zoom0;
+      controls.reset();
+    }
+  };
+
+  const saveControls = () => {
+    if (!controls) return;
+    controls.saveState();
+    const { target0, position0, zoom0 } = controls;
+    const state = { target0, position0, zoom0 };
+    localStorage.setItem(`orbitControls`, JSON.stringify(state));
+  };
+
   onMount(() => {
+    loadControls();
     updateProps();
     controls?.addEventListener("change", updateProps);
     return () => {
@@ -28,19 +51,7 @@
   });
 </script>
 
-<T.OrthographicCamera
-  bind:ref={camera}
-  makeDefault
-  position.y={1}
-  zoom={30}
-  on:create={({ ref, cleanup }) => {
-    ref.onBeforeRender = () => {
-      console.log(ref.position);
-    };
-
-    cleanup(() => {});
-  }}
->
+<T.OrthographicCamera bind:ref={camera} position.y={1} makeDefault>
   <OrbitControls
     bind:ref={controls}
     enableZoom={true}

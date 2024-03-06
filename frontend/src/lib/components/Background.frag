@@ -47,15 +47,28 @@ void main(void) {
     float thickness = 0.05/cz;
     float delta = 0.1 / 2.0;
 
+    float nz = (cz - minZ) / (maxZ - minZ);
+
     float ux = (vUv.x-0.5) * width + cx*cz;
     float uy = (vUv.y-0.5) * height - cy*cz;
 
     float c1 = grid(ux, uy, divisions, thickness) * 0.1;
     float c2 = grid(ux, uy, divisions*2.0, thickness) * 0.1;
-    float c = max(c1, c2);
+    float small = max(c1, c2);
 
     float s1 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.2;
-    c = max(c, s1);
+    small = max(small, s1);
+
+
+    float c3 = grid(ux, uy, divisions, thickness) * 0.1;
+    float c4 = grid(ux, uy, divisions*2.0, thickness) * 0.1;
+    float large = max(c1, c2);
+
+    float s2 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.2;
+    large = max(large, s2);
+
+    float c = large;
+    
 
     gl_FragColor = vec4(c, c, c, 1.0);
 }

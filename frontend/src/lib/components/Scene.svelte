@@ -17,8 +17,6 @@
 
   let width = globalThis?.innerWidth || 100;
   let height = globalThis?.innerHeight || 100;
-
-  console.log({ graph });
 </script>
 
 <svelte:window bind:innerHeight={height} bind:innerWidth={width} />
