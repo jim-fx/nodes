@@ -17,6 +17,7 @@
     position[0] = camera.position.x;
     position[1] = camera.position.z;
     position[2] = camera.zoom;
+
     saveControls();
   }
 

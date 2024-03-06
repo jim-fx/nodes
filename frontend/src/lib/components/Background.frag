@@ -42,6 +42,10 @@ float circle_grid(float x, float y, float divisions, float circleRadius) {
     return circle;
 }
 
+float lerp(float a, float b,float t) {
+    return a * (1.0 - t) + b * t;
+}
+
 void main(void) {
     float divisions = 0.1/cz;
     float thickness = 0.05/cz;
@@ -52,23 +56,35 @@ void main(void) {
     float ux = (vUv.x-0.5) * width + cx*cz;
     float uy = (vUv.y-0.5) * height - cy*cz;
 
-    float c1 = grid(ux, uy, divisions, thickness) * 0.1;
+
+    //extra small grid
+    float m1 = grid(ux, uy, divisions*4.0, thickness*4.0) * 0.1;
+    float m2 = grid(ux, uy, divisions*16.0, thickness*16.0) * 0.03;
+    float xsmall = max(m1, m2);
+    
+    float s3 = circle_grid(ux, uy, cz/1.6, 1.0) * 0.2;
+    xsmall = max(xsmall, s3);
+
+    // small grid
+    float c1 = grid(ux, uy, divisions, thickness) * 0.2;
     float c2 = grid(ux, uy, divisions*2.0, thickness) * 0.1;
     float small = max(c1, c2);
 
     float s1 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.2;
     small = max(small, s1);
 
+    // large grid
+    float c3 = grid(ux, uy, divisions/8.0, thickness/8.0) * 0.1;
+    float c4 = grid(ux, uy, divisions/2.0, thickness/4.0) * 0.05;
+    float large = max(c3, c4);
 
-    float c3 = grid(ux, uy, divisions, thickness) * 0.1;
-    float c4 = grid(ux, uy, divisions*2.0, thickness) * 0.1;
-    float large = max(c1, c2);
-
-    float s2 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.2;
+    float s2 = circle_grid(ux, uy, cz*20.0, 1.0) * 0.2;
     large = max(large, s2);
 
-    float c = large;
-    
+    float c = mix(large, small, min(nz*2.0+0.05, 1.0));
+    c = mix(c, xsmall, max(min((nz-0.3)/0.7, 1.0), 0.0));
+
+    //c = xsmall;
 
     gl_FragColor = vec4(c, c, c, 1.0);
 }

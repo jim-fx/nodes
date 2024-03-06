@@ -45,7 +45,7 @@
   <div class="content">
     <label>{label}</label>
 
-    <input type="number" bind:value />
+    <div class="input">input</div>
   </div>
 
   <svg
@@ -59,12 +59,7 @@
       --hover-path: path("${createPath({ depth: 8, height: 24 })}");
     `}
   >
-    <path
-      vector-effect="non-scaling-stroke"
-      fill="none"
-      stroke="white"
-      stroke-width="0.1"
-    ></path>
+    <path vector-effect="non-scaling-stroke"></path>
   </svg>
 </div>
 
@@ -91,6 +86,15 @@
     box-sizing: border-box;
   }
 
+  .input {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 2px;
+    font-size: 0.5em;
+    padding: 2px 2px;
+    background: #111;
+  }
+
   label {
     font-size: 0.5em;
   }
@@ -111,6 +115,8 @@
     stroke-width: 0.2px;
     transition: 0.2s;
     fill: #060606;
+    stroke: #777;
+    stroke-width: 0.1;
     d: var(--path);
   }
 

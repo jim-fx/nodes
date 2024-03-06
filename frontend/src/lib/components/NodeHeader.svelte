@@ -42,7 +42,7 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 3, height: 15 })}");
+      --path: path("${createPath({ depth: 5, height: 27 })}");
       --hover-path: path("${createPath({ depth: 8, height: 24 })}");
     `}
   >
@@ -80,6 +80,8 @@
     stroke-width: 0.2px;
     transition: 0.2s;
     fill: #060606;
+    stroke: #777;
+    stroke-width: 0.1;
     d: var(--path);
   }
 
@@ -87,7 +89,7 @@
     font-size: 0.5em;
     display: flex;
     align-items: center;
-    padding-left: 2px;
+    padding-left: 5px;
     height: 100%;
   }
 

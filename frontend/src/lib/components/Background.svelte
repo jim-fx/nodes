@@ -41,10 +41,10 @@
         cz: {
           value: 30,
         },
-        minz: {
+        minZ: {
           value: minZoom,
         },
-        maxz: {
+        maxZ: {
           value: maxZoom,
         },
         height: {

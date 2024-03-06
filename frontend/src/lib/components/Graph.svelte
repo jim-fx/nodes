@@ -47,8 +47,12 @@
       (event.clientY - mouseDownY) / cameraPosition[2];
 
     if (event.ctrlKey) {
-      newX = snapToGrid(newX, 2.5);
-      newY = snapToGrid(newY, 2.5);
+      const targets = [1, 2, 4, 8];
+      const index = Math.floor(
+        ((cameraPosition[2] - 4) / (150 - 4)) * targets.length * 0.999,
+      );
+      newX = snapToGrid(newX, 5 / targets[index]);
+      newY = snapToGrid(newY, 5 / targets[index]);
     }
     node.position.x = newX;
     node.position.y = newY;
