@@ -7,6 +7,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+.svelte-kit/
+
 vite.config.ts.timestamp*
 
 node_modules

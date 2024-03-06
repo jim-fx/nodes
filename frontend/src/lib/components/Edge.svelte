@@ -9,8 +9,6 @@
 
   let samples = 20;
 
-  console.log("edge");
-
   const curve = new CubicBezierCurve(
     new Vector2(from.position.x + 20, from.position.y),
     new Vector2(from.position.x + 2, from.position.y),
@@ -33,10 +31,10 @@
       last_from_x = new_x;
       last_from_y = new_y;
     }
-    curve.v0.set(from.position.x + 5, from.position.y + 1.25);
-    curve.v1.set(from.position.x + 6, from.position.y + 1.25);
-    curve.v2.set(to.position.x - 1, to.position.y + 1.25);
-    curve.v3.set(to.position.x, to.position.y + 1.25);
+    curve.v0.set(from.position.x + 5, from.position.y + 5 / 8);
+    curve.v1.set(from.position.x + 7, from.position.y + 5 / 8);
+    curve.v2.set(to.position.x - 2, to.position.y + 2.55);
+    curve.v3.set(to.position.x + 0.2, to.position.y + 2.55);
     points = curve.getPoints(samples).map((p) => new Vector3(p.x, 0, p.y));
   }
 

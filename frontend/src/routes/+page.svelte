@@ -1,7 +1,13 @@
 <script lang="ts">
-  import App from "$lib/components/App.svelte";
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
+
+  import { Canvas } from "@threlte/core";
+  import Scene from "$lib/components/Scene.svelte";
+  import { GraphManager } from "$lib/graph-manager";
+
+  const graph = GraphManager.createEmptyGraph();
+  graph.load();
 
   onMount(async () => {
     try {
@@ -21,7 +27,9 @@
 </script>
 
 <div>
-  <App />
+  <Canvas shadows={false}>
+    <Scene {graph} />
+  </Canvas>
 </div>
 
 <style>

@@ -1,8 +1,7 @@
-import { nodes } from "$lib/components/nodes"
 
 export type Node = {
   id: string;
-  type: keyof typeof nodes;
+  type: string;
   props?: Record<string, any>,
   tmp?: {
     downX?: number;
@@ -18,6 +17,42 @@ export type Node = {
     y: number;
   }
 }
+
+type NodeInputFloat = {
+  type: "float";
+  value?: number;
+  min?: number;
+  max?: number;
+}
+
+type NodeInputInteger = {
+  type: "integer";
+  value?: number;
+  min?: number;
+  max?: number;
+}
+
+type NodeInputSelect = {
+  type: "select";
+  value?: string;
+  options: string[];
+}
+
+export type NodeInput = NodeInputFloat | NodeInputInteger | NodeInputSelect;
+
+export type NodeType = {
+  id: string;
+  inputs?: Record<string, NodeInput>;
+  outputs?: string[];
+  meta?: {
+    title?: string;
+  }
+}
+
+export interface NodeRegistry {
+  getNode: (id: string) => NodeType | undefined;
+}
+
 
 export type Edge = {
   from: string;
