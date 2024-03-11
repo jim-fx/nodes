@@ -55,7 +55,7 @@
   });
 </script>
 
-<T.OrthographicCamera bind:ref={camera} position.y={1} makeDefault>
+<T.OrthographicCamera bind:ref={camera} position.y={10} makeDefault>
   <OrbitControls
     bind:ref={controls}
     enableZoom={true}

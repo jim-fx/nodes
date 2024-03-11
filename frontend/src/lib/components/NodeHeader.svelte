@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
-  import type { Writable } from "svelte/store";
+  import { getGraphManager, getGraphState } from "./graph/context";
 
   export let node: Node;
 
-  export let mouseDown: Writable<false | { x: number; y: number; socket: any }>;
+  const graph = getGraphManager();
+  const state = getGraphState();
 
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
     let corner = 10;
@@ -34,21 +35,28 @@
   }
 
   function handleMouseDown(event: MouseEvent) {
-    $mouseDown = {
-      x: event.clientX,
-      y: event.clientY,
-      socket: { x: node.position.x + 5, y: node.position.y + 0.65 },
-    };
-    console.log("click");
     event.stopPropagation();
     event.preventDefault();
+    state.setMouseDown({
+      x: node.position.x + 5,
+      y: node.position.y + 0.625,
+      node,
+      socketIndex: 0,
+      isInput: false,
+    });
   }
 </script>
 
 <div class="wrapper" data-node-id={node.id}>
   <div class="content">
-    {node.type}
+    {node.type} / {node.id}
   </div>
+  <div
+    class="click-target"
+    role="button"
+    tabindex="0"
+    on:mousedown={handleMouseDown}
+  />
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 100 100"
@@ -56,18 +64,18 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 27, y: 48.2 })}");
-      --hover-path: path("${createPath({ depth: 6, height: 33, y: 48.2 })}");
+      --path: path("${createPath({ depth: 5, height: 27, y: 46 })}");
+      --hover-path: path("${createPath({ depth: 6, height: 33, y: 46 })}");
     `}
   >
-    <ellipse
-      cx="100"
-      cy="48"
-      rx="2.7"
-      ry="10"
-      fill="red"
-      on:mousedown={handleMouseDown}
-    />
+    <!-- <ellipse -->
+    <!--   cx="100" -->
+    <!--   cy="48" -->
+    <!--   rx="5.4" -->
+    <!--   ry="20" -->
+    <!--   fill="rgba(255,0,0,0.3)" -->
+    <!--   id="one" -->
+    <!-- /> -->
     <path
       vector-effect="non-scaling-stroke"
       fill="none"
@@ -87,6 +95,20 @@
     /* pointer-events: none; */
   }
 
+  .click-target {
+    position: absolute;
+    right: -2.5px;
+    top: 4px;
+    height: 5px;
+    width: 5px;
+    z-index: 100;
+    border-radius: 50%;
+  }
+
+  .click-target:hover + svg path {
+    d: var(--hover-path);
+  }
+
   svg {
     position: absolute;
     top: 0;
@@ -96,6 +118,10 @@
     width: 100%;
     height: calc(100% + 1px);
     overflow: visible;
+  }
+
+  ellipse {
+    z-index: 99;
   }
 
   svg path {

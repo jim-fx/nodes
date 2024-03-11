@@ -1,6 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node } from "./types";
-import { snapToGrid } from "./helpers";
+import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node, Edge } from "./types";
 
 const nodeTypes: NodeType[] = [
   {
@@ -32,7 +31,7 @@ export class GraphManager {
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
 
   nodes: Node[] = [];
-  edges: { from: string, to: string }[] = [];
+  edges: Edge[] = [];
 
   private constructor(private graph: Graph, private nodeRegistry: NodeRegistry = new NodeRegistry()) {
   }
@@ -55,23 +54,69 @@ export class GraphManager {
     this.status.set("idle");
   }
 
-  getNode(id: string) {
+  getNode(id: number) {
     return this.nodes.find((node) => node.id === id);
   }
 
-  public getNodeType(id: string): NodeType {
+  getPossibleSockets(node: Node, socketIndex: number, isInput: boolean): [Node, number][] {
+
+    const nodeType = this.getNodeType(node.type);
+    if (!nodeType) return [];
+
+    const nodes = this.nodes.filter(n => n.id !== node.id);
+
+
+    const sockets: [Node, number][] = []
+    if (isInput) {
+
+
+      const ownType = Object.values(nodeType?.inputs || {})[socketIndex].type;
+
+      for (const node of nodes) {
+        const nodeType = this.getNodeType(node.type);
+        const inputs = nodeType?.outputs;
+        if (!inputs) continue;
+        for (let index = 0; index < inputs.length; index++) {
+          if (inputs[index] === ownType) {
+            sockets.push([node, index]);
+          }
+        }
+      }
+
+    } else {
+
+      const ownType = nodeType.outputs?.[socketIndex];
+
+      for (const node of nodes) {
+        const nodeType = this.getNodeType(node.type);
+        const inputs = nodeType?.inputs;
+        const entries = Object.values(inputs || {});
+        entries.map((input, index) => {
+          if (input.type === ownType) {
+            sockets.push([node, index]);
+          }
+        });
+      }
+
+    }
+
+    return sockets;
+
+  }
+
+  getNodeType(id: string): NodeType {
     return this.nodeRegistry.getNode(id)!;
   }
 
-  public getEdges() {
+  getEdges() {
     return this.edges
       .map((edge) => {
         const from = this.nodes.find((node) => node.id === edge.from);
         const to = this.nodes.find((node) => node.id === edge.to);
         if (!from || !to) return;
-        return [from, to] as const;
+        return [from, edge.fromSocket, to, edge.toSocket] as const;
       })
-      .filter(Boolean) as unknown as [Node, Node][];
+      .filter(Boolean) as unknown as [Node, number, Node, number][];
   }
 
 
@@ -89,7 +134,7 @@ export class GraphManager {
       const y = Math.floor(i / height);
 
       graph.nodes.push({
-        id: `${i.toString()}`,
+        id: i,
         tmp: {
           visible: false,
         },
@@ -102,8 +147,10 @@ export class GraphManager {
       });
 
       graph.edges.push({
-        from: i.toString(),
-        to: (i + 1).toString(),
+        from: i,
+        fromSocket: 0,
+        to: (i + 1),
+        toSocket: 0,
       });
     }
 

@@ -1,11 +1,17 @@
 <script lang="ts">
   import type { NodeInput } from "$lib/types";
+  import type { Node } from "$lib/types";
+  import { getGraphState } from "./graph/context";
 
+  export let node: Node;
   export let value: unknown;
   export let input: NodeInput;
-  export let label: string;
+  export let id: string;
+  export let index: number;
 
   export let isLast = false;
+
+  const state = getGraphState();
 
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
     let corner = isLast ? 2 : 0;
@@ -39,14 +45,28 @@
       }
       Z`.replace(/\s+/g, " ");
   }
+
+  function handleMouseDown(ev: MouseEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    state.setMouseDown({
+      x: node.position.x,
+      y: node.position.y + 2.5 + index * 2.5,
+      node,
+      socketIndex: index,
+      isInput: true,
+    });
+  }
 </script>
 
 <div class="wrapper">
   <div class="content">
-    <label>{label}</label>
+    <label>{id}</label>
 
     <div class="input">input</div>
   </div>
+
+  <div class="click-target" on:mousedown={handleMouseDown} />
 
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -70,6 +90,15 @@
     height: 25px;
   }
 
+  .click-target {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    top: 10px;
+    left: -3px;
+  }
+
   .content {
     position: relative;
     padding: 2px 5px;
@@ -83,13 +112,7 @@
   }
 
   :global(.zoom-small) .content {
-    /* display: none; */
-  }
-
-  input {
-    font-size: 0.5em;
-    width: 100%;
-    box-sizing: border-box;
+    display: none;
   }
 
   .input {
@@ -126,7 +149,7 @@
     d: var(--path);
   }
 
-  .wrapper:hover svg path {
+  .click-target:hover + svg path {
     d: var(--hover-path) !important;
   }
 </style>

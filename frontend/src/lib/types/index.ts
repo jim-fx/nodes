@@ -1,6 +1,7 @@
+export type { NodeInput } from "./inputs";
 
 export type Node = {
-  id: string;
+  id: number;
   type: string;
   props?: Record<string, any>,
   tmp?: {
@@ -19,28 +20,6 @@ export type Node = {
   }
 }
 
-type NodeInputFloat = {
-  type: "float";
-  value?: number;
-  min?: number;
-  max?: number;
-}
-
-type NodeInputInteger = {
-  type: "integer";
-  value?: number;
-  min?: number;
-  max?: number;
-}
-
-type NodeInputSelect = {
-  type: "select";
-  value?: string;
-  options: string[];
-}
-
-export type NodeInput = NodeInputFloat | NodeInputInteger | NodeInputSelect;
-
 export type NodeType = {
   id: string;
   inputs?: Record<string, NodeInput>;
@@ -56,8 +35,10 @@ export interface NodeRegistry {
 
 
 export type Edge = {
-  from: string;
-  to: string;
+  from: number;
+  fromSocket: number;
+  to: number;
+  toSocket: number;
 }
 
 export type Graph = {

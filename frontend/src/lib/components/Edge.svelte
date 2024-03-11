@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type { Node } from "$lib/types";
-  import { T } from "@threlte/core";
+  import { T, extend } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { CubicBezierCurve, Vector2, Vector3 } from "three";
+  import { onMount } from "svelte";
+  import { CubicBezierCurve, Mesh, Vector2, Vector3 } from "three";
 
-  export let from: { position: { x: number; y: number } };
-  export let to: { position: { x: number; y: number } };
+  extend({ MeshLineGeometry, MeshLineMaterial });
 
-  let samples = 12;
+  export let from: { x: number; y: number };
+  export let to: { x: number; y: number };
 
   const curve = new CubicBezierCurve(
-    new Vector2(from.position.x + 20, from.position.y),
-    new Vector2(from.position.x + 2, from.position.y),
-    new Vector2(to.position.x - 2, to.position.y),
-    new Vector2(to.position.x, to.position.y),
+    new Vector2(from.x, from.y),
+    new Vector2(from.x + 2, from.y),
+    new Vector2(to.x - 2, to.y),
+    new Vector2(to.x, to.y),
   );
 
   let points: Vector3[] = [];
@@ -21,32 +21,47 @@
   let last_from_x = 0;
   let last_from_y = 0;
 
+  let mesh: Mesh;
+
   function update(force = false) {
     if (!force) {
-      const new_x = from.position.x + to.position.x;
-      const new_y = from.position.y + to.position.y;
+      const new_x = from.x + to.x;
+      const new_y = from.y + to.y;
       if (last_from_x === new_x && last_from_y === new_y) {
         return;
       }
       last_from_x = new_x;
       last_from_y = new_y;
     }
-    curve.v0.set(from.position.x + 5, from.position.y + 0.65);
-    curve.v1.set(from.position.x + 7, from.position.y + 0.65);
-    curve.v2.set(to.position.x - 2, to.position.y + 2.5);
-    curve.v3.set(to.position.x, to.position.y + 2.5);
+
+    const mid = new Vector2((from.x + to.x) / 2, (from.y + to.y) / 2);
+
+    // const length = Math.sqrt(
+    //   Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2),
+    // );
+    //
+    // let samples = Math.max(5, Math.floor(length));
+    // console.log(samples);
+    const samples = 12;
+
+    curve.v0.set(from.x, from.y);
+    curve.v1.set(mid.x, from.y);
+    curve.v2.set(mid.x, to.y);
+    curve.v3.set(to.x, to.y);
     points = curve.getPoints(samples).map((p) => new Vector3(p.x, 0, p.y));
+    // mesh.setGeometry(points);
+    // mesh.needsUpdate = true;
   }
 
   update();
-  $: if (from.position || to.position) {
+  $: if (from || to) {
     update();
   }
 </script>
 
 <T.Mesh
-  position.x={from.position.x + 5}
-  position.z={from.position.y + 0.65}
+  position.x={from.x}
+  position.z={from.y}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
@@ -55,8 +70,8 @@
 </T.Mesh>
 
 <T.Mesh
-  position.x={to.position.x}
-  position.z={to.position.y + 2.5}
+  position.x={to.x}
+  position.z={to.y}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
@@ -64,7 +79,7 @@
   <T.MeshBasicMaterial color={0x555555} />
 </T.Mesh>
 
-<T.Mesh position.y={0.5}>
+<T.Mesh position.y={0.5} bind:ref={mesh}>
   <MeshLineGeometry {points} />
-  <MeshLineMaterial width={1} attenuate={false} color={0x555555} />
+  <MeshLineMaterial width={2} attenuate={false} color={0x555555} />
 </T.Mesh>

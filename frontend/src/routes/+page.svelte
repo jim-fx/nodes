@@ -4,10 +4,10 @@
   import { PerfMonitor } from "@threlte/extras";
 
   import { Canvas } from "@threlte/core";
-  import Scene from "$lib/components/Scene.svelte";
   import { GraphManager } from "$lib/graph-manager";
+  import Graph from "$lib/components/graph/Graph.svelte";
 
-  const graph = GraphManager.createEmptyGraph();
+  const graph = GraphManager.createEmptyGraph({ width: 3, height: 3 });
   graph.load();
 
   onMount(async () => {
@@ -30,7 +30,7 @@
 <div>
   <Canvas shadows={false} renderMode="on-demand">
     <PerfMonitor />
-    <Scene {graph} />
+    <Graph {graph} />
   </Canvas>
 </div>
 

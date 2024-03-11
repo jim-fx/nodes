@@ -1,16 +1,14 @@
 <script lang="ts">
-  import type { GraphManager } from "$lib/graph-manager";
   import type { Node } from "$lib/types";
-  import type { Writable } from "svelte/store";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
+  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
-  export let graph: GraphManager;
+
+  const graph = getGraphManager();
 
   export let inView = true;
-
-  export let mouseDown: Writable<false | { x: number; y: number; socket: any }>;
 
   const type = graph.getNodeType(node.type);
 
@@ -25,13 +23,15 @@
   style={`--nx:${node.position.x * 10}px;
           --ny: ${node.position.y * 10}px`}
 >
-  <NodeHeader {node} {mouseDown} />
+  <NodeHeader {node} />
 
   {#each parameters as [key, value], i}
     <NodeParameter
+      {node}
+      id={key}
+      index={i}
       value={node?.props?.[key]}
       input={value}
-      label={key}
       isLast={i == parameters.length - 1}
     />
   {/each}
