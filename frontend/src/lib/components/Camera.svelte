@@ -59,6 +59,7 @@
   <OrbitControls
     bind:ref={controls}
     enableZoom={true}
+    zoomSpeed={2}
     target.y={0}
     rotateSpeed={0}
     minPolarAngle={0}

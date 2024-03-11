@@ -56,7 +56,7 @@
     preserveAspectRatio="none"
     style={`
       --path: path("${createPath({ depth: 5, height: 15, y: 48.2 })}");
-      --hover-path: path("${createPath({ depth: 8, height: 24 })}");
+      --hover-path: path("${createPath({ depth: 8, height: 24, y: 48.2 })}");
     `}
   >
     <path vector-effect="non-scaling-stroke"></path>
@@ -78,6 +78,12 @@
     height: 100%;
     justify-content: space-around;
     box-sizing: border-box;
+    opacity: calc((2 * var(--cz)) / 150 - 0.5);
+    opacity: calc((var(--cz) - 10) / 20);
+  }
+
+  :global(.zoom-small) .content {
+    /* display: none; */
   }
 
   input {
@@ -102,7 +108,7 @@
   svg {
     position: absolute;
     box-sizing: border-box;
-    pointer-events: none;
+    /* pointer-events: none; */
     width: 100%;
     height: 100%;
     overflow: visible;

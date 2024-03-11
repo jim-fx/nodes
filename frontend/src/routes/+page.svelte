@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
+  import { PerfMonitor } from "@threlte/extras";
 
   import { Canvas } from "@threlte/core";
   import Scene from "$lib/components/Scene.svelte";
@@ -27,7 +28,8 @@
 </script>
 
 <div>
-  <Canvas shadows={false}>
+  <Canvas shadows={false} renderMode="on-demand">
+    <PerfMonitor />
     <Scene {graph} />
   </Canvas>
 </div>

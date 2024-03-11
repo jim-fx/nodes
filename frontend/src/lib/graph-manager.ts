@@ -75,16 +75,18 @@ export class GraphManager {
   }
 
 
-  static createEmptyGraph(): GraphManager {
+  static createEmptyGraph({ width = 20, height = 20 } = {}): GraphManager {
 
     const graph: Graph = {
       edges: [],
       nodes: [],
     };
 
-    for (let i = 0; i < 40; i++) {
-      const x = i % 20;
-      const y = Math.floor(i / 20);
+    const amount = width * height;
+
+    for (let i = 0; i < amount; i++) {
+      const x = i % width;
+      const y = Math.floor(i / height);
 
       graph.nodes.push({
         id: `${i.toString()}`,
@@ -93,7 +95,7 @@ export class GraphManager {
         },
         position: {
           x: x * 7.5,
-          y: y * 5,
+          y: y * 10,
         },
         props: i == 0 ? { value: 0 } : {},
         type: i == 0 ? "input/float" : "math",

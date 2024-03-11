@@ -1,7 +1,10 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
+  import type { Writable } from "svelte/store";
 
   export let node: Node;
+
+  export let mouseDown: Writable<false | { x: number; y: number; socket: any }>;
 
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
     let corner = 10;
@@ -29,6 +32,17 @@
       V100
       Z`.replace(/\s+/g, " ");
   }
+
+  function handleMouseDown(event: MouseEvent) {
+    $mouseDown = {
+      x: event.clientX,
+      y: event.clientY,
+      socket: { x: node.position.x + 5, y: node.position.y + 0.65 },
+    };
+    console.log("click");
+    event.stopPropagation();
+    event.preventDefault();
+  }
 </script>
 
 <div class="wrapper" data-node-id={node.id}>
@@ -43,9 +57,17 @@
     preserveAspectRatio="none"
     style={`
       --path: path("${createPath({ depth: 5, height: 27, y: 48.2 })}");
-      --hover-path: path("${createPath({ depth: 8, height: 24 })}");
+      --hover-path: path("${createPath({ depth: 6, height: 33, y: 48.2 })}");
     `}
   >
+    <ellipse
+      cx="100"
+      cy="48"
+      rx="2.7"
+      ry="10"
+      fill="red"
+      on:mousedown={handleMouseDown}
+    />
     <path
       vector-effect="non-scaling-stroke"
       fill="none"
@@ -62,7 +84,7 @@
     height: 12.5px;
   }
   .wrapper > * {
-    pointer-events: none;
+    /* pointer-events: none; */
   }
 
   svg {

@@ -7,6 +7,7 @@ export type Node = {
     downX?: number;
     downY?: number;
     visible?: boolean;
+    isMoving?: boolean;
   },
   meta?: {
     title?: string;

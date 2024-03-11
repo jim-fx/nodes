@@ -4,10 +4,10 @@
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
   import { CubicBezierCurve, Vector2, Vector3 } from "three";
 
-  export let from: Node;
-  export let to: Node;
+  export let from: { position: { x: number; y: number } };
+  export let to: { position: { x: number; y: number } };
 
-  let samples = 25;
+  let samples = 12;
 
   const curve = new CubicBezierCurve(
     new Vector2(from.position.x + 20, from.position.y),
