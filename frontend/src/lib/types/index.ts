@@ -1,3 +1,4 @@
+import type { NodeInput } from "./inputs";
 export type { NodeInput } from "./inputs";
 
 export type Node = {
@@ -5,6 +6,7 @@ export type Node = {
   type: string;
   props?: Record<string, any>,
   tmp?: {
+    type?: NodeType;
     downX?: number;
     downY?: number;
     visible?: boolean;
@@ -34,12 +36,7 @@ export interface NodeRegistry {
 }
 
 
-export type Edge = {
-  from: number;
-  fromSocket: number;
-  to: number;
-  toSocket: number;
-}
+export type Edge = [Node, number, Node, string];
 
 export type Graph = {
   meta?: {
@@ -47,5 +44,5 @@ export type Graph = {
     lastModified?: string;
   },
   nodes: Node[];
-  edges: Edge[];
+  edges: [number, number, number, string][];
 }

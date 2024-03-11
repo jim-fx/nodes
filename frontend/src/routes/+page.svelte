@@ -7,7 +7,7 @@
   import { GraphManager } from "$lib/graph-manager";
   import Graph from "$lib/components/graph/Graph.svelte";
 
-  const graph = GraphManager.createEmptyGraph({ width: 3, height: 3 });
+  const graph = GraphManager.createEmptyGraph({ width: 12, height: 12 });
   graph.load();
 
   onMount(async () => {

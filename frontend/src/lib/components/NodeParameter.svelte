@@ -14,10 +14,10 @@
   const state = getGraphState();
 
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
-    let corner = isLast ? 2 : 0;
+    let corner = isLast ? 5 : 0;
 
     let right_bump = false;
-    let left_bump = true;
+    let left_bump = node.tmp?.type?.inputs?.[id].internal !== true;
 
     return `M0,0
       H100
@@ -53,7 +53,8 @@
       x: node.position.x,
       y: node.position.y + 2.5 + index * 2.5,
       node,
-      socketIndex: index,
+      index: index,
+      type: node?.tmp?.type?.inputs?.[id].type || "",
       isInput: true,
     });
   }
@@ -66,7 +67,15 @@
     <div class="input">input</div>
   </div>
 
-  <div class="click-target" on:mousedown={handleMouseDown} />
+  {#if node.tmp?.type?.inputs?.[id].internal !== true}
+    <div
+      class="click-target"
+      on:mousedown={handleMouseDown}
+      role="button"
+      tabindex="0"
+      style={`background: var(--node-hovered-in-${node.tmp?.type?.inputs?.[id].type}`}
+    />
+  {/if}
 
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -75,8 +84,8 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 15, y: 48.2 })}");
-      --hover-path: path("${createPath({ depth: 8, height: 24, y: 48.2 })}");
+      --path: path("${createPath({ depth: 5, height: 15, y: 50 })}");
+      --hover-path: path("${createPath({ depth: 8, height: 24, y: 50 })}");
     `}
   >
     <path vector-effect="non-scaling-stroke"></path>
@@ -88,6 +97,7 @@
     position: relative;
     width: 100%;
     height: 25px;
+    transform: translateY(-0.5px);
   }
 
   .click-target {
@@ -95,8 +105,9 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    top: 10px;
+    top: 9.5px;
     left: -3px;
+    opacity: 0.1;
   }
 
   .content {

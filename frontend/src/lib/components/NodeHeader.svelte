@@ -10,7 +10,7 @@
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
     let corner = 10;
 
-    let right_bump = true;
+    let right_bump = node.tmp.type.outputs.length > 0;
 
     return `M0,100
       ${
@@ -41,7 +41,8 @@
       x: node.position.x + 5,
       y: node.position.y + 0.625,
       node,
-      socketIndex: 0,
+      type: node.tmp?.type?.outputs?.[0] || "",
+      index: 0,
       isInput: false,
     });
   }
@@ -56,6 +57,7 @@
     role="button"
     tabindex="0"
     on:mousedown={handleMouseDown}
+    style={`background: var(--node-hovered-out-${node.tmp?.type?.outputs?.[0]}`}
   />
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -64,18 +66,10 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 27, y: 46 })}");
-      --hover-path: path("${createPath({ depth: 6, height: 33, y: 46 })}");
+      --path: path("${createPath({ depth: 5, height: 27, y: 50 })}");
+      --hover-path: path("${createPath({ depth: 6, height: 33, y: 50 })}");
     `}
   >
-    <!-- <ellipse -->
-    <!--   cx="100" -->
-    <!--   cy="48" -->
-    <!--   rx="5.4" -->
-    <!--   ry="20" -->
-    <!--   fill="rgba(255,0,0,0.3)" -->
-    <!--   id="one" -->
-    <!-- /> -->
     <path
       vector-effect="non-scaling-stroke"
       fill="none"
@@ -91,18 +85,16 @@
     width: 100%;
     height: 12.5px;
   }
-  .wrapper > * {
-    /* pointer-events: none; */
-  }
 
   .click-target {
     position: absolute;
     right: -2.5px;
-    top: 4px;
+    top: 3.8px;
     height: 5px;
     width: 5px;
     z-index: 100;
     border-radius: 50%;
+    opacity: 0.1;
   }
 
   .click-target:hover + svg path {
@@ -116,18 +108,14 @@
     z-index: -1;
     box-sizing: border-box;
     width: 100%;
-    height: calc(100% + 1px);
+    height: 100%;
     overflow: visible;
-  }
-
-  ellipse {
-    z-index: 99;
   }
 
   svg path {
     stroke-width: 0.2px;
     transition: 0.2s;
-    fill: #060606;
+    fill: #131313;
     stroke: #777;
     stroke-width: 0.1;
     d: var(--path);

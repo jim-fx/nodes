@@ -8,6 +8,7 @@ type Socket = {
   node: Node;
   index: number;
   isInput: boolean;
+  type: string;
   position: [number, number];
 }
 
@@ -16,7 +17,7 @@ export class GraphState {
   activeNodeId: Writable<number> = writable(-1);
   dimensions: Writable<[number, number]> = writable([100, 100]);
   mouse: Writable<[number, number]> = writable([0, 0]);
-  mouseDown: Writable<false | { x: number, y: number, node?: Node, socketIndex?: number, isInput?: boolean }> = writable(false);
+  mouseDown: Writable<false | ({ x: number, y: number } & Omit<Socket, "position">)> = writable(false);
   cameraPosition: Writable<[number, number, number]> = writable([0, 1, 0]);
   cameraBounds = derived([this.cameraPosition, this.dimensions], ([_cameraPosition, [width, height]]) => {
     return [
@@ -56,39 +57,73 @@ export class GraphState {
     ]);
   }
 
-  setMouseDown(opts: { x: number, y: number, node?: Node, socketIndex?: number, isInput?: boolean } | false) {
+  getSocketPosition(node: Node, index: number | string) {
+    const isOutput = typeof index === "number";
+    if (isOutput) {
+      return [node.position.x + 5, node.position.y + 0.625 + 2.5 * index] as const;
+    } else {
+      const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
+      return [node.position.x, node.position.y + 2.5 + 2.5 * _index] as const;
+    }
+  }
+
+  setMouseDown(opts: ({ x: number, y: number } & Omit<Socket, "position">) | false) {
+
     if (!opts) {
       this.mouseDown.set(false);
       return;
     }
-    const { x, y, node, socketIndex, isInput } = opts;
-    this.mouseDown.set({ x, y, node, socketIndex, isInput });
 
-    if (node && socketIndex !== undefined) {
+    let { x, y, node, index, isInput, type } = opts;
+
+    if (node && index !== undefined && isInput !== undefined) {
 
       debug.clear();
 
-      this.possibleSockets = this.graph.getPossibleSockets(node, socketIndex, isInput).map(([node, index]) => {
+      // remove existing edge
+      if (isInput) {
+        const edges = this.graph.getEdgesToNode(node);
+        const key = Object.keys(node.tmp?.type?.inputs || {})[index];
+        for (const edge of edges) {
+          if (edge[3] === key) {
+            node = edge[2];
+            index = 0;
+            const pos = this.getSocketPosition(edge[0], index);
+            x = pos[0];
+            y = pos[1];
+            isInput = false;
+            this.graph.removeEdge(edge);
+            break;
+          }
+        }
+      }
+
+      this.mouseDown.set({ x, y, node, index, isInput, type });
+
+      this.possibleSockets = this.graph.getPossibleSockets(node, index, isInput).map(([node, index]) => {
         if (isInput) {
-          // debug.debugPosition(new Vector3(node.position.x + 5, 0, node.position.y + 0.625 + 2.5 * index));
+          const key = Object.keys(node.tmp?.type?.inputs || {})[index];
           return {
             node,
             index,
+            isInput,
+            type: node.tmp?.type?.inputs?.[key].type || "",
             position: [node.position.x + 5, node.position.y + 0.625 + 2.5 * index]
           }
         } else {
-          // debug.debugPosition(new Vector3(node.position.x, 0, node.position.y + 2.5 + 2.5 * index));
           return {
             node,
             index,
+            isInput,
+            type: node.tmp?.type?.outputs?.[index] || "",
             position: [node.position.x, node.position.y + 2.5 + 2.5 * index]
           }
-
         }
       });
-
-
     }
+
+    console.log("possibleSockets", this.possibleSockets);
+
   }
 
 }

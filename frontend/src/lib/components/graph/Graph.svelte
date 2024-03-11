@@ -2,19 +2,21 @@
   import Edge from "../Edge.svelte";
   import { HTML } from "@threlte/extras";
   import Node from "../Node.svelte";
-  import { snapToGrid } from "$lib/helpers";
+  import { animate, lerp, snapToGrid } from "$lib/helpers";
   import Debug from "../debug/Debug.svelte";
   import { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
   import type { GraphManager } from "$lib/graph-manager";
   import { setContext } from "svelte";
-  import { GraphState } from "./graph-state";
+  import { GraphState } from "./state";
   import Camera from "../Camera.svelte";
-  import { event } from "@tauri-apps/api";
+  import type { Node as NodeType } from "$lib/types";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
   const status = graph.status;
+  const nodes = graph.nodes;
+  const edges = graph.edges;
 
   const state = new GraphState(graph);
   setContext("graphState", state);
@@ -31,7 +33,15 @@
   const minZoom = 4;
   const maxZoom = 150;
 
-  let edges = graph?.getEdges() || [];
+  $: edgePositions = $edges.map((edge) => {
+    const index = Object.keys(edge[2].tmp?.type?.inputs || {}).indexOf(edge[3]);
+    return [
+      edge[0].position.x + 5,
+      edge[0].position.y + 0.625 + edge[1] * 2.5,
+      edge[2].position.x,
+      edge[2].position.y + 2.5 + index * 2.5,
+    ];
+  });
 
   function handleMouseMove(event: MouseEvent) {
     state.setMouseFromEvent(event);
@@ -56,6 +66,8 @@
       if (_socket && smallestDist < 0.3) {
         state.setMouse(_socket.position[0], _socket.position[1]);
         state.hoveredSocket.set(_socket);
+      } else {
+        state.hoveredSocket.set(null);
       }
     }
 
@@ -83,8 +95,9 @@
     node.position.x = newX;
     node.position.y = newY;
     node.position = node.position;
-    edges = [...edges];
-    graph.nodes = [...graph.nodes];
+
+    nodes.set($nodes);
+    edges.set($edges);
   }
 
   function handleMouseDown(ev: MouseEvent) {
@@ -102,7 +115,7 @@
     if ($activeNodeId < 0) return;
 
     $mouseDown = { x: ev.clientX, y: ev.clientY };
-    const node = graph.nodes.find((node) => node.id === $activeNodeId);
+    const node = graph.getNode($activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
     node.tmp.downX = node.position.x;
@@ -139,23 +152,46 @@
       node.tmp = node.tmp || {};
       node.tmp.isMoving = false;
       const snapLevel = getSnapLevel();
-      node.position.x = snapToGrid(node.position.x, 5 / snapLevel);
-      node.position.y = snapToGrid(node.position.y, 5 / snapLevel);
+      const fx = snapToGrid(node.position.x, 5 / snapLevel);
+      const fy = snapToGrid(node.position.y, 5 / snapLevel);
+      animate(500, (a: number) => {
+        node.position.x = lerp(node.position.x, fx, a);
+        node.position.y = lerp(node.position.y, fy, a);
+        if (node?.tmp?.isMoving) {
+          return false;
+        }
+        nodes.set($nodes);
+        edges.set($edges);
+      });
+      nodes.set($nodes);
+      edges.set($edges);
     } else if ($hoveredSocket && $mouseDown && $mouseDown?.node) {
-      const newEdge = [
-        $mouseDown.node,
-        $mouseDown.socketIndex,
-        $hoveredSocket.node,
-        $hoveredSocket.index,
-      ];
-      edges.push(newEdge);
+      if ($hoveredSocket.isInput) {
+        const newEdge: [NodeType, number, NodeType, string] = [
+          $hoveredSocket.node,
+          $hoveredSocket.index || 0,
+          $mouseDown.node,
+          Object.keys($mouseDown?.node?.tmp?.type?.inputs || {})[
+            $mouseDown?.index || 0
+          ],
+        ];
+        $edges = [...$edges, newEdge];
+      } else {
+        const newEdge: [NodeType, number, NodeType, string] = [
+          $mouseDown.node,
+          $mouseDown?.index || 0,
+          $hoveredSocket.node,
+          Object.keys($hoveredSocket.node?.tmp?.type?.inputs || {})[
+            $hoveredSocket.index
+          ],
+        ];
+        $edges = [...$edges, newEdge];
+      }
     }
 
     $mouseDown = false;
     $hoveredSocket = null;
     $activeNodeId = -1;
-    graph.nodes = [...graph.nodes];
-    edges = [...edges];
   }
 </script>
 
@@ -180,15 +216,15 @@
 />
 
 {#if $status === "idle"}
-  {#each edges as edge}
+  {#each edgePositions as [x1, y1, x2, y2]}
     <Edge
       from={{
-        x: edge[0].position.x + 5,
-        y: edge[0].position.y + 0.625 + edge[1] * 2.5,
+        x: x1,
+        y: y1,
       }}
       to={{
-        x: edge[2].position.x,
-        y: edge[2].position.y + 2.5 + edge[3] * 2.5,
+        x: x2,
+        y: y2,
       }}
     />
   {/each}
@@ -203,9 +239,9 @@
       tabindex="0"
       class="wrapper"
       class:zoom-small={$cameraPosition[2] < 10}
-      style={`--cz: ${$cameraPosition[2]}`}
+      style={`--cz: ${$cameraPosition[2]}; ${$mouseDown ? `--node-hovered-${$mouseDown.isInput ? "out" : "in"}-${$mouseDown.type}: red;` : ""}`}
     >
-      {#each graph.nodes as node}
+      {#each $nodes as node}
         <Node {node} inView={$cameraPosition && isNodeInView(node)} />
       {/each}
     </div>

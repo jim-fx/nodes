@@ -50,12 +50,6 @@
     font-weight: 300;
     font-size: 0.5em;
     display: none;
-    transition: transform 0.2s ease;
-  }
-
-  .node.is-moving {
-    z-index: 100;
-    transition: none !important;
   }
 
   .node.in-view {

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { T, extend } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { onMount } from "svelte";
   import { CubicBezierCurve, Mesh, Vector2, Vector3 } from "three";
 
   extend({ MeshLineGeometry, MeshLineMaterial });

@@ -18,4 +18,8 @@ type NodeInputSelect = {
   options: string[];
 }
 
-export type NodeInput = NodeInputFloat | NodeInputInteger | NodeInputSelect;
+type DefaultOptions = {
+  internal?: boolean;
+}
+
+export type NodeInput = (NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;
