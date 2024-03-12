@@ -6,6 +6,8 @@ export type Node = {
   type: string;
   props?: Record<string, any>,
   tmp?: {
+    parents?: Node[],
+    children?: Node[],
     type?: NodeType;
     downX?: number;
     downY?: number;
@@ -30,6 +32,13 @@ export type NodeType = {
     title?: string;
   }
 }
+
+export type Socket = {
+  node: Node;
+  index: number | string;
+  position: [number, number];
+};
+
 
 export interface NodeRegistry {
   getNode: (id: string) => NodeType | undefined;

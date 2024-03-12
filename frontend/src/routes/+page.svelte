@@ -10,26 +10,26 @@
   const graph = GraphManager.createEmptyGraph({ width: 12, height: 12 });
   graph.load();
 
-  onMount(async () => {
-    try {
-      const res = await invoke("greet", { name: "Dude" });
-      console.log({ res });
-    } catch (error) {
-      console.log(error);
-    }
-
-    try {
-      const res2 = await invoke("run_nodes", {});
-      console.log({ res2 });
-    } catch (error) {
-      console.log(error);
-    }
-  });
+  // onMount(async () => {
+  //   try {
+  //     const res = await invoke("greet", { name: "Dude" });
+  //     console.log({ res });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  //
+  //   try {
+  //     const res2 = await invoke("run_nodes", {});
+  //     console.log({ res2 });
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // });
 </script>
 
 <div>
-  <Canvas shadows={false} renderMode="on-demand">
-    <PerfMonitor />
+  <Canvas shadows={false} renderMode="on-demand" autoRender={true}>
+    <!-- <PerfMonitor /> -->
     <Graph {graph} />
   </Canvas>
 </div>

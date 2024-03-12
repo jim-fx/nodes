@@ -17,7 +17,6 @@
     position[0] = camera.position.x;
     position[1] = camera.position.z;
     position[2] = camera.zoom;
-
     saveControls();
   }
 
@@ -57,6 +56,7 @@
 
 <T.OrthographicCamera bind:ref={camera} position.y={10} makeDefault>
   <OrbitControls
+    args={[camera, window]}
     bind:ref={controls}
     enableZoom={true}
     zoomSpeed={2}

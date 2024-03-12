@@ -1,12 +1,11 @@
-import type { Vector3 } from "three";
+import { Vector3 } from "three";
 import { lines, points } from "./store";
 
-export function debugPosition(pos: Vector3) {
+export function debugPosition(x: number, y: number) {
   points.update((p) => {
-    p.push(pos);
+    p.push(new Vector3(x, 1, y));
     return p;
   });
-
 }
 
 export function clear() {

@@ -1,5 +1,5 @@
-import { get, writable, type Writable } from "svelte/store";
-import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node, Edge } from "./types";
+import { writable, type Writable } from "svelte/store";
+import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node, Edge, Socket } from "./types";
 
 const nodeTypes: NodeType[] = [
   {
@@ -38,8 +38,8 @@ export class GraphManager {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
 
-  private _nodes: Node[] = [];
-  nodes: Writable<Node[]> = writable([]);
+  private _nodes: Map<number, Node> = new Map();
+  nodes: Writable<Map<number, Node>> = writable(new Map());
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
@@ -54,10 +54,10 @@ export class GraphManager {
 
   async load() {
 
-    const nodes = this.graph.nodes;
+    const nodes = new Map(this.graph.nodes.map(node => [node.id, node]));
 
-    for (const node of nodes) {
-      const nodeType = this.getNodeType(node.type);
+    for (const node of nodes.values()) {
+      const nodeType = this.nodeRegistry.getNode(node.type);
       if (!nodeType) {
         console.error(`Node type not found: ${node.type}`);
         this.status.set("error");
@@ -67,39 +67,110 @@ export class GraphManager {
       node.tmp.type = nodeType;
     }
 
-    this.nodes.set(nodes);
+
     this.edges.set(this.graph.edges.map((edge) => {
-      const from = this._nodes.find((node) => node.id === edge[0]);
-      const to = this._nodes.find((node) => node.id === edge[2]);
-      if (!from || !to) return;
+      const from = nodes.get(edge[0]);
+      const to = nodes.get(edge[2]);
+      if (!from || !to) {
+        console.error("Edge references non-existing node");
+        return;
+      };
+      from.tmp = from.tmp || {};
+      from.tmp.children = from.tmp.children || [];
+      from.tmp.children.push(to);
+      to.tmp = to.tmp || {};
+      to.tmp.parents = to.tmp.parents || [];
+      to.tmp.parents.push(from);
       return [from, edge[1], to, edge[3]] as const;
     })
       .filter(Boolean) as unknown as [Node, number, Node, string][]
     );
+
+    this.nodes.set(nodes);
+    console.log(this._nodes);
 
 
     this.status.set("idle");
   }
 
 
-  getNode(id: number) {
-    return this._nodes.find((node) => node.id === id);
+  getAllNodes() {
+    return Array.from(this._nodes.values());
   }
 
-  getPossibleSockets(node: Node, socketIndex: number, isInput: boolean): [Node, number][] {
+  getNode(id: number) {
+    return this._nodes.get(id);
+  }
 
-    const nodeType = this.getNodeType(node.type);
+  getChildrenOfNode(node: Node) {
+    const children = [];
+    const stack = node.tmp?.children?.slice(0);
+    while (stack?.length) {
+      const child = stack.pop();
+      if (!child) continue;
+      children.push(child);
+      stack.push(...child.tmp?.children || []);
+    }
+    return children;
+  }
+
+  createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
+
+
+    const existingEdges = this.getEdgesToNode(to);
+
+    // check if this exact edge already exists
+    const existingEdge = existingEdges.find(e => e[0].id === from.id && e[1] === fromSocket && e[3] === toSocket);
+    if (existingEdge) {
+      console.log("Edge already exists");
+      console.log(existingEdge)
+      return;
+    };
+
+    // check if socket types match
+    const fromSocketType = from.tmp?.type?.outputs?.[fromSocket];
+    const toSocketType = to.tmp?.type?.inputs?.[toSocket]?.type;
+
+    if (fromSocketType !== toSocketType) {
+      console.error(`Socket types do not match: ${fromSocketType} !== ${toSocketType}`);
+      return;
+    }
+
+    this.edges.update((edges) => {
+      return [...edges.filter(e => e[2].id !== to.id || e[3] !== toSocket), [from, fromSocket, to, toSocket]];
+    });
+  }
+
+  getParentsOfNode(node: Node) {
+    const parents = [];
+    const stack = node.tmp?.parents?.slice(0);
+    while (stack?.length) {
+      const parent = stack.pop();
+      if (!parent) continue;
+      parents.push(parent);
+      stack.push(...parent.tmp?.parents || []);
+    }
+    return parents;
+  }
+
+  getPossibleSockets({ node, index }: Socket): [Node, string | number][] {
+
+    const nodeType = node?.tmp?.type;
     if (!nodeType) return [];
 
-    const nodes = this._nodes.filter(n => n.id !== node.id);
 
-    const sockets: [Node, number][] = []
-    if (isInput) {
+    const sockets: [Node, string | number][] = []
+    // if index is a string, we are an input looking for outputs
+    if (typeof index === "string") {
 
-      const ownType = Object.values(nodeType?.inputs || {})[socketIndex].type;
+      // filter out self and child nodes
+      const children = new Set(this.getChildrenOfNode(node).map(n => n.id));
+      const nodes = this.getAllNodes().filter(n => n.id !== node.id && !children.has(n.id));
+
+      const ownType = nodeType?.inputs?.[index].type;
 
       for (const node of nodes) {
-        const nodeType = this.getNodeType(node.type);
+        const nodeType = node?.tmp?.type;
         const inputs = nodeType?.outputs;
         if (!inputs) continue;
         for (let index = 0; index < inputs.length; index++) {
@@ -109,29 +180,31 @@ export class GraphManager {
         }
       }
 
-    } else {
+    } else if (typeof index === "number") {
+      // if index is a number, we are an output looking for inputs
 
-      const ownType = nodeType.outputs?.[socketIndex];
+      // filter out self and parent nodes
+      const parents = new Set(this.getParentsOfNode(node).map(n => n.id));
+      const nodes = this.getAllNodes().filter(n => n.id !== node.id && !parents.has(n.id));
+
+      // get edges from this socket
+      const edges = new Map(this.getEdgesFromNode(node).filter(e => e[1] === index).map(e => [e[2].id, e[3]]));
+
+      const ownType = nodeType.outputs?.[index];
 
       for (const node of nodes) {
-        const nodeType = this.getNodeType(node.type);
-        const inputs = nodeType?.inputs;
-        const entries = Object.values(inputs || {});
-        entries.map((input, index) => {
-          if (input.type === ownType) {
-            sockets.push([node, index]);
+        const inputs = node?.tmp?.type?.inputs;
+        if (!inputs) continue;
+        for (const key in inputs) {
+          if (inputs[key].type === ownType && edges.get(node.id) !== key) {
+            sockets.push([node, key]);
           }
-        });
+        }
       }
-
     }
 
     return sockets;
 
-  }
-
-  getNodeType(id: string): NodeType {
-    return this.nodeRegistry.getNode(id)!;
   }
 
   removeEdge(edge: Edge) {
@@ -148,8 +221,8 @@ export class GraphManager {
     return this._edges
       .filter((edge) => edge[2].id === node.id)
       .map((edge) => {
-        const from = this._nodes.find((node) => node.id === edge[0].id);
-        const to = this._nodes.find((node) => node.id === edge[2].id);
+        const from = this.getNode(edge[0].id);
+        const to = this.getNode(edge[2].id);
         if (!from || !to) return;
         return [from, edge[1], to, edge[3]] as const;
       })
@@ -158,10 +231,10 @@ export class GraphManager {
 
   getEdgesFromNode(node: Node) {
     return this._edges
-      .filter((edge) => edge[0] === node.id)
+      .filter((edge) => edge[0].id === node.id)
       .map((edge) => {
-        const from = this._nodes.find((node) => node.id === edge[0]);
-        const to = this._nodes.find((node) => node.id === edge[2]);
+        const from = this.getNode(edge[0].id);
+        const to = this.getNode(edge[2].id);
         if (!from || !to) return;
         return [from, edge[1], to, edge[3]] as const;
       })

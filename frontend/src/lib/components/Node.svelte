@@ -2,15 +2,13 @@
   import type { Node } from "$lib/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
-  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
-
-  const graph = getGraphManager();
-
   export let inView = true;
 
-  const type = graph.getNodeType(node.type);
+  export let possibleSocketIds: null | Set<string> = null;
+
+  const type = node?.tmp?.type;
 
   const parameters = Object.entries(type?.inputs || {});
 </script>
@@ -18,7 +16,6 @@
 <div
   class="node"
   class:in-view={inView}
-  class:is-moving={node?.tmp?.isMoving}
   data-node-id={node.id}
   style={`--nx:${node.position.x * 10}px;
           --ny: ${node.position.y * 10}px`}
@@ -28,9 +25,9 @@
   {#each parameters as [key, value], i}
     <NodeParameter
       {node}
+      {possibleSocketIds}
       id={key}
       index={i}
-      value={node?.props?.[key]}
       input={value}
       isLast={i == parameters.length - 1}
     />

@@ -23,3 +23,7 @@
 :root {
   font-family: 'Fira Code', monospace;
 }
+
+body {
+  overflow: hidden;
+}

@@ -1,17 +1,16 @@
 <script lang="ts">
   import type { NodeInput } from "$lib/types";
   import type { Node } from "$lib/types";
-  import { getGraphState } from "./graph/context";
+  import { getContext } from "svelte";
 
   export let node: Node;
-  export let value: unknown;
   export let input: NodeInput;
   export let id: string;
   export let index: number;
 
-  export let isLast = false;
+  export let possibleSocketIds: null | Set<string> = null;
 
-  const state = getGraphState();
+  export let isLast = false;
 
   function createPath({ depth = 8, height = 20, y = 50 } = {}) {
     let corner = isLast ? 5 : 0;
@@ -46,21 +45,24 @@
       Z`.replace(/\s+/g, " ");
   }
 
+  const setDownSocket = getContext("setDownSocket");
+
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
-    state.setMouseDown({
-      x: node.position.x,
-      y: node.position.y + 2.5 + index * 2.5,
+    setDownSocket({
       node,
-      index: index,
-      type: node?.tmp?.type?.inputs?.[id].type || "",
-      isInput: true,
+      index: id,
+      position: [node.position.x, node.position.y + 2.5 + index * 2.5],
     });
   }
 </script>
 
-<div class="wrapper">
+<div
+  class="wrapper"
+  class:disabled={possibleSocketIds &&
+    !possibleSocketIds.has(`${node.id}-${id}`)}
+>
   <div class="content">
     <label>{id}</label>
 
@@ -69,11 +71,16 @@
 
   {#if node.tmp?.type?.inputs?.[id].internal !== true}
     <div
-      class="click-target"
+      class="large target"
       on:mousedown={handleMouseDown}
       role="button"
       tabindex="0"
-      style={`background: var(--node-hovered-in-${node.tmp?.type?.inputs?.[id].type}`}
+    />
+    <div
+      class="small target"
+      on:mousedown={handleMouseDown}
+      role="button"
+      tabindex="0"
     />
   {/if}
 
@@ -85,6 +92,7 @@
     preserveAspectRatio="none"
     style={`
       --path: path("${createPath({ depth: 5, height: 15, y: 50 })}");
+      --hover-path-disabled: path("${createPath({ depth: 0, height: 15, y: 50 })}");
       --hover-path: path("${createPath({ depth: 8, height: 24, y: 50 })}");
     `}
   >
@@ -100,14 +108,24 @@
     transform: translateY(-0.5px);
   }
 
-  .click-target {
+  .target {
     position: absolute;
+    border-radius: 50%;
+  }
+
+  .small.target {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
     top: 9.5px;
     left: -3px;
-    opacity: 0.1;
+  }
+
+  .large.target {
+    width: 15px;
+    height: 15px;
+    top: 5px;
+    left: -7.5px;
+    cursor: unset;
   }
 
   .content {
@@ -142,7 +160,6 @@
   svg {
     position: absolute;
     box-sizing: border-box;
-    /* pointer-events: none; */
     width: 100%;
     height: 100%;
     overflow: visible;
@@ -160,7 +177,11 @@
     d: var(--path);
   }
 
-  .click-target:hover + svg path {
-    d: var(--hover-path) !important;
+  :global(.hovering-sockets) .large:hover ~ svg path {
+    d: var(--hover-path);
+  }
+
+  .disabled svg path {
+    d: var(--hover-path-disabled) !important;
   }
 </style>

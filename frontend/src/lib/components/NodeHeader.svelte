@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
+  import { getContext } from "svelte";
   import { getGraphManager, getGraphState } from "./graph/context";
 
   export let node: Node;
@@ -34,16 +35,15 @@
       Z`.replace(/\s+/g, " ");
   }
 
+  const setDownSocket = getContext("setDownSocket");
+
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    state.setMouseDown({
-      x: node.position.x + 5,
-      y: node.position.y + 0.625,
+    setDownSocket({
       node,
-      type: node.tmp?.type?.outputs?.[0] || "",
       index: 0,
-      isInput: false,
+      position: [node.position.x + 5, node.position.y + 0.625],
     });
   }
 </script>
