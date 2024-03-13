@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
+  import { getContext, onMount } from "svelte";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "./graph/stores";
@@ -7,9 +8,20 @@
   export let node: Node;
   export let inView = true;
 
+  const updateNodePosition =
+    getContext<(n: Node) => void>("updateNodePosition");
+
   const type = node?.tmp?.type;
 
   const parameters = Object.entries(type?.inputs || {});
+
+  let ref: HTMLDivElement;
+
+  $: if (node && ref) {
+    node.tmp = node.tmp || {};
+    node.tmp.ref = ref;
+    updateNodePosition(node);
+  }
 </script>
 
 <div
@@ -18,7 +30,7 @@
   class:selected={!!$selectedNodes?.has(node.id)}
   class:in-view={inView}
   data-node-id={node.id}
-  bind:this={node.tmp.ref}
+  bind:this={ref}
 >
   <NodeHeader {node} />
 

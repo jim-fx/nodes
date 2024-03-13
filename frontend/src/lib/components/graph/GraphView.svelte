@@ -14,14 +14,16 @@
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
 
+  const getSocketPosition =
+    getContext<(node: NodeType, index: string | number) => [number, number]>(
+      "getSocketPosition",
+    );
+
   function getEdgePosition(edge: EdgeType) {
-    const index = Object.keys(edge[2].tmp?.type?.inputs || {}).indexOf(edge[3]);
-    return [
-      edge[0].position.x + 5,
-      edge[0].position.y + 0.625 + edge[1] * 2.5,
-      edge[2].position.x,
-      edge[2].position.y + 2.5 + index * 2.5,
-    ];
+    const pos1 = getSocketPosition(edge[0], edge[1]);
+    const pos2 = getSocketPosition(edge[2], edge[3]);
+
+    return [pos1[0], pos1[1], pos2[0], pos2[1]];
   }
 
   onMount(() => {

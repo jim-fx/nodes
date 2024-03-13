@@ -20,6 +20,7 @@
     "@threlte/extras": "^8.7.5",
     "@threlte/flex": "^1.0.1",
     "@types/three": "^0.159.0",
+    "jsondiffpatch": "^0.6.0",
     "three": "^0.159.0"
   },
   "devDependencies": {

@@ -56,10 +56,20 @@
   function updateNodePosition(node: NodeType) {
     node.tmp = node.tmp || {};
     if (node?.tmp?.ref) {
-      node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
-      node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+      if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
+        node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
+        node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
+        if (node.tmp.x === node.position.x && node.tmp.y === node.position.y) {
+          delete node.tmp.x;
+          delete node.tmp.y;
+        }
+      } else {
+        node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
+        node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+      }
     }
   }
+  setContext("updateNodePosition", updateNodePosition);
 
   const nodeHeightCache: Record<string, number> = {};
   function getNodeHeight(nodeTypeId: string) {
@@ -100,7 +110,7 @@
         if (edge[3] === index) {
           node = edge[0];
           index = edge[1];
-          position = getSocketPosition({ node, index });
+          position = getSocketPosition(node, index);
           graph.removeEdge(edge);
           break;
         }
@@ -120,7 +130,7 @@
         return {
           node,
           index,
-          position: getSocketPosition({ node, index }),
+          position: getSocketPosition(node, index),
         };
       });
     $possibleSocketIds = new Set(
@@ -142,23 +152,23 @@
   }
 
   function getSocketPosition(
-    socket: Omit<Socket, "position">,
+    node: NodeType,
+    index: string | number,
   ): [number, number] {
-    if (typeof socket.index === "number") {
+    if (typeof index === "number") {
       return [
-        socket.node.position.x + 5,
-        socket.node.position.y + 0.625 + 2.5 * socket.index,
+        (node?.tmp?.x ?? node.position.x) + 5,
+        (node?.tmp?.y ?? node.position.y) + 0.625 + 2.5 * index,
       ];
     } else {
-      const _index = Object.keys(socket.node.tmp?.type?.inputs || {}).indexOf(
-        socket.index,
-      );
+      const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
       return [
-        socket.node.position.x,
-        socket.node.position.y + 2.5 + 2.5 * _index,
+        node?.tmp?.x ?? node.position.x,
+        (node?.tmp?.y ?? node.position.y) + 2.5 + 2.5 * _index,
       ];
     }
   }
+  setContext("getSocketPosition", getSocketPosition);
 
   function setMouseFromEvent(event: MouseEvent) {
     const x = event.clientX;
@@ -230,16 +240,15 @@
     if ($selectedNodes?.size) {
       for (const nodeId of $selectedNodes) {
         const n = graph.getNode(nodeId);
-        if (!n) continue;
-        n.position.x = (n?.tmp?.downX || 0) - vecX;
-        n.position.y = (n?.tmp?.downY || 0) - vecY;
+        if (!n?.tmp) continue;
+        n.tmp.x = (n?.tmp?.downX || 0) - vecX;
+        n.tmp.y = (n?.tmp?.downY || 0) - vecY;
         updateNodePosition(n);
       }
     }
 
-    node.position.x = newX;
-    node.position.y = newY;
-    node.position = node.position;
+    node.tmp.x = newX;
+    node.tmp.y = newY;
 
     updateNodePosition(node);
 
@@ -306,7 +315,41 @@
   }
 
   function handleKeyDown(event: KeyboardEvent) {
-    if (event.key === "Delete") {
+    if (event.key === "Escape") {
+      $activeNodeId = -1;
+      $selectedNodes?.clear();
+      $selectedNodes = $selectedNodes;
+    }
+
+    if (event.key === "a" && event.ctrlKey) {
+      $selectedNodes = new Set($nodes.keys());
+    }
+
+    if (event.key === "c" && event.ctrlKey) {
+    }
+
+    if (event.key === "v" && event.ctrlKey) {
+    }
+
+    if (event.key === "z" && event.ctrlKey) {
+      graph.history.undo();
+      for (const node of $nodes.values()) {
+        updateNodePosition(node);
+      }
+    }
+
+    if (event.key === "y" && event.ctrlKey) {
+      graph.history.redo();
+      for (const node of $nodes.values()) {
+        updateNodePosition(node);
+      }
+    }
+
+    if (
+      event.key === "Delete" ||
+      event.key === "Backspace" ||
+      event.key === "x"
+    ) {
       if ($activeNodeId !== -1) {
         const node = graph.getNode($activeNodeId);
         if (node) {
@@ -349,38 +392,52 @@
       activeNode.tmp = activeNode.tmp || {};
       activeNode.tmp.isMoving = false;
       const snapLevel = getSnapLevel();
-      const fx = snapToGrid(activeNode.position.x, 5 / snapLevel);
-      const fy = snapToGrid(activeNode.position.y, 5 / snapLevel);
-      if ($selectedNodes) {
-        for (const nodeId of $selectedNodes) {
-          const node = graph.getNode(nodeId);
-          if (!node) continue;
-          node.tmp = node.tmp || {};
-          node.tmp.snapX = node.position.x - (activeNode.position.x - fx);
-          node.tmp.snapY = node.position.y - (activeNode.position.y - fy);
+      activeNode.position.x = snapToGrid(
+        activeNode?.tmp?.x ?? activeNode.position.x,
+        5 / snapLevel,
+      );
+      activeNode.position.y = snapToGrid(
+        activeNode?.tmp?.y ?? activeNode.position.y,
+        5 / snapLevel,
+      );
+      const nodes = [
+        ...[...($selectedNodes?.values() || [])].map((id) => graph.getNode(id)),
+      ] as NodeType[];
+
+      const vec = [
+        activeNode.position.x - (activeNode?.tmp.x || 0),
+        activeNode.position.y - (activeNode?.tmp.y || 0),
+      ];
+
+      for (const node of nodes) {
+        if (!node) continue;
+        node.tmp = node.tmp || {};
+        const { x, y } = node.tmp;
+        if (x !== undefined && y !== undefined) {
+          node.position.x = x + vec[0];
+          node.position.y = y + vec[1];
         }
       }
+      nodes.push(activeNode);
       animate(500, (a: number) => {
-        activeNode.position.x = lerp(activeNode.position.x, fx, a);
-        activeNode.position.y = lerp(activeNode.position.y, fy, a);
-        updateNodePosition(activeNode);
-
-        if ($selectedNodes) {
-          for (const nodeId of $selectedNodes) {
-            const node = graph.getNode(nodeId);
-            if (!node) continue;
-            node.position.x = lerp(node.position.x, node?.tmp?.snapX || 0, a);
-            node.position.y = lerp(node.position.y, node?.tmp?.snapY || 0, a);
+        for (const node of nodes) {
+          if (
+            node?.tmp &&
+            node.tmp["x"] !== undefined &&
+            node.tmp["y"] !== undefined
+          ) {
+            node.tmp.x = lerp(node.tmp.x, node.position.x, a);
+            node.tmp.y = lerp(node.tmp.y, node.position.y, a);
             updateNodePosition(node);
+            if (node?.tmp?.isMoving) {
+              return false;
+            }
           }
-        }
-
-        if (activeNode?.tmp?.isMoving) {
-          return false;
         }
 
         $edges = $edges;
       });
+      graph.history.save();
     } else if ($hoveredSocket && $activeSocket) {
       if (
         typeof $hoveredSocket.index === "number" &&
@@ -403,6 +460,7 @@
           $hoveredSocket.index,
         );
       }
+      graph.history.save();
     }
 
     mouseDown = null;

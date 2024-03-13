@@ -1,5 +1,6 @@
 import { writable, type Writable } from "svelte/store";
 import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node, Edge, Socket } from "./types";
+import { HistoryManager } from "./history-manager";
 
 const nodeTypes: NodeType[] = [
   {
@@ -43,6 +44,8 @@ export class GraphManager {
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
+  history: HistoryManager = new HistoryManager(this);
+
   private constructor(private graph: Graph, private nodeRegistry: NodeRegistry = new NodeRegistry()) {
     this.nodes.subscribe((nodes) => {
       this._nodes = nodes;
@@ -50,38 +53,30 @@ export class GraphManager {
     this.edges.subscribe((edges) => {
       this._edges = edges;
     });
-
-    globalThis["serialize"] = () => this.serialize();
   }
 
-  serialize() {
+  serialize(): Graph {
     const nodes = Array.from(this._nodes.values()).map(node => ({
       id: node.id,
-      position: node.position,
+      position: { x: node.position.x, y: node.position.y },
       type: node.type,
       props: node.props,
     }));
-    const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]);
+    const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     return { nodes, edges };
   }
 
-  async load() {
-
-    const nodes = new Map(this.graph.nodes.map(node => [node.id, node]));
-
-    for (const node of nodes.values()) {
+  private _init(graph: Graph) {
+    const nodes = new Map(graph.nodes.map(node => {
       const nodeType = this.nodeRegistry.getNode(node.type);
-      if (!nodeType) {
-        console.error(`Node type not found: ${node.type}`);
-        this.status.set("error");
-        return;
+      if (nodeType) {
+        node.tmp = node.tmp || {};
+        node.tmp.type = nodeType;
       }
-      node.tmp = node.tmp || {};
-      node.tmp.type = nodeType;
-    }
+      return [node.id, node]
+    }));
 
-
-    this.edges.set(this.graph.edges.map((edge) => {
+    this.edges.set(graph.edges.map((edge) => {
       const from = nodes.get(edge[0]);
       const to = nodes.get(edge[2]);
       if (!from || !to) {
@@ -101,7 +96,25 @@ export class GraphManager {
 
     this.nodes.set(nodes);
 
+  }
+
+  async load() {
+
+    for (const node of this.graph.nodes) {
+      const nodeType = this.nodeRegistry.getNode(node.type);
+      if (!nodeType) {
+        console.error(`Node type not found: ${node.type}`);
+        this.status.set("error");
+        return;
+      }
+      node.tmp = node.tmp || {};
+      node.tmp.type = nodeType;
+    }
+
+    this._init(this.graph);
+
     this.status.set("idle");
+    this.history.save();
   }
 
 
@@ -155,6 +168,7 @@ export class GraphManager {
       nodes.delete(node.id);
       return nodes;
     });
+    this.history.save();
   }
 
   createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
@@ -181,6 +195,8 @@ export class GraphManager {
     this.edges.update((edges) => {
       return [...edges.filter(e => e[2].id !== to.id || e[3] !== toSocket), [from, fromSocket, to, toSocket]];
     });
+
+    this.history.save();
   }
 
   getParentsOfNode(node: Node) {
@@ -257,6 +273,7 @@ export class GraphManager {
     this.edges.update((edges) => {
       return edges.filter((e) => e[0].id !== id0 || e[1] !== sid0 || e[2].id !== id2 || e[3] !== sid2);
     });
+    this.history.save();
   }
 
   getEdgesToNode(node: Node) {
@@ -328,7 +345,5 @@ export class GraphManager {
     return new GraphManager(graph);
   }
 
-
 }
-
 
