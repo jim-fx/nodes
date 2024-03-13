@@ -20,20 +20,11 @@
   ></div>
 </HTML>
 
-<!-- <T.Mesh -->
-<!--   position.x={x - width / 2} -->
-<!--   position.z={y - height / 2} -->
-<!--   rotation.x={-Math.PI / 2} -->
-<!-- > -->
-<!--   <T.PlaneGeometry args={[width, height]} /> -->
-<!--   <T.MeshBasicMaterial color="red" /> -->
-<!-- </T.Mesh> -->
-
 <style>
   .selection {
     width: 40px;
     height: 20px;
-    border: solid 0.2px red;
+    border: solid 0.2px white;
     border-style: dashed;
     border-radius: 2px;
   }

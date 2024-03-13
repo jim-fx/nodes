@@ -172,18 +172,15 @@
   }
   setContext("getSocketPosition", getSocketPosition);
 
-  function setMouseFromEvent(event: MouseEvent) {
-    const x = event.clientX;
-    const y = event.clientY;
-
-    mousePosition = [
+  function projectScreenToWorld(x: number, y: number): [number, number] {
+    return [
       cameraPosition[0] + (x - width / 2) / cameraPosition[2],
       cameraPosition[1] + (y - height / 2) / cameraPosition[2],
     ];
   }
 
   function handleMouseMove(event: MouseEvent) {
-    setMouseFromEvent(event);
+    mousePosition = projectScreenToWorld(event.clientX, event.clientY);
 
     if (!mouseDown) return;
 
@@ -210,6 +207,28 @@
       }
     }
 
+    // handle box selection
+    if (boxSelection) {
+      const mouseD = projectScreenToWorld(mouseDown[0], mouseDown[1]);
+      const x1 = Math.min(mouseD[0], mousePosition[0]);
+      const x2 = Math.max(mouseD[0], mousePosition[0]);
+      const y1 = Math.min(mouseD[1], mousePosition[1]);
+      const y2 = Math.max(mouseD[1], mousePosition[1]);
+      const _selectedNodes = $selectedNodes || new Set();
+      for (const node of $nodes.values()) {
+        if (!node?.tmp) continue;
+        const x = node.position.x;
+        const y = node.position.y;
+        if (x > x1 && x < x2 && y > y1 && y < y2) {
+          _selectedNodes.add(node.id);
+        } else {
+          _selectedNodes?.delete(node.id);
+        }
+      }
+      $selectedNodes = _selectedNodes;
+    }
+
+    // here we are handling dragging of nodes
     if ($activeNodeId === -1) return;
 
     const node = graph.getNode($activeNodeId);
