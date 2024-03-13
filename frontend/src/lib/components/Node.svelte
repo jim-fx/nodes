@@ -2,11 +2,10 @@
   import type { Node } from "$lib/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
+  import { activeNodeId, selectedNodes } from "./graph/stores";
 
   export let node: Node;
   export let inView = true;
-
-  export let possibleSocketIds: null | Set<string> = null;
 
   const type = node?.tmp?.type;
 
@@ -15,17 +14,17 @@
 
 <div
   class="node"
+  class:active={$activeNodeId === node.id}
+  class:selected={!!$selectedNodes?.has(node.id)}
   class:in-view={inView}
   data-node-id={node.id}
-  style={`--nx:${node.position.x * 10}px;
-          --ny: ${node.position.y * 10}px`}
+  bind:this={node.tmp.ref}
 >
   <NodeHeader {node} />
 
   {#each parameters as [key, value], i}
     <NodeParameter
       {node}
-      {possibleSocketIds}
       id={key}
       index={i}
       input={value}
@@ -47,6 +46,18 @@
     font-weight: 300;
     font-size: 0.5em;
     display: none;
+    --stroke: #777;
+    --stroke-width: 0.1px;
+  }
+
+  .node.active {
+    --stroke: white;
+    --stroke-width: 0.3px;
+  }
+
+  .node.selected {
+    --stroke: #f2be90;
+    --stroke-width: 0.2px;
   }
 
   .node.in-view {

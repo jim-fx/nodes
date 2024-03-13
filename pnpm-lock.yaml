@@ -54,6 +54,9 @@ importers:
       '@tsconfig/svelte':
         specifier: ^5.0.2
         version: 5.0.2
+      '@zerodevx/svelte-json-view':
+        specifier: ^1.0.9
+        version: 1.0.9(svelte@4.2.12)
       histoire:
         specifier: ^0.17.9
         version: 0.17.9(vite@5.1.4)
@@ -1227,6 +1230,14 @@ packages:
       - encoding
       - supports-color
     dev: false
+
+  /@zerodevx/svelte-json-view@1.0.9(svelte@4.2.12):
+    resolution: {integrity: sha512-2KKxBfDxEo7lM/kJSy+m1PdLAp5Q9c5nB6OYVBg7oWPdCLXB9JVH1Ytxn2hkqTn77m9MobqGI1fz9FFOTPONfA==}
+    peerDependencies:
+      svelte: ^3.57.0 || ^4.0.0
+    dependencies:
+      svelte: 4.2.12
+    dev: true
 
   /abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}

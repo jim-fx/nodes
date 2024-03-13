@@ -50,6 +50,19 @@ export class GraphManager {
     this.edges.subscribe((edges) => {
       this._edges = edges;
     });
+
+    globalThis["serialize"] = () => this.serialize();
+  }
+
+  serialize() {
+    const nodes = Array.from(this._nodes.values()).map(node => ({
+      id: node.id,
+      position: node.position,
+      type: node.type,
+      props: node.props,
+    }));
+    const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]);
+    return { nodes, edges };
   }
 
   async load() {
@@ -87,8 +100,6 @@ export class GraphManager {
     );
 
     this.nodes.set(nodes);
-    console.log(this._nodes);
-
 
     this.status.set("idle");
   }
@@ -100,6 +111,10 @@ export class GraphManager {
 
   getNode(id: number) {
     return this._nodes.get(id);
+  }
+
+  getNodeType(id: string) {
+    return this.nodeRegistry.getNode(id);
   }
 
   getChildrenOfNode(node: Node) {
@@ -114,8 +129,35 @@ export class GraphManager {
     return children;
   }
 
-  createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
+  getNodesBetween(from: Node, to: Node): Node[] | undefined {
+    //  < - - - - from
+    const toParents = this.getParentsOfNode(to);
+    //  < - - - - from - - - - to
+    const fromParents = this.getParentsOfNode(from);
+    if (toParents.includes(from)) {
+      return toParents.splice(toParents.indexOf(from));
+    } else if (fromParents.includes(to)) {
+      return fromParents.splice(fromParents.indexOf(to));
+    } else {
+      // these two nodes are not connected
+      return;
+    }
+  }
 
+  private updateNodeParents(node: Node) {
+  }
+
+  removeNode(node: Node) {
+    const edges = this._edges.filter((edge) => edge[0].id !== node.id && edge[2].id !== node.id);
+    this.edges.set(edges);
+
+    this.nodes.update((nodes) => {
+      nodes.delete(node.id);
+      return nodes;
+    });
+  }
+
+  createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
 
     const existingEdges = this.getEdgesToNode(to);
 
@@ -150,7 +192,7 @@ export class GraphManager {
       parents.push(parent);
       stack.push(...parent.tmp?.parents || []);
     }
-    return parents;
+    return parents.reverse();
   }
 
   getPossibleSockets({ node, index }: Socket): [Node, string | number][] {

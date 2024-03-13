@@ -21,3 +21,44 @@ export function animate(duration: number, callback: (progress: number) => void |
   }
   requestAnimationFrame(loop);
 }
+
+export function createNodePath({
+  depth = 8,
+  height = 20,
+  y = 50,
+  cornerTop = 0,
+  cornerBottom = 0,
+  leftBump = false,
+  rightBump = false,
+  aspectRatio = 1,
+} = {}) {
+  return `M0,${cornerTop}
+      ${cornerTop
+      ? ` V${cornerTop}
+              Q0,0 ${cornerTop * aspectRatio},0
+              H${100 - cornerTop * aspectRatio}
+              Q100,0  100,${cornerTop}
+            `
+      : ` V0
+              H100
+            `
+    }
+      V${y - height / 2}
+      ${rightBump
+      ? ` C${100 - depth},${y - height / 2} ${100 - depth},${y + height / 2} 100,${y + height / 2}`
+      : ` H100`
+    }
+      ${cornerBottom
+      ? ` V${100 - cornerBottom}
+              Q100,100 ${100 - cornerBottom * aspectRatio},100
+              H${cornerBottom * aspectRatio}
+              Q0,100  0,${100 - cornerBottom}
+            `
+      : `${leftBump ? `V100 H0` : `V100`}`
+    }
+      ${leftBump
+      ? ` V${y + height / 2} C${depth},${y + height / 2} ${depth},${y - height / 2} 0,${y - height / 2}`
+      : ` H0`
+    }
+      Z`.replace(/\s+/g, " ");
+  }

@@ -2,13 +2,16 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
   import { PerfMonitor } from "@threlte/extras";
-
   import { Canvas } from "@threlte/core";
   import { GraphManager } from "$lib/graph-manager";
   import Graph from "$lib/components/graph/Graph.svelte";
+  import Details from "$lib/elements/Details.svelte";
+  import { JsonView } from "@zerodevx/svelte-json-view";
 
   const graph = GraphManager.createEmptyGraph({ width: 12, height: 12 });
   graph.load();
+
+  let debug: undefined;
 
   // onMount(async () => {
   //   try {
@@ -27,15 +30,28 @@
   // });
 </script>
 
-<div>
+<div class="wrapper">
+  <Details>
+    <JsonView json={debug} />
+  </Details>
+</div>
+
+<div class="canvas-wrapper">
   <Canvas shadows={false} renderMode="on-demand" autoRender={true}>
     <!-- <PerfMonitor /> -->
-    <Graph {graph} />
+    <Graph {graph} bind:debug />
   </Canvas>
 </div>
 
 <style>
-  div {
+  .wrapper {
+    position: absolute;
+    z-index: 100;
+    top: 10px;
+    left: 10px;
+  }
+
+  .canvas-wrapper {
     height: 100vh;
   }
 

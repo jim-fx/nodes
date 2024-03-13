@@ -9,8 +9,15 @@
   import GraphView from "./GraphView.svelte";
   import type { Node as NodeType } from "$lib/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
-  import * as debug from "../debug";
   import type { Socket } from "$lib/types";
+  import {
+    activeNodeId,
+    activeSocket,
+    hoveredSocket,
+    possibleSockets,
+    possibleSocketIds,
+    selectedNodes,
+  } from "./stores";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
@@ -27,39 +34,68 @@
   let width = 100;
   let height = 100;
 
-  let activeNodeId = -1;
-  let downSocket: null | Socket = null;
-  let possibleSockets: Socket[] = [];
-  $: possibleSocketIds = possibleSockets?.length
-    ? new Set(possibleSockets.map((s) => `${s.node.id}-${s.index}`))
-    : null;
-  let hoveredSocket: Socket | null = null;
-
   $: cameraBounds = [
-    cameraPosition[0] - width / cameraPosition[2],
-    cameraPosition[0] + width / cameraPosition[2],
-    cameraPosition[1] - height / cameraPosition[2],
-    cameraPosition[1] + height / cameraPosition[2],
+    cameraPosition[0] - width / cameraPosition[2] / 2,
+    cameraPosition[0] + width / cameraPosition[2] / 2,
+    cameraPosition[1] - height / cameraPosition[2] / 2,
+    cameraPosition[1] + height / cameraPosition[2] / 2,
   ];
 
+  export let debug = {};
+  $: debug = {
+    activeNodeId: $activeNodeId,
+    activeSocket: $activeSocket
+      ? `${$activeSocket?.node.id}-${$activeSocket?.index}`
+      : null,
+    hoveredSocket: $hoveredSocket
+      ? `${$hoveredSocket?.node.id}-${$hoveredSocket?.index}`
+      : null,
+    selectedNodes: [...($selectedNodes?.values() || [])],
+  };
+
+  function updateNodePosition(node: NodeType) {
+    node.tmp = node.tmp || {};
+    if (node?.tmp?.ref) {
+      node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
+      node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+    }
+  }
+
+  const nodeHeightCache: Record<string, number> = {};
+  function getNodeHeight(nodeTypeId: string) {
+    if (nodeTypeId in nodeHeightCache) {
+      return nodeHeightCache[nodeTypeId];
+    }
+    const node = graph.getNodeType(nodeTypeId);
+    if (!node?.inputs) {
+      return 1.25;
+    }
+    const height = 1.25 + 2.5 * Object.keys(node.inputs).length;
+    nodeHeightCache[nodeTypeId] = height;
+    return height;
+  }
+
   setContext("isNodeInView", (node: NodeType) => {
+    const height = getNodeHeight(node.type);
+    const width = 5;
     return (
-      node.position.x > cameraBounds[0] &&
+      // check x-axis
+      node.position.x > cameraBounds[0] - width &&
       node.position.x < cameraBounds[1] &&
-      node.position.y > cameraBounds[2] &&
+      // check y-axis
+      node.position.y > cameraBounds[2] - height &&
       node.position.y < cameraBounds[3]
     );
   });
 
   setContext("setDownSocket", (socket: Socket) => {
-    downSocket = socket;
+    $activeSocket = socket;
 
     let { node, index, position } = socket;
 
     // remove existing edge
     if (typeof index === "string") {
       const edges = graph.getEdgesToNode(node);
-      console.log({ edges });
       for (const edge of edges) {
         if (edge[3] === index) {
           node = edge[0];
@@ -72,14 +108,14 @@
     }
 
     mouseDown = position;
-    downSocket = {
+    $activeSocket = {
       node,
       index,
       position,
     };
 
-    possibleSockets = graph
-      .getPossibleSockets(downSocket)
+    $possibleSockets = graph
+      .getPossibleSockets($activeSocket)
       .map(([node, index]) => {
         return {
           node,
@@ -87,6 +123,9 @@
           position: getSocketPosition({ node, index }),
         };
       });
+    $possibleSocketIds = new Set(
+      $possibleSockets.map((s) => `${s.node.id}-${s.index}`),
+    );
   });
 
   function getSnapLevel() {
@@ -136,10 +175,11 @@
 
     if (!mouseDown) return;
 
-    if (possibleSockets?.length) {
+    // we are creating a new edge here
+    if ($possibleSockets?.length) {
       let smallestDist = 1000;
       let _socket;
-      for (const socket of possibleSockets) {
+      for (const socket of $possibleSockets) {
         const dist = Math.sqrt(
           (socket.position[0] - mousePosition[0]) ** 2 +
             (socket.position[1] - mousePosition[1]) ** 2,
@@ -152,118 +192,235 @@
 
       if (_socket && smallestDist < 0.3) {
         mousePosition = _socket.position;
-        hoveredSocket = _socket;
+        $hoveredSocket = _socket;
       } else {
-        hoveredSocket = null;
+        $hoveredSocket = null;
       }
     }
 
-    if (activeNodeId === -1) return;
+    if ($activeNodeId === -1) return;
 
-    const node = graph.getNode(activeNodeId);
-    if (!node) return;
+    const node = graph.getNode($activeNodeId);
+    if (!node || event.buttons !== 1) return;
 
     node.tmp = node.tmp || {};
-    node.tmp.isMoving = true;
 
-    let newX =
-      (node?.tmp?.downX || 0) +
-      (event.clientX - mouseDown[0]) / cameraPosition[2];
-    let newY =
-      (node?.tmp?.downY || 0) +
-      (event.clientY - mouseDown[1]) / cameraPosition[2];
+    const oldX = node.tmp.downX || 0;
+    const oldY = node.tmp.downY || 0;
+
+    let newX = oldX + (event.clientX - mouseDown[0]) / cameraPosition[2];
+    let newY = oldY + (event.clientY - mouseDown[1]) / cameraPosition[2];
 
     if (event.ctrlKey) {
       const snapLevel = getSnapLevel();
       newX = snapToGrid(newX, 5 / snapLevel);
       newY = snapToGrid(newY, 5 / snapLevel);
     }
+
+    if (!node.tmp.isMoving) {
+      const dist = Math.sqrt((oldX - newX) ** 2 + (oldY - newY) ** 2);
+      if (dist > 0.2) {
+        node.tmp.isMoving = true;
+      }
+    }
+
+    const vecX = oldX - newX;
+    const vecY = oldY - newY;
+
+    if ($selectedNodes?.size) {
+      for (const nodeId of $selectedNodes) {
+        const n = graph.getNode(nodeId);
+        if (!n) continue;
+        n.position.x = (n?.tmp?.downX || 0) - vecX;
+        n.position.y = (n?.tmp?.downY || 0) - vecY;
+        updateNodePosition(n);
+      }
+    }
+
     node.position.x = newX;
     node.position.y = newY;
     node.position = node.position;
 
-    nodes.set($nodes);
-    edges.set($edges);
+    updateNodePosition(node);
+
+    $edges = $edges;
   }
 
   function handleMouseDown(event: MouseEvent) {
     if (mouseDown) return;
+    mouseDown = [event.clientX, event.clientY];
 
-    for (const node of event.composedPath()) {
-      let _activeNodeId = (node as unknown as HTMLElement)?.getAttribute?.(
-        "data-node-id",
-      )!;
+    if (event.target instanceof HTMLElement && event.buttons === 1) {
+      const nodeElement = event.target.closest(".node");
+      const _activeNodeId = nodeElement?.getAttribute?.("data-node-id");
       if (_activeNodeId) {
-        activeNodeId = parseInt(_activeNodeId, 10);
-        break;
+        const nodeId = parseInt(_activeNodeId, 10);
+        if ($activeNodeId !== -1) {
+          // if the selected node is the same as the clicked node
+          if ($activeNodeId === nodeId) {
+            //$activeNodeId = -1;
+            // if the clicked node is different from the selected node and secondary
+          } else if (event.ctrlKey) {
+            $selectedNodes = $selectedNodes || new Set();
+            $selectedNodes.add($activeNodeId);
+            $selectedNodes.delete(nodeId);
+            $activeNodeId = nodeId;
+            // select the node
+          } else if (event.shiftKey) {
+            const activeNode = graph.getNode($activeNodeId);
+            const newNode = graph.getNode(nodeId);
+            if (activeNode && newNode) {
+              const edge = graph.getNodesBetween(activeNode, newNode);
+              if (edge) {
+                $selectedNodes = new Set(edge.map((n) => n.id));
+              }
+              $activeNodeId = nodeId;
+            }
+          } else if (!$selectedNodes?.has(nodeId)) {
+            $activeNodeId = nodeId;
+          }
+        } else {
+          $activeNodeId = nodeId;
+        }
+      } else {
+        $activeNodeId = -1;
+        $selectedNodes?.clear();
+        $selectedNodes = $selectedNodes;
       }
     }
-    if (activeNodeId < 0) return;
 
-    mouseDown = [event.clientX, event.clientY];
-    const node = graph.getNode(activeNodeId);
+    const node = graph.getNode($activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
     node.tmp.downX = node.position.x;
     node.tmp.downY = node.position.y;
+    if ($selectedNodes) {
+      for (const nodeId of $selectedNodes) {
+        const n = graph.getNode(nodeId);
+        if (!n) continue;
+        n.tmp = n.tmp || {};
+        n.tmp.downX = n.position.x;
+        n.tmp.downY = n.position.y;
+      }
+    }
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Delete") {
+      if ($activeNodeId !== -1) {
+        const node = graph.getNode($activeNodeId);
+        if (node) {
+          graph.removeNode(node);
+          $activeNodeId = -1;
+        }
+      }
+      if ($selectedNodes) {
+        for (const nodeId of $selectedNodes) {
+          const node = graph.getNode(nodeId);
+          if (node) {
+            graph.removeNode(node);
+          }
+        }
+        $selectedNodes.clear();
+        $selectedNodes = $selectedNodes;
+      }
+    }
   }
 
   function handleMouseUp(event: MouseEvent) {
-    if (event.button !== 0) return;
+    const activeNode = graph.getNode($activeNodeId);
 
-    const node = graph.getNode(activeNodeId);
-    if (node) {
-      node.tmp = node.tmp || {};
-      node.tmp.isMoving = false;
+    if (event.target instanceof HTMLElement && event.button === 0) {
+      const nodeElement = event.target.closest(".node");
+      const _activeNodeId = nodeElement?.getAttribute?.("data-node-id");
+      if (_activeNodeId) {
+        const nodeId = parseInt(_activeNodeId, 10);
+        if (activeNode) {
+          if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
+            $selectedNodes?.clear();
+            $selectedNodes = $selectedNodes;
+            $activeNodeId = nodeId;
+          }
+        }
+      }
+    }
+
+    if (activeNode?.tmp?.isMoving) {
+      activeNode.tmp = activeNode.tmp || {};
+      activeNode.tmp.isMoving = false;
       const snapLevel = getSnapLevel();
-      const fx = snapToGrid(node.position.x, 5 / snapLevel);
-      const fy = snapToGrid(node.position.y, 5 / snapLevel);
+      const fx = snapToGrid(activeNode.position.x, 5 / snapLevel);
+      const fy = snapToGrid(activeNode.position.y, 5 / snapLevel);
+      if ($selectedNodes) {
+        for (const nodeId of $selectedNodes) {
+          const node = graph.getNode(nodeId);
+          if (!node) continue;
+          node.tmp = node.tmp || {};
+          node.tmp.snapX = node.position.x - (activeNode.position.x - fx);
+          node.tmp.snapY = node.position.y - (activeNode.position.y - fy);
+        }
+      }
       animate(500, (a: number) => {
-        node.position.x = lerp(node.position.x, fx, a);
-        node.position.y = lerp(node.position.y, fy, a);
-        nodes.set($nodes);
-        edges.set($edges);
-        if (node?.tmp?.isMoving) {
+        activeNode.position.x = lerp(activeNode.position.x, fx, a);
+        activeNode.position.y = lerp(activeNode.position.y, fy, a);
+        updateNodePosition(activeNode);
+
+        if ($selectedNodes) {
+          for (const nodeId of $selectedNodes) {
+            const node = graph.getNode(nodeId);
+            if (!node) continue;
+            node.position.x = lerp(node.position.x, node?.tmp?.snapX || 0, a);
+            node.position.y = lerp(node.position.y, node?.tmp?.snapY || 0, a);
+            updateNodePosition(node);
+          }
+        }
+
+        if (activeNode?.tmp?.isMoving) {
           return false;
         }
+
+        $edges = $edges;
       });
-    } else if (hoveredSocket && downSocket) {
-      console.log({ hoveredSocket, downSocket });
+    } else if ($hoveredSocket && $activeSocket) {
       if (
-        typeof hoveredSocket.index === "number" &&
-        typeof downSocket.index === "string"
+        typeof $hoveredSocket.index === "number" &&
+        typeof $activeSocket.index === "string"
       ) {
         graph.createEdge(
-          hoveredSocket.node,
-          hoveredSocket.index || 0,
-          downSocket.node,
-          downSocket.index,
+          $hoveredSocket.node,
+          $hoveredSocket.index || 0,
+          $activeSocket.node,
+          $activeSocket.index,
         );
-      } else {
+      } else if (
+        typeof $activeSocket.index == "number" &&
+        typeof $hoveredSocket.index === "string"
+      ) {
         graph.createEdge(
-          downSocket.node,
-          downSocket.index || 0,
-          hoveredSocket.node,
-          hoveredSocket.index,
+          $activeSocket.node,
+          $activeSocket.index || 0,
+          $hoveredSocket.node,
+          $hoveredSocket.index,
         );
       }
     }
 
     mouseDown = null;
-    downSocket = null;
-    possibleSockets = [];
-    hoveredSocket = null;
-    activeNodeId = -1;
+    $activeSocket = null;
+    $possibleSockets = [];
+    $possibleSocketIds = null;
+    $hoveredSocket = null;
   }
 </script>
 
-<svelte:document
+<svelte:window
   on:mousemove={handleMouseMove}
   on:mouseup={handleMouseUp}
   on:mousedown={handleMouseDown}
+  on:keydown={handleKeyDown}
+  bind:innerWidth={width}
+  bind:innerHeight={height}
 />
-
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 <Debug />
 
@@ -272,19 +429,13 @@
 <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
 
 {#if $status === "idle"}
-  {#if downSocket}
+  {#if $activeSocket}
     <FloatingEdge
-      from={{ x: downSocket.position[0], y: downSocket.position[1] }}
+      from={{ x: $activeSocket.position[0], y: $activeSocket.position[1] }}
       to={{ x: mousePosition[0], y: mousePosition[1] }}
     />
   {/if}
-  <GraphView
-    {nodes}
-    {edges}
-    {cameraPosition}
-    {possibleSocketIds}
-    {downSocket}
-  />
+  <GraphView {nodes} {edges} {cameraPosition} />
 {:else if $status === "loading"}
   <span>Loading</span>
 {:else if $status === "error"}

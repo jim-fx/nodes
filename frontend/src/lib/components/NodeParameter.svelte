@@ -1,51 +1,17 @@
 <script lang="ts">
-  import type { NodeInput } from "$lib/types";
+  import type { NodeInput, Socket } from "$lib/types";
   import type { Node } from "$lib/types";
   import { getContext } from "svelte";
+  import { createNodePath } from "$lib/helpers";
+  import { possibleSocketIds } from "./graph/stores";
 
   export let node: Node;
   export let input: NodeInput;
   export let id: string;
   export let index: number;
-
-  export let possibleSocketIds: null | Set<string> = null;
-
   export let isLast = false;
 
-  function createPath({ depth = 8, height = 20, y = 50 } = {}) {
-    let corner = isLast ? 5 : 0;
-
-    let right_bump = false;
-    let left_bump = node.tmp?.type?.inputs?.[id].internal !== true;
-
-    return `M0,0
-      H100
-      V${y - height / 2}
-      ${
-        right_bump
-          ? ` C${100 - depth},${y - height / 2} ${100 - depth},${y + height / 2} 100,${y + height / 2}`
-          : ` H100`
-      }
-      ${
-        corner
-          ? ` V${100 - corner}
-              Q100,100 ${100 - corner / 2},100
-              H${corner / 2}
-              Q0,100  0,${100 - corner}
-            `
-          : ` V100
-              H0
-            `
-      }
-      ${
-        left_bump
-          ? ` V${y + height / 2} C${depth},${y + height / 2} ${depth},${y - height / 2} 0,${y - height / 2}`
-          : ` H0`
-      }
-      Z`.replace(/\s+/g, " ");
-  }
-
-  const setDownSocket = getContext("setDownSocket");
+  const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
 
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
@@ -56,12 +22,41 @@
       position: [node.position.x, node.position.y + 2.5 + index * 2.5],
     });
   }
+
+  const leftBump = node.tmp?.type?.inputs?.[id].internal !== true;
+  const cornerBottom = isLast ? 5 : 0;
+  const aspectRatio = 0.5;
+
+  const path = createNodePath({
+    depth: 4,
+    height: 12,
+    y: 50,
+    cornerBottom,
+    leftBump,
+    aspectRatio,
+  });
+  const pathDisabled = createNodePath({
+    depth: 0,
+    height: 15,
+    y: 50,
+    cornerBottom,
+    leftBump,
+    aspectRatio,
+  });
+  const pathHover = createNodePath({
+    depth: 8,
+    height: 24,
+    y: 50,
+    cornerBottom,
+    leftBump,
+    aspectRatio,
+  });
 </script>
 
 <div
   class="wrapper"
-  class:disabled={possibleSocketIds &&
-    !possibleSocketIds.has(`${node.id}-${id}`)}
+  class:disabled={$possibleSocketIds &&
+    !$possibleSocketIds.has(`${node.id}-${id}`)}
 >
   <div class="content">
     <label>{id}</label>
@@ -91,9 +86,9 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 15, y: 50 })}");
-      --hover-path-disabled: path("${createPath({ depth: 0, height: 15, y: 50 })}");
-      --hover-path: path("${createPath({ depth: 8, height: 24, y: 50 })}");
+      --path: path("${path}");
+      --hover-path: path("${pathHover}");
+      --hover-path-disabled: path("${pathDisabled}");
     `}
   >
     <path vector-effect="non-scaling-stroke"></path>
@@ -111,6 +106,8 @@
   .target {
     position: absolute;
     border-radius: 50%;
+    /* background: red; */
+    /* opacity: 0.1; */
   }
 
   .small.target {
@@ -126,6 +123,11 @@
     top: 5px;
     left: -7.5px;
     cursor: unset;
+    pointer-events: none;
+  }
+
+  :global(.hovering-sockets) .large.target {
+    pointer-events: all;
   }
 
   .content {
@@ -169,19 +171,24 @@
   }
 
   svg path {
-    stroke-width: 0.2px;
     transition: 0.2s;
     fill: #060606;
-    stroke: #777;
-    stroke-width: 0.1;
+    stroke: var(--stroke);
+    stroke-width: var(--stroke-width);
     d: var(--path);
   }
 
   :global(.hovering-sockets) .large:hover ~ svg path {
     d: var(--hover-path);
+    fill: #131313;
+  }
+
+  :global(.hovering-sockets) .small:hover ~ svg path {
+    fill: #161616;
   }
 
   .disabled svg path {
     d: var(--hover-path-disabled) !important;
+    fill: #060606 !important;
   }
 </style>

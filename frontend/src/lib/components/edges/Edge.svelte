@@ -22,7 +22,7 @@
 
   let mesh: Mesh;
 
-  function update(force = false) {
+  export const update = function (force = false) {
     if (!force) {
       const new_x = from.x + to.x;
       const new_y = from.y + to.y;
@@ -50,7 +50,7 @@
     points = curve.getPoints(samples).map((p) => new Vector3(p.x, 0, p.y));
     // mesh.setGeometry(points);
     // mesh.needsUpdate = true;
-  }
+  };
 
   update();
   $: if (from || to) {

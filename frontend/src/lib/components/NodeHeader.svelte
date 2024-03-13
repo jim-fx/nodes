@@ -1,41 +1,11 @@
 <script lang="ts">
-  import type { Node } from "$lib/types";
+  import { createNodePath } from "$lib/helpers";
+  import type { Node, Socket } from "$lib/types";
   import { getContext } from "svelte";
-  import { getGraphManager, getGraphState } from "./graph/context";
 
   export let node: Node;
 
-  const graph = getGraphManager();
-  const state = getGraphState();
-
-  function createPath({ depth = 8, height = 20, y = 50 } = {}) {
-    let corner = 10;
-
-    let right_bump = node.tmp.type.outputs.length > 0;
-
-    return `M0,100
-      ${
-        corner
-          ? ` V${corner}
-              Q0,0 ${corner / 4},0
-              H${100 - corner / 4}
-              Q100,0  100,${corner}
-            `
-          : ` V0
-              H100
-            `
-      }
-      V${y - height / 2}
-      ${
-        right_bump
-          ? ` C${100 - depth},${y - height / 2} ${100 - depth},${y + height / 2} 100,${y + height / 2}`
-          : ` H100`
-      }
-      V100
-      Z`.replace(/\s+/g, " ");
-  }
-
-  const setDownSocket = getContext("setDownSocket");
+  const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
 
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
@@ -46,6 +16,35 @@
       position: [node.position.x + 5, node.position.y + 0.625],
     });
   }
+
+  const cornerTop = 10;
+  const rightBump = !!node?.tmp?.type?.outputs?.length;
+  const aspectRatio = 0.25;
+
+  const path = createNodePath({
+    depth: 4.5,
+    height: 24,
+    y: 50,
+    cornerTop,
+    rightBump,
+    aspectRatio,
+  });
+  const pathDisabled = createNodePath({
+    depth: 0,
+    height: 15,
+    y: 50,
+    cornerTop,
+    rightBump,
+    aspectRatio,
+  });
+  const pathHover = createNodePath({
+    depth: 6,
+    height: 30,
+    y: 50,
+    cornerTop,
+    rightBump,
+    aspectRatio,
+  });
 </script>
 
 <div class="wrapper" data-node-id={node.id}>
@@ -66,8 +65,8 @@
     height="100"
     preserveAspectRatio="none"
     style={`
-      --path: path("${createPath({ depth: 5, height: 27, y: 50 })}");
-      --hover-path: path("${createPath({ depth: 6, height: 33, y: 50 })}");
+      --path: path("${path}");
+      --hover-path: path("${pathHover}");
     `}
   >
     <path
@@ -116,8 +115,8 @@
     stroke-width: 0.2px;
     transition: 0.2s;
     fill: #131313;
-    stroke: #777;
-    stroke-width: 0.1;
+    stroke: var(--stroke);
+    stroke-width: var(--stroke-width);
     d: var(--path);
   }
 

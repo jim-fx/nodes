@@ -1,18 +1,16 @@
 <script lang="ts">
-  import type { Edge as EdgeType, Node as NodeType } from "$lib/types";
+  import type { Edge as EdgeType, Node as NodeType, Socket } from "$lib/types";
   import { HTML } from "@threlte/extras";
   import Edge from "../edges/Edge.svelte";
   import Node from "../Node.svelte";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
+  import { activeSocket } from "./stores";
 
   export let nodes: Writable<Map<number, NodeType>>;
   export let edges: Writable<EdgeType[]>;
 
   export let cameraPosition = [0, 1, 0];
-  export let downSocket: null | { node: NodeType; index: number | string } =
-    null;
-  export let possibleSocketIds: null | Set<string> = null;
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
 
@@ -25,9 +23,18 @@
       edge[2].position.y + 2.5 + index * 2.5,
     ];
   }
+
+  onMount(() => {
+    for (const node of $nodes.values()) {
+      if (node?.tmp?.ref) {
+        node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
+        node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+      }
+    }
+  });
 </script>
 
-{#each $edges as edge}
+{#each $edges as edge (edge[0].id + edge[2].id + edge[3])}
   {@const pos = getEdgePosition(edge)}
   {@const [x1, y1, x2, y2] = pos}
   <Edge
@@ -48,15 +55,11 @@
     tabindex="0"
     class="wrapper"
     class:zoom-small={cameraPosition[2] < 10}
-    class:hovering-sockets={downSocket}
+    class:hovering-sockets={activeSocket}
     style={`--cz: ${cameraPosition[2]}`}
   >
-    {#each $nodes.values() as node}
-      <Node
-        {node}
-        inView={cameraPosition && isNodeInView(node)}
-        {possibleSocketIds}
-      />
+    {#each $nodes.values() as node (node.id)}
+      <Node {node} inView={cameraPosition && isNodeInView(node)} />
     {/each}
   </div>
 </HTML>

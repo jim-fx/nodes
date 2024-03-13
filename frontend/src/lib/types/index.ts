@@ -11,6 +11,9 @@ export type Node = {
     type?: NodeType;
     downX?: number;
     downY?: number;
+    snapX?: number;
+    snapY?: number;
+    ref?: HTMLElement;
     visible?: boolean;
     isMoving?: boolean;
   },
