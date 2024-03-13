@@ -2,7 +2,7 @@
   import { T } from "@threlte/core";
   import { OrbitControls } from "@threlte/extras";
   import { onMount } from "svelte";
-  import { type OrthographicCamera } from "three";
+  import { MOUSE, type OrthographicCamera } from "three";
 
   export let camera: OrthographicCamera | undefined = undefined;
   export let maxZoom = 150;
@@ -57,6 +57,7 @@
 <T.OrthographicCamera bind:ref={camera} position.y={10} makeDefault>
   <OrbitControls
     args={[camera, window]}
+    mouseButtons={{ LEFT: MOUSE.PAN, MIDDLE: 0, RIGHT: 0 }}
     bind:ref={controls}
     enableZoom={true}
     zoomSpeed={2}

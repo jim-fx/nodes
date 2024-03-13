@@ -18,6 +18,7 @@
     possibleSocketIds,
     selectedNodes,
   } from "./stores";
+  import BoxSelection from "../BoxSelection.svelte";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
@@ -30,6 +31,7 @@
   const maxZoom = 150;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
+  let boxSelection = false;
   let cameraPosition: [number, number, number] = [0, 1, 0];
   let width = 100;
   let height = 100;
@@ -291,6 +293,8 @@
         } else {
           $activeNodeId = nodeId;
         }
+      } else if (event.ctrlKey) {
+        boxSelection = true;
       } else {
         $activeNodeId = -1;
         $selectedNodes?.clear();
@@ -464,6 +468,7 @@
     }
 
     mouseDown = null;
+    boxSelection = false;
     $activeSocket = null;
     $possibleSockets = [];
     $possibleSocketIds = null;
@@ -485,6 +490,17 @@
 <Camera bind:camera {maxZoom} {minZoom} bind:position={cameraPosition} />
 
 <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
+
+{#if boxSelection && mouseDown}
+  <BoxSelection
+    {cameraPosition}
+    p1={{
+      x: cameraPosition[0] + (mouseDown[0] - width / 2) / cameraPosition[2],
+      y: cameraPosition[1] + (mouseDown[1] - height / 2) / cameraPosition[2],
+    }}
+    p2={{ x: mousePosition[0], y: mousePosition[1] }}
+  />
+{/if}
 
 {#if $status === "idle"}
   {#if $activeSocket}
