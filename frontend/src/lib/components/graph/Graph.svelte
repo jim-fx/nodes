@@ -28,7 +28,7 @@
 
   let camera: OrthographicCamera;
   const minZoom = 4;
-  const maxZoom = 150;
+  const maxZoom = 100;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
   let boxSelection = false;
@@ -80,16 +80,16 @@
     }
     const node = graph.getNodeType(nodeTypeId);
     if (!node?.inputs) {
-      return 1.25;
+      return 2.5;
     }
-    const height = 1.25 + 2.5 * Object.keys(node.inputs).length;
+    const height = 2.5 + 5 * Object.keys(node.inputs).length;
     nodeHeightCache[nodeTypeId] = height;
     return height;
   }
 
   setContext("isNodeInView", (node: NodeType) => {
     const height = getNodeHeight(node.type);
-    const width = 5;
+    const width = 10;
     return (
       // check x-axis
       node.position.x > cameraBounds[0] - width &&
@@ -159,14 +159,14 @@
   ): [number, number] {
     if (typeof index === "number") {
       return [
-        (node?.tmp?.x ?? node.position.x) + 5,
-        (node?.tmp?.y ?? node.position.y) + 0.625 + 2.5 * index,
+        (node?.tmp?.x ?? node.position.x) + 10,
+        (node?.tmp?.y ?? node.position.y) + 1.25 + 5 * index,
       ];
     } else {
       const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
       return [
         node?.tmp?.x ?? node.position.x,
-        (node?.tmp?.y ?? node.position.y) + 2.5 + 2.5 * _index,
+        (node?.tmp?.y ?? node.position.y) + 5 + 5 * _index,
       ];
     }
   }
@@ -199,7 +199,7 @@
         }
       }
 
-      if (_socket && smallestDist < 0.3) {
+      if (_socket && smallestDist < 0.9) {
         mousePosition = _socket.position;
         $hoveredSocket = _socket;
       } else {
@@ -302,7 +302,9 @@
             if (activeNode && newNode) {
               const edge = graph.getNodesBetween(activeNode, newNode);
               if (edge) {
-                $selectedNodes = new Set(edge.map((n) => n.id));
+                const selected = new Set(edge.map((n) => n.id));
+                selected.delete(nodeId);
+                $selectedNodes = selected;
               }
               $activeNodeId = nodeId;
             }

@@ -8,10 +8,13 @@
   export let node: Node;
   export let input: NodeInput;
   export let id: string;
-  export let index: number;
   export let isLast = false;
 
   const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
+  const getSocketPosition =
+    getContext<(node: Node, index: string) => [number, number]>(
+      "getSocketPosition",
+    );
 
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
@@ -19,7 +22,7 @@
     setDownSocket({
       node,
       index: id,
-      position: [node.position.x, node.position.y + 2.5 + index * 2.5],
+      position: getSocketPosition(node, id),
     });
   }
 
@@ -30,7 +33,7 @@
   const path = createNodePath({
     depth: 4,
     height: 12,
-    y: 50,
+    y: 51,
     cornerBottom,
     leftBump,
     aspectRatio,
@@ -99,29 +102,27 @@
   .wrapper {
     position: relative;
     width: 100%;
-    height: 25px;
+    height: 50px;
     transform: translateY(-0.5px);
   }
 
   .target {
     position: absolute;
     border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%) translateX(-50%);
     /* background: red; */
     /* opacity: 0.1; */
   }
 
   .small.target {
-    width: 6px;
-    height: 6px;
-    top: 9.5px;
-    left: -3px;
+    width: 15px;
+    height: 15px;
   }
 
   .large.target {
-    width: 15px;
-    height: 15px;
-    top: 5px;
-    left: -7.5px;
+    width: 30px;
+    height: 30px;
     cursor: unset;
     pointer-events: none;
   }
@@ -150,13 +151,13 @@
     width: 100%;
     box-sizing: border-box;
     border-radius: 2px;
-    font-size: 0.5em;
+    font-size: 1em;
     padding: 2px 2px;
     background: #111;
   }
 
   label {
-    font-size: 0.5em;
+    font-size: 1em;
   }
 
   svg {
@@ -172,7 +173,7 @@
 
   svg path {
     transition: 0.2s;
-    fill: #060606;
+    fill: var(--background-color);
     stroke: var(--stroke);
     stroke-width: var(--stroke-width);
     d: var(--path);
@@ -180,15 +181,15 @@
 
   :global(.hovering-sockets) .large:hover ~ svg path {
     d: var(--hover-path);
-    fill: #131313;
+    /* fill: #131313; */
   }
 
   :global(.hovering-sockets) .small:hover ~ svg path {
-    fill: #161616;
+    /* fill: #161616; */
   }
 
   .disabled svg path {
     d: var(--hover-path-disabled) !important;
-    fill: #060606 !important;
+    /* fill: #060606 !important; */
   }
 </style>

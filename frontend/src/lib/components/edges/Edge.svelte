@@ -64,7 +64,7 @@
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
-  <T.CircleGeometry args={[0.1, 32]} />
+  <T.CircleGeometry args={[0.2, 16]} />
   <T.MeshBasicMaterial color={0x555555} />
 </T.Mesh>
 
@@ -74,7 +74,7 @@
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
-  <T.CircleGeometry args={[0.1, 32]} />
+  <T.CircleGeometry args={[0.2, 16]} />
   <T.MeshBasicMaterial color={0x555555} />
 </T.Mesh>
 

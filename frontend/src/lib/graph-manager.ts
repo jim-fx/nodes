@@ -150,7 +150,7 @@ export class GraphManager {
     if (toParents.includes(from)) {
       return toParents.splice(toParents.indexOf(from));
     } else if (fromParents.includes(to)) {
-      return fromParents.splice(fromParents.indexOf(to));
+      return [...fromParents.splice(fromParents.indexOf(to)), from];
     } else {
       // these two nodes are not connected
       return;
@@ -319,8 +319,8 @@ export class GraphManager {
           visible: false,
         },
         position: {
-          x: x * 7.5,
-          y: y * 10,
+          x: x * 15,
+          y: y * 20,
         },
         props: i == 0 ? { value: 0 } : {},
         type: i == 0 ? "input/float" : "math",
@@ -335,8 +335,8 @@ export class GraphManager {
         visible: false,
       },
       position: {
-        x: width * 7.5,
-        y: (height - 1) * 10,
+        x: width * 15,
+        y: (height - 1) * 20,
       },
       type: "output",
       props: {},

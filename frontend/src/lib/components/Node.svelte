@@ -51,8 +51,8 @@
     box-sizing: border-box;
     user-select: none !important;
     cursor: pointer;
-    width: 50px;
-    color: white;
+    width: 100px;
+    color: var(--text-color);
     transform: translate3d(var(--nx), var(--ny), 0);
     z-index: 1;
     font-weight: 300;
