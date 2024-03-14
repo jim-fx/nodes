@@ -21,8 +21,8 @@
 }
 
 :root {
-  font-family: 'Fira Code', monospace;
-
+  --font-family: 'Fira Code', monospace;
+  font-family: var(--font-family);
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -48,6 +48,8 @@ body {
   --background-color: #151515;
   --background-color-darker: #101010;
   --text-color: #aeaeae;
+
+  background-color: var(--background-color-darker);
 }
 
 body.theme-catppuccin {

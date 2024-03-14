@@ -6,7 +6,7 @@ const nodeTypes: NodeType[] = [
   {
     id: "input/float",
     inputs: {
-      "value": { type: "float" },
+      "value": { type: "float", value: 0.1 },
     },
     outputs: ["float"],
   },
@@ -14,8 +14,8 @@ const nodeTypes: NodeType[] = [
     id: "math",
     inputs: {
       "type": { type: "select", options: ["add", "subtract", "multiply", "divide"], internal: true },
-      "a": { type: "float" },
-      "b": { type: "float" },
+      "a": { type: "float", value: 0.2 },
+      "b": { type: "float", value: 0.2 },
     },
     outputs: ["float"],
   },
@@ -44,6 +44,8 @@ export class GraphManager {
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
+  inputSockets: Writable<Set<string>> = writable(new Set());
+
   history: HistoryManager = new HistoryManager(this);
 
   private constructor(private graph: Graph, private nodeRegistry: NodeRegistry = new NodeRegistry()) {
@@ -52,6 +54,11 @@ export class GraphManager {
     });
     this.edges.subscribe((edges) => {
       this._edges = edges;
+      const s = new Set<string>();
+      for (const edge of edges) {
+        s.add(`${edge[2].id}-${edge[3]}`);
+      }
+      this.inputSockets.set(s);
     });
   }
 

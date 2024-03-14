@@ -40,7 +40,6 @@
   {@const pos = getEdgePosition(edge)}
   {@const [x1, y1, x2, y2] = pos}
   <Edge
-    color={$colors.backgroundColorLighter}
     from={{
       x: x1,
       y: y1,

@@ -1,14 +1,21 @@
 <script lang="ts">
-  import type { NodeInput, Socket } from "$lib/types";
+  import type { NodeInput as NodeInputType, Socket } from "$lib/types";
   import type { Node } from "$lib/types";
   import { getContext } from "svelte";
   import { createNodePath } from "$lib/helpers";
   import { possibleSocketIds } from "./graph/stores";
+  import NodeInput from "./NodeInput.svelte";
+  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
-  export let input: NodeInput;
+  export let input: NodeInputType;
   export let id: string;
   export let isLast = false;
+
+  const socketId = `${node.id}-${id}`;
+
+  const graph = getGraphManager();
+  const inputSockets = graph.inputSockets;
 
   const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
   const getSocketPosition =
@@ -58,13 +65,12 @@
 
 <div
   class="wrapper"
-  class:disabled={$possibleSocketIds &&
-    !$possibleSocketIds.has(`${node.id}-${id}`)}
+  class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
-  <div class="content">
+  <div class="content" class:disabled={$inputSockets.has(socketId)}>
     <label>{id}</label>
 
-    <div class="input">input</div>
+    <NodeInput {node} {input} {id} />
   </div>
 
   {#if node.tmp?.type?.inputs?.[id].internal !== true}
@@ -184,6 +190,11 @@
 
   :global(.hovering-sockets) .small:hover ~ svg path {
     /* fill: #161616; */
+  }
+
+  .content.disabled {
+    opacity: 0.2;
+    pointer-events: none;
   }
 
   .disabled svg path {
