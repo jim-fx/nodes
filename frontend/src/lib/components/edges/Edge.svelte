@@ -22,6 +22,10 @@
 
   let mesh: Mesh;
 
+  import { colors } from "../graph/stores";
+
+  $: color = $colors.backgroundColorLighter;
+
   export const update = function (force = false) {
     if (!force) {
       const new_x = from.x + to.x;
@@ -64,8 +68,8 @@
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
-  <T.CircleGeometry args={[0.2, 16]} />
-  <T.MeshBasicMaterial color={0x555555} />
+  <T.CircleGeometry args={[0.3, 16]} />
+  <T.MeshBasicMaterial {color} />
 </T.Mesh>
 
 <T.Mesh
@@ -74,11 +78,11 @@
   position.y={0.8}
   rotation.x={-Math.PI / 2}
 >
-  <T.CircleGeometry args={[0.2, 16]} />
-  <T.MeshBasicMaterial color={0x555555} />
+  <T.CircleGeometry args={[0.3, 16]} />
+  <T.MeshBasicMaterial {color} />
 </T.Mesh>
 
 <T.Mesh position.y={0.5} bind:ref={mesh}>
   <MeshLineGeometry {points} />
-  <MeshLineMaterial width={2} attenuate={false} color={0x555555} />
+  <MeshLineMaterial width={2} attenuate={false} {color} />
 </T.Mesh>

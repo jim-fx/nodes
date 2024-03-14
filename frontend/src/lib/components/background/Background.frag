@@ -4,13 +4,10 @@ varying vec2 vUv;
 
 const float PI = 3.14159265359;
 
-uniform float width;
-uniform float height;
-uniform float cx;
-uniform float cy;
-uniform float cz;
-uniform float minZ;
-uniform float maxZ;
+uniform vec2 dimensions;
+uniform vec3 camPos;
+uniform vec2 zoomLimits;
+uniform vec3 backgroundColor;
 
 float grid(float x, float y, float divisions, float thickness) {
     x = fract(x * divisions);
@@ -47,6 +44,17 @@ float lerp(float a, float b,float t) {
 }
 
 void main(void) {
+
+    float cx = camPos.x;
+    float cy = camPos.y;
+    float cz = camPos.z;
+
+    float width = dimensions.x;
+    float height =  dimensions.y;
+
+    float minZ = zoomLimits.x;
+    float maxZ = zoomLimits.y;
+
     float divisions = 0.1/cz;
     float thickness = 0.05/cz;
     float delta = 0.1 / 2.0;
@@ -84,7 +92,7 @@ void main(void) {
     float c = mix(large, small, min(nz*2.0+0.05, 1.0));
     c = mix(c, xsmall, max(min((nz-0.3)/0.7, 1.0), 0.0));
 
-    //c = xsmall;
+    vec3 color = mix(backgroundColor, vec3(1.0), c*0.5); 
 
-    gl_FragColor = vec4(c, c, c, 1.0);
+    gl_FragColor = vec4(color, 1.0);
 }

@@ -37,7 +37,7 @@
 </div>
 
 <div class="canvas-wrapper">
-  <Canvas shadows={false} renderMode="on-demand" autoRender={true}>
+  <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <!-- <PerfMonitor /> -->
     <Graph {graph} bind:debug />
   </Canvas>

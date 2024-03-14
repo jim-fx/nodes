@@ -81,7 +81,7 @@
   .wrapper {
     position: relative;
     width: 100%;
-    height: 25px;
+    height: 50px;
   }
 
   .click-target {
@@ -89,8 +89,8 @@
     right: 0px;
     top: 50%;
     transform: translateX(50%) translateY(-50%);
-    height: 15px;
-    width: 15px;
+    height: 30px;
+    width: 30px;
     z-index: 100;
     border-radius: 50%;
     /* background: red; */
@@ -114,7 +114,9 @@
 
   svg path {
     stroke-width: 0.2px;
-    transition: 0.2s;
+    transition:
+      d 0.3s ease,
+      fill 0.3s ease;
     fill: var(--background-color-lighter);
     stroke: var(--stroke);
     stroke-width: var(--stroke-width);
@@ -125,7 +127,7 @@
     font-size: 1em;
     display: flex;
     align-items: center;
-    padding-left: 5px;
+    padding-left: 20px;
     height: 100%;
   }
 

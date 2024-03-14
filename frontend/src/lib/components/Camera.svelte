@@ -3,12 +3,13 @@
   import { OrbitControls } from "@threlte/extras";
   import { onMount } from "svelte";
   import { MOUSE, type OrthographicCamera } from "three";
+  import type { OrbitControls as OrbitControlsType } from "three/examples/jsm/Addons.js";
 
   export let camera: OrthographicCamera | undefined = undefined;
   export let maxZoom = 150;
   export let minZoom = 4;
 
-  let controls: OrbitControls | undefined = undefined;
+  export let controls: OrbitControlsType | undefined = undefined;
 
   export const position: [number, number, number] = [0, 1, 0];
 
@@ -56,8 +57,8 @@
 
 <T.OrthographicCamera bind:ref={camera} position.y={10} makeDefault>
   <OrbitControls
-    args={[camera, window]}
-    mouseButtons={{ LEFT: MOUSE.PAN, MIDDLE: 0, RIGHT: 0 }}
+    args={[camera, document.body]}
+    mouseButtons={{ LEFT: 0, MIDDLE: 0, RIGHT: MOUSE.PAN }}
     bind:ref={controls}
     enableZoom={true}
     zoomSpeed={2}

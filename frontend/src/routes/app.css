@@ -23,28 +23,6 @@
 :root {
   font-family: 'Fira Code', monospace;
 
-  /* Colors */
-  --primary-color: #007bff;
-  /* Primary brand color */
-  --secondary-color: #6c757d;
-  /* Secondary color */
-  --background-color: #151515;
-  --background-color-lightest: #ffffff;
-  --background-color-lighter: #202020;
-  --background-color-dark: #dae0e5;
-  --background-color-darkest: #c8d1d7;
-  /* Background color */
-  --text-color: #aeaeae;
-  /* Text color */
-  --accent-color: #ffc107;
-  /* Accent color */
-
-  /* Typography */
-  --font-family: Arial, sans-serif;
-  --font-size-base: 16px;
-  /* Base font size */
-  --line-height-base: 1.5;
-  /* Base line height */
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -62,4 +40,23 @@
 
 body {
   overflow: hidden;
+
+  /* Secondary color */
+  --secondary-color: #6c757d;
+  /* Background color */
+  --background-color-lighter: #202020;
+  --background-color: #151515;
+  --background-color-darker: #101010;
+  --text-color: #aeaeae;
 }
+
+body.theme-catppuccin {
+  --text-color: #CDD6F4;
+  --background-color-lighter: #313244;
+  --background-color: #1E1E2E;
+  --background-color-darker: #11111b;
+}
+
+/* canvas { */
+/*   display: none !important; */
+/* } */

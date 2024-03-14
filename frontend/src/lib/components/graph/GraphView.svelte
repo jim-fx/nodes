@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { Edge as EdgeType, Node as NodeType, Socket } from "$lib/types";
+  import type { Edge as EdgeType, Node as NodeType } from "$lib/types";
   import { HTML } from "@threlte/extras";
   import Edge from "../edges/Edge.svelte";
   import Node from "../Node.svelte";
   import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
-  import { activeSocket } from "./stores";
+  import { activeSocket, colors } from "./stores";
 
   export let nodes: Writable<Map<number, NodeType>>;
   export let edges: Writable<EdgeType[]>;
@@ -40,6 +40,7 @@
   {@const pos = getEdgePosition(edge)}
   {@const [x1, y1, x2, y2] = pos}
   <Edge
+    color={$colors.backgroundColorLighter}
     from={{
       x: x1,
       y: y1,
@@ -56,9 +57,9 @@
     role="tree"
     tabindex="0"
     class="wrapper"
-    class:zoom-small={cameraPosition[2] < 10}
+    class:zoom-small={cameraPosition[2] < 2}
     class:hovering-sockets={activeSocket}
-    style={`--cz: ${cameraPosition[2]}`}
+    style={`--cz: ${cameraPosition[2]};`}
   >
     {#each $nodes.values() as node (node.id)}
       <Node {node} inView={cameraPosition && isNodeInView(node)} />
@@ -73,5 +74,6 @@
     width: 0px;
     height: 0px;
     transform: scale(calc(var(--cz) * 0.1));
+    --input-opacity: calc((var(--cz) - 2) / 5);
   }
 </style>

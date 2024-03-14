@@ -47,9 +47,9 @@
     aspectRatio,
   });
   const pathHover = createNodePath({
-    depth: 8,
-    height: 24,
-    y: 50,
+    depth: 6,
+    height: 18,
+    y: 50.5,
     cornerBottom,
     leftBump,
     aspectRatio,
@@ -102,7 +102,7 @@
   .wrapper {
     position: relative;
     width: 100%;
-    height: 50px;
+    height: 100px;
     transform: translateY(-0.5px);
   }
 
@@ -116,13 +116,13 @@
   }
 
   .small.target {
-    width: 15px;
-    height: 15px;
+    width: 30px;
+    height: 30px;
   }
 
   .large.target {
-    width: 30px;
-    height: 30px;
+    width: 60px;
+    height: 60px;
     cursor: unset;
     pointer-events: none;
   }
@@ -133,14 +133,13 @@
 
   .content {
     position: relative;
-    padding: 2px 5px;
+    padding: 10px 20px;
     display: flex;
     flex-direction: column;
     height: 100%;
     justify-content: space-around;
     box-sizing: border-box;
-    opacity: calc((2 * var(--cz)) / 150 - 0.5);
-    opacity: calc((var(--cz) - 10) / 20);
+    opacity: var(--input-opacity);
   }
 
   :global(.zoom-small) .content {
@@ -150,14 +149,11 @@
   .input {
     width: 100%;
     box-sizing: border-box;
-    border-radius: 2px;
+    border-radius: 3px;
     font-size: 1em;
-    padding: 2px 2px;
+    padding: 10px;
     background: #111;
-  }
-
-  label {
-    font-size: 1em;
+    background: var(--background-color-lighter);
   }
 
   svg {
@@ -172,7 +168,9 @@
   }
 
   svg path {
-    transition: 0.2s;
+    transition:
+      d 0.3s ease,
+      fill 0.3s ease;
     fill: var(--background-color);
     stroke: var(--stroke);
     stroke-width: var(--stroke-width);

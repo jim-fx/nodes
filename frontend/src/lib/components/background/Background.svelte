@@ -1,9 +1,10 @@
 <script lang="ts">
   import { T } from "@threlte/core";
-  import { onMount } from "svelte";
 
   import BackgroundVert from "./Background.vert";
   import BackgroundFrag from "./Background.frag";
+  import { Color } from "three";
+  import { colors } from "../graph/stores";
 
   export let minZoom = 4;
   export let maxZoom = 150;
@@ -34,33 +35,23 @@
       vertexShader={BackgroundVert}
       fragmentShader={BackgroundFrag}
       uniforms={{
-        cx: {
-          value: 0,
+        camPos: {
+          value: [0, 1, 0],
         },
-        cy: {
-          value: 0,
+        backgroundColor: {
+          value: [0, 0, 0],
         },
-        cz: {
-          value: 30,
+        zoomLimits: {
+          value: [2, 50],
         },
-        minZ: {
-          value: minZoom,
-        },
-        maxZ: {
-          value: maxZoom,
-        },
-        height: {
-          value: 100,
-        },
-        width: {
-          value: 100,
+        dimensions: {
+          value: [100, 100],
         },
       }}
-      uniforms.cx.value={cameraPosition[0]}
-      uniforms.cy.value={cameraPosition[1]}
-      uniforms.cz.value={cameraPosition[2]}
-      uniforms.width.value={width}
-      uniforms.height.value={height}
+      uniforms.camPos.value={cameraPosition}
+      uniforms.backgroundColor.value={$colors.backgroundColorDarker}
+      uniforms.zoomLimits.value={[minZoom, maxZoom]}
+      uniforms.dimensions.value={[width, height]}
     />
   </T.Mesh>
 </T.Group>

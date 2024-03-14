@@ -319,8 +319,8 @@ export class GraphManager {
           visible: false,
         },
         position: {
-          x: x * 15,
-          y: y * 20,
+          x: x * 30,
+          y: y * 40,
         },
         props: i == 0 ? { value: 0 } : {},
         type: i == 0 ? "input/float" : "math",
@@ -335,8 +335,8 @@ export class GraphManager {
         visible: false,
       },
       position: {
-        x: width * 15,
-        y: (height - 1) * 20,
+        x: width * 30,
+        y: (height - 1) * 40,
       },
       type: "output",
       props: {},

@@ -19,6 +19,7 @@
     selectedNodes,
   } from "./stores";
   import BoxSelection from "../BoxSelection.svelte";
+  import type { OrbitControls } from "three/examples/jsm/Addons.js";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
@@ -27,8 +28,9 @@
   const edges = graph.edges;
 
   let camera: OrthographicCamera;
-  const minZoom = 4;
-  const maxZoom = 100;
+  let controls: OrbitControls;
+  const minZoom = 2;
+  const maxZoom = 40;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
   let boxSelection = false;
@@ -80,16 +82,16 @@
     }
     const node = graph.getNodeType(nodeTypeId);
     if (!node?.inputs) {
-      return 2.5;
+      return 5;
     }
-    const height = 2.5 + 5 * Object.keys(node.inputs).length;
+    const height = 5 + 10 * Object.keys(node.inputs).length;
     nodeHeightCache[nodeTypeId] = height;
     return height;
   }
 
   setContext("isNodeInView", (node: NodeType) => {
     const height = getNodeHeight(node.type);
-    const width = 10;
+    const width = 20;
     return (
       // check x-axis
       node.position.x > cameraBounds[0] - width &&
@@ -159,14 +161,14 @@
   ): [number, number] {
     if (typeof index === "number") {
       return [
-        (node?.tmp?.x ?? node.position.x) + 10,
-        (node?.tmp?.y ?? node.position.y) + 1.25 + 5 * index,
+        (node?.tmp?.x ?? node.position.x) + 20,
+        (node?.tmp?.y ?? node.position.y) + 2.5 + 10 * index,
       ];
     } else {
       const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
       return [
         node?.tmp?.x ?? node.position.x,
-        (node?.tmp?.y ?? node.position.y) + 5 + 5 * _index,
+        (node?.tmp?.y ?? node.position.y) + 10 + 10 * _index,
       ];
     }
   }
@@ -209,71 +211,74 @@
 
     // handle box selection
     if (boxSelection) {
+      event.preventDefault();
+      event.stopPropagation();
       const mouseD = projectScreenToWorld(mouseDown[0], mouseDown[1]);
       const x1 = Math.min(mouseD[0], mousePosition[0]);
       const x2 = Math.max(mouseD[0], mousePosition[0]);
       const y1 = Math.min(mouseD[1], mousePosition[1]);
       const y2 = Math.max(mouseD[1], mousePosition[1]);
-      const _selectedNodes = $selectedNodes || new Set();
       for (const node of $nodes.values()) {
         if (!node?.tmp) continue;
         const x = node.position.x;
         const y = node.position.y;
-        if (x > x1 && x < x2 && y > y1 && y < y2) {
-          _selectedNodes.add(node.id);
+        const height = getNodeHeight(node.type);
+        if (x > x1 - 20 && x < x2 && y > y1 - height && y < y2) {
+          $selectedNodes?.add(node.id);
         } else {
-          _selectedNodes?.delete(node.id);
+          $selectedNodes?.delete(node.id);
         }
       }
-      $selectedNodes = _selectedNodes;
+      $selectedNodes = $selectedNodes;
+      return;
     }
 
     // here we are handling dragging of nodes
-    if ($activeNodeId === -1) return;
+    if ($activeNodeId !== -1) {
+      const node = graph.getNode($activeNodeId);
+      if (!node || event.buttons !== 1) return;
 
-    const node = graph.getNode($activeNodeId);
-    if (!node || event.buttons !== 1) return;
+      node.tmp = node.tmp || {};
 
-    node.tmp = node.tmp || {};
+      const oldX = node.tmp.downX || 0;
+      const oldY = node.tmp.downY || 0;
 
-    const oldX = node.tmp.downX || 0;
-    const oldY = node.tmp.downY || 0;
+      let newX = oldX + (event.clientX - mouseDown[0]) / cameraPosition[2];
+      let newY = oldY + (event.clientY - mouseDown[1]) / cameraPosition[2];
 
-    let newX = oldX + (event.clientX - mouseDown[0]) / cameraPosition[2];
-    let newY = oldY + (event.clientY - mouseDown[1]) / cameraPosition[2];
-
-    if (event.ctrlKey) {
-      const snapLevel = getSnapLevel();
-      newX = snapToGrid(newX, 5 / snapLevel);
-      newY = snapToGrid(newY, 5 / snapLevel);
-    }
-
-    if (!node.tmp.isMoving) {
-      const dist = Math.sqrt((oldX - newX) ** 2 + (oldY - newY) ** 2);
-      if (dist > 0.2) {
-        node.tmp.isMoving = true;
+      if (event.ctrlKey) {
+        const snapLevel = getSnapLevel();
+        newX = snapToGrid(newX, 5 / snapLevel);
+        newY = snapToGrid(newY, 5 / snapLevel);
       }
-    }
 
-    const vecX = oldX - newX;
-    const vecY = oldY - newY;
-
-    if ($selectedNodes?.size) {
-      for (const nodeId of $selectedNodes) {
-        const n = graph.getNode(nodeId);
-        if (!n?.tmp) continue;
-        n.tmp.x = (n?.tmp?.downX || 0) - vecX;
-        n.tmp.y = (n?.tmp?.downY || 0) - vecY;
-        updateNodePosition(n);
+      if (!node.tmp.isMoving) {
+        const dist = Math.sqrt((oldX - newX) ** 2 + (oldY - newY) ** 2);
+        if (dist > 0.2) {
+          node.tmp.isMoving = true;
+        }
       }
+
+      const vecX = oldX - newX;
+      const vecY = oldY - newY;
+
+      if ($selectedNodes?.size) {
+        for (const nodeId of $selectedNodes) {
+          const n = graph.getNode(nodeId);
+          if (!n?.tmp) continue;
+          n.tmp.x = (n?.tmp?.downX || 0) - vecX;
+          n.tmp.y = (n?.tmp?.downY || 0) - vecY;
+          updateNodePosition(n);
+        }
+      }
+
+      node.tmp.x = newX;
+      node.tmp.y = newY;
+
+      updateNodePosition(node);
+
+      $edges = $edges;
     }
-
-    node.tmp.x = newX;
-    node.tmp.y = newY;
-
-    updateNodePosition(node);
-
-    $edges = $edges;
   }
 
   function handleMouseDown(event: MouseEvent) {
@@ -316,6 +321,7 @@
         }
       } else if (event.ctrlKey) {
         boxSelection = true;
+        controls.enabled = false;
       } else {
         $activeNodeId = -1;
         $selectedNodes?.clear();
@@ -489,6 +495,7 @@
     }
 
     mouseDown = null;
+    controls.enabled = true;
     boxSelection = false;
     $activeSocket = null;
     $possibleSockets = [];
@@ -497,18 +504,24 @@
   }
 </script>
 
-<svelte:window
+<svelte:document
   on:mousemove={handleMouseMove}
   on:mouseup={handleMouseUp}
   on:mousedown={handleMouseDown}
   on:keydown={handleKeyDown}
-  bind:innerWidth={width}
-  bind:innerHeight={height}
 />
+
+<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
 <Debug />
 
-<Camera bind:camera {maxZoom} {minZoom} bind:position={cameraPosition} />
+<Camera
+  bind:controls
+  bind:camera
+  {maxZoom}
+  {minZoom}
+  bind:position={cameraPosition}
+/>
 
 <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
 

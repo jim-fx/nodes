@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
-  import { getContext, onMount } from "svelte";
+  import { getContext } from "svelte";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "./graph/stores";
@@ -38,7 +38,6 @@
     <NodeParameter
       {node}
       id={key}
-      index={i}
       input={value}
       isLast={i == parameters.length - 1}
     />
@@ -51,25 +50,24 @@
     box-sizing: border-box;
     user-select: none !important;
     cursor: pointer;
-    width: 100px;
+    width: 200px;
     color: var(--text-color);
     transform: translate3d(var(--nx), var(--ny), 0);
     z-index: 1;
     font-weight: 300;
-    font-size: 0.5em;
     display: none;
-    --stroke: #777;
-    --stroke-width: 0.1px;
+    --stroke: var(--background-color-lighter);
+    --stroke-width: 2px;
   }
 
   .node.active {
     --stroke: white;
-    --stroke-width: 0.3px;
+    --stroke-width: 1px;
   }
 
   .node.selected {
     --stroke: #f2be90;
-    --stroke-width: 0.2px;
+    --stroke-width: 1px;
   }
 
   .node.in-view {
