@@ -58,10 +58,14 @@
     class="wrapper"
     class:zoom-small={cameraPosition[2] < 2}
     class:hovering-sockets={activeSocket}
-    style={`--cz: ${cameraPosition[2]};`}
+    style={`--cz: ${cameraPosition[2]}; --node-display: ${cameraPosition[2] < 2 ? "none" : "block"};`}
   >
     {#each $nodes.values() as node (node.id)}
-      <Node {node} inView={cameraPosition && isNodeInView(node)} />
+      <Node
+        {node}
+        inView={cameraPosition && isNodeInView(node)}
+        z={cameraPosition[2]}
+      />
     {/each}
   </div>
 </HTML>

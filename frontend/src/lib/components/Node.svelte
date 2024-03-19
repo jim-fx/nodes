@@ -4,39 +4,60 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "./graph/stores";
+  import { T } from "@threlte/core";
+  import type { Mesh } from "three";
 
   export let node: Node;
   export let inView = true;
+  export let z = 2;
 
   const updateNodePosition =
     getContext<(n: Node) => void>("updateNodePosition");
+
+  const getNodeHeight = getContext<(n: Node) => number>("getNodeHeight");
 
   const type = node?.tmp?.type;
 
   const parameters = Object.entries(type?.inputs || {});
 
   let ref: HTMLDivElement;
+  let meshRef: Mesh;
 
-  $: if (node && ref) {
+  const height = getNodeHeight(node.type);
+  console.log(node.type, height);
+
+  $: if (node && ref && meshRef) {
     node.tmp = node.tmp || {};
     node.tmp.ref = ref;
+    node.tmp.mesh = meshRef;
     updateNodePosition(node);
   }
 
   onMount(() => {
-    if (ref) {
-      node.tmp = node.tmp || {};
-      node.tmp.ref = ref;
-      updateNodePosition(node);
-    }
+    node.tmp = node.tmp || {};
+    node.tmp.ref = ref;
+    node.tmp.mesh = meshRef;
+    updateNodePosition(node);
   });
 </script>
+
+<T.Mesh
+  position.x={node.position.x + 10}
+  position.z={node.position.y + height / 2}
+  position.y={0.8}
+  rotation.x={-Math.PI / 2}
+  bind:ref={meshRef}
+  visible={true}
+>
+  <T.PlaneGeometry args={[20, height]} />
+  <T.MeshBasicMaterial color="#151515" />
+</T.Mesh>
 
 <div
   class="node"
   class:active={$activeNodeId === node.id}
   class:selected={!!$selectedNodes?.has(node.id)}
-  class:in-view={inView}
+  class:out-of-view={!inView}
   data-node-id={node.id}
   bind:this={ref}
 >
@@ -63,9 +84,10 @@
     transform: translate3d(var(--nx), var(--ny), 0);
     z-index: 1;
     font-weight: 300;
-    display: none;
+    display: var(--node-display, "block");
     --stroke: var(--background-color-lighter);
     --stroke-width: 2px;
+    opacity: var(--input-opacity);
   }
 
   .node.active {
@@ -78,7 +100,7 @@
     --stroke-width: 1px;
   }
 
-  .node.in-view {
-    display: unset;
+  .node.out-of-view {
+    display: none;
   }
 </style>

@@ -14,7 +14,7 @@
   if (graph) {
     graphManager.load(JSON.parse(graph));
   } else {
-    graphManager.load(graphManager.createTemplate("grid", 5, 5));
+    graphManager.load(graphManager.createTemplate("grid", 10, 10));
   }
 
   graphManager.on("save", (graph) => {
@@ -54,13 +54,6 @@
 </div>
 
 <style>
-  .wrapper {
-    position: absolute;
-    z-index: 100;
-    top: 10px;
-    left: 10px;
-  }
-
   #canvas-wrapper {
     height: 100vh;
   }

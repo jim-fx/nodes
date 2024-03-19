@@ -26,7 +26,7 @@
   const edges = graph.edges;
 
   let camera: OrthographicCamera;
-  const minZoom = 2;
+  const minZoom = 1;
   const maxZoom = 40;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
@@ -71,11 +71,12 @@
   };
 
   function updateNodePosition(node: NodeType) {
-    node.tmp = node.tmp || {};
     if (node?.tmp?.ref) {
       if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
         node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
         node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
+        node.tmp.mesh.position.x = node.tmp.x + 10;
+        node.tmp.mesh.position.z = node.tmp.y + getNodeHeight(node.type) / 2;
         if (node.tmp.x === node.position.x && node.tmp.y === node.position.y) {
           delete node.tmp.x;
           delete node.tmp.y;
@@ -83,6 +84,9 @@
       } else {
         node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
         node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+        node.tmp.mesh.position.x = node.position.x + 10;
+        node.tmp.mesh.position.z =
+          node.position.y + getNodeHeight(node.type) / 2;
       }
     }
   }
@@ -99,8 +103,10 @@
     }
     const height = 5 + 10 * Object.keys(node.inputs).length;
     nodeHeightCache[nodeTypeId] = height;
+    console.log(node, height);
     return height;
   }
+  setContext("getNodeHeight", getNodeHeight);
 
   setContext("isNodeInView", (node: NodeType) => {
     const height = getNodeHeight(node.type);
