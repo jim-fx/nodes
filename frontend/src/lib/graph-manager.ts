@@ -103,7 +103,7 @@ export class GraphManager {
 
     setTimeout(() => {
       this.status.set("idle");
-      this.history.save();
+      this.save();
     }, 100)
   }
 
@@ -155,7 +155,7 @@ export class GraphManager {
       nodes.delete(node.id);
       return nodes;
     });
-    this.history.save();
+    this.save();
   }
 
   createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
@@ -183,6 +183,10 @@ export class GraphManager {
       return [...edges.filter(e => e[2].id !== to.id || e[3] !== toSocket), [from, fromSocket, to, toSocket]];
     });
 
+    this.save();
+  }
+
+  save() {
     this.history.save();
   }
 
@@ -260,7 +264,7 @@ export class GraphManager {
     this.edges.update((edges) => {
       return edges.filter((e) => e[0].id !== id0 || e[1] !== sid0 || e[2].id !== id2 || e[3] !== sid2);
     });
-    this.history.save();
+    this.save();
   }
 
   getEdgesToNode(node: Node) {

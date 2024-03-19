@@ -2,8 +2,6 @@
   import { Canvas } from "@threlte/core";
   import { GraphManager } from "$lib/graph-manager";
   import Graph from "$lib/components/graph/Graph.svelte";
-  import Details from "$lib/elements/Details.svelte";
-  import { JsonView } from "@zerodevx/svelte-json-view";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry } from "$lib/node-registry";
 

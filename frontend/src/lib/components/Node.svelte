@@ -4,7 +4,6 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "./graph/stores";
-  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
   export let inView = true;
@@ -18,7 +17,10 @@
 
   let ref: HTMLDivElement;
 
-  $: if (node) {
+  $: if (node && ref) {
+    node.tmp = node.tmp || {};
+    node.tmp.ref = ref;
+    updateNodePosition(node);
   }
 
   onMount(() => {
