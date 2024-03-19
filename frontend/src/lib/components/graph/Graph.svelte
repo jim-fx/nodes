@@ -524,7 +524,7 @@
 
         $edges = $edges;
       });
-      graph.history.save();
+      graph.save();
     } else if ($hoveredSocket && $activeSocket) {
       if (
         typeof $hoveredSocket.index === "number" &&
@@ -547,7 +547,7 @@
           $hoveredSocket.index,
         );
       }
-      graph.history.save();
+      graph.save();
     }
 
     mouseDown = null;

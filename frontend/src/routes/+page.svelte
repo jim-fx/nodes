@@ -9,7 +9,17 @@
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
   const graphManager = new GraphManager(nodeRegistry, runtimeExecutor);
-  graphManager.load(graphManager.createTemplate("grid", 5, 5));
+
+  let graph = localStorage.getItem("graph");
+  if (graph) {
+    graphManager.load(JSON.parse(graph));
+  } else {
+    graphManager.load(graphManager.createTemplate("grid", 5, 5));
+  }
+
+  graphManager.on("save", (graph) => {
+    localStorage.setItem("graph", JSON.stringify(graph));
+  });
 
   let debug: undefined;
 

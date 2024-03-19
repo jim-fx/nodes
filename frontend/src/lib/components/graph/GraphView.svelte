@@ -5,7 +5,7 @@
   import Node from "../Node.svelte";
   import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
-  import { activeSocket, colors } from "./stores";
+  import { activeSocket } from "./stores";
 
   export let nodes: Writable<Map<number, NodeType>>;
   export let edges: Writable<EdgeType[]>;

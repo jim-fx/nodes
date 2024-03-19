@@ -2,8 +2,9 @@ import { writable, type Writable } from "svelte/store";
 import { type Graph, type Node, type Edge, type Socket, type NodeRegistry, type RuntimeExecutor } from "./types";
 import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
+import EventEmitter from "./helpers/EventEmitter";
 
-export class GraphManager {
+export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
 
@@ -19,6 +20,7 @@ export class GraphManager {
   history: HistoryManager = new HistoryManager(this);
 
   constructor(private nodeRegistry: NodeRegistry, private runtime: RuntimeExecutor) {
+    super();
     this.nodes.subscribe((nodes) => {
       this._nodes = nodes;
     });
@@ -187,6 +189,7 @@ export class GraphManager {
   }
 
   save() {
+    this.emit("save", this.serialize());
     this.history.save();
   }
 
