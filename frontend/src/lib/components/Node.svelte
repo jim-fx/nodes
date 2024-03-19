@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Node } from "$lib/types";
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "./graph/stores";
+  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
   export let inView = true;
@@ -17,11 +18,16 @@
 
   let ref: HTMLDivElement;
 
-  $: if (node && ref) {
-    node.tmp = node.tmp || {};
-    node.tmp.ref = ref;
-    updateNodePosition(node);
+  $: if (node) {
   }
+
+  onMount(() => {
+    if (ref) {
+      node.tmp = node.tmp || {};
+      node.tmp.ref = ref;
+      updateNodePosition(node);
+    }
+  });
 </script>
 
 <div
@@ -36,7 +42,7 @@
 
   {#each parameters as [key, value], i}
     <NodeParameter
-      {node}
+      bind:node
       id={key}
       input={value}
       isLast={i == parameters.length - 1}

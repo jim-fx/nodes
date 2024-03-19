@@ -1,4 +1,4 @@
-import type { NodeInput } from "./inputs";
+import type { NodeInput, NodeInputType } from "./inputs";
 export type { NodeInput } from "./inputs";
 
 export type Node = {
@@ -6,8 +6,10 @@ export type Node = {
   type: string;
   props?: Record<string, any>,
   tmp?: {
+    depth?: number;
     parents?: Node[],
     children?: Node[],
+    inputNodes?: Record<string, Node>
     type?: NodeType;
     downX?: number;
     downY?: number;
@@ -29,11 +31,12 @@ export type Node = {
 
 export type NodeType = {
   id: string;
-  inputs?: Record<string, NodeInput>;
+  inputs?: Record<string, NodeInput>
   outputs?: string[];
   meta?: {
     title?: string;
-  }
+  },
+  execute?: (inputs: Record<string, string | number | boolean>) => unknown;
 }
 
 export type Socket = {
@@ -45,6 +48,10 @@ export type Socket = {
 
 export interface NodeRegistry {
   getNode: (id: string) => NodeType | undefined;
+}
+
+export interface RuntimeExecutor {
+  execute: (graph: Graph) => void;
 }
 
 

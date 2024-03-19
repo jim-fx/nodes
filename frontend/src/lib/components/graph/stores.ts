@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 import type { Socket } from "$lib/types";
 import { writable, type Writable } from "svelte/store";
-import { Color } from "three";
+import { Color } from "three/src/math/Color.js";
 
 export const activeNodeId: Writable<number> = writable(-1);
 export const selectedNodes: Writable<Set<number> | null> = writable(null);

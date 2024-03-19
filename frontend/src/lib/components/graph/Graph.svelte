@@ -1,10 +1,9 @@
 <script lang="ts">
   import { animate, lerp, snapToGrid } from "$lib/helpers";
-  import Debug from "../debug/Debug.svelte";
-  import { OrthographicCamera } from "three";
+  import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
   import type { GraphManager } from "$lib/graph-manager";
-  import { setContext } from "svelte";
+  import { onMount, setContext } from "svelte";
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
   import type { Node as NodeType } from "$lib/types";
@@ -19,7 +18,6 @@
     selectedNodes,
   } from "./stores";
   import BoxSelection from "../BoxSelection.svelte";
-  import type { OrbitControls } from "three/examples/jsm/Addons.js";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
@@ -28,22 +26,36 @@
   const edges = graph.edges;
 
   let camera: OrthographicCamera;
-  let controls: OrbitControls;
   const minZoom = 2;
   const maxZoom = 40;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
   let boxSelection = false;
-  let cameraPosition: [number, number, number] = [0, 1, 0];
-  let width = 100;
-  let height = 100;
+  let loaded = false;
+  const cameraDown = [0, 0];
+  let cameraPosition: [number, number, number] = [0, 0, 4];
 
+  $: if (cameraPosition && loaded) {
+    localStorage.setItem("cameraPosition", JSON.stringify(cameraPosition));
+  }
+
+  let width = globalThis?.innerWidth ?? 100;
+  let height = globalThis?.innerHeight ?? 100;
+
+  let cameraBounds = [-1000, 1000, -1000, 1000];
   $: cameraBounds = [
     cameraPosition[0] - width / cameraPosition[2] / 2,
     cameraPosition[0] + width / cameraPosition[2] / 2,
     cameraPosition[1] - height / cameraPosition[2] / 2,
     cameraPosition[1] + height / cameraPosition[2] / 2,
   ];
+  function setCameraTransform(x: number, y: number, z: number) {
+    if (!camera) return;
+    camera.position.x = x;
+    camera.position.z = y;
+    camera.zoom = z;
+    cameraPosition = [x, y, z];
+  }
 
   export let debug = {};
   $: debug = {
@@ -55,6 +67,7 @@
       ? `${$hoveredSocket?.node.id}-${$hoveredSocket?.index}`
       : null,
     selectedNodes: [...($selectedNodes?.values() || [])],
+    cameraPosition,
   };
 
   function updateNodePosition(node: NodeType) {
@@ -93,10 +106,8 @@
     const height = getNodeHeight(node.type);
     const width = 20;
     return (
-      // check x-axis
       node.position.x > cameraBounds[0] - width &&
       node.position.x < cameraBounds[1] &&
-      // check y-axis
       node.position.y > cameraBounds[2] - height &&
       node.position.y < cameraBounds[3]
     );
@@ -207,6 +218,7 @@
       } else {
         $hoveredSocket = null;
       }
+      return;
     }
 
     // handle box selection
@@ -278,12 +290,53 @@
       updateNodePosition(node);
 
       $edges = $edges;
+      return;
     }
+
+    // here we are handling panning of camera
+    let newX =
+      cameraDown[0] - (event.clientX - mouseDown[0]) / cameraPosition[2];
+    let newY =
+      cameraDown[1] - (event.clientY - mouseDown[1]) / cameraPosition[2];
+
+    setCameraTransform(newX, newY, cameraPosition[2]);
+  }
+
+  const zoomSpeed = 2;
+  function handleMouseScroll(event: WheelEvent) {
+    const bodyIsFocused = document.activeElement === document.body;
+    if (!bodyIsFocused) return;
+
+    // Define zoom speed and clamp it between -1 and 1
+    const isNegative = event.deltaY < 0;
+    const normalizedDelta = Math.abs(event.deltaY * 0.01);
+    const delta = Math.pow(0.95, zoomSpeed * normalizedDelta);
+
+    // Calculate new zoom level and clamp it between minZoom and maxZoom
+    const newZoom = Math.max(
+      minZoom,
+      Math.min(
+        maxZoom,
+        isNegative ? cameraPosition[2] / delta : cameraPosition[2] * delta,
+      ),
+    );
+
+    // Calculate the ratio of the new zoom to the original zoom
+    const zoomRatio = newZoom / cameraPosition[2];
+
+    // Update camera position and zoom level
+    setCameraTransform(
+      mousePosition[0] - (mousePosition[0] - cameraPosition[0]) / zoomRatio,
+      mousePosition[1] - (mousePosition[1] - cameraPosition[1]) / zoomRatio,
+      newZoom,
+    );
   }
 
   function handleMouseDown(event: MouseEvent) {
     if (mouseDown) return;
     mouseDown = [event.clientX, event.clientY];
+    cameraDown[0] = cameraPosition[0];
+    cameraDown[1] = cameraPosition[1];
 
     if (event.target instanceof HTMLElement && event.buttons === 1) {
       const nodeElement = event.target.closest(".node");
@@ -321,7 +374,6 @@
         }
       } else if (event.ctrlKey) {
         boxSelection = true;
-        controls.enabled = false;
       } else {
         $activeNodeId = -1;
         $selectedNodes?.clear();
@@ -346,10 +398,13 @@
   }
 
   function handleKeyDown(event: KeyboardEvent) {
+    const bodyIsFocused = document.activeElement === document.body;
+
     if (event.key === "Escape") {
       $activeNodeId = -1;
       $selectedNodes?.clear();
       $selectedNodes = $selectedNodes;
+      document?.activeElement.blur();
     }
 
     if (event.key === "a" && event.ctrlKey) {
@@ -377,9 +432,10 @@
     }
 
     if (
-      event.key === "Delete" ||
-      event.key === "Backspace" ||
-      event.key === "x"
+      (event.key === "Delete" ||
+        event.key === "Backspace" ||
+        event.key === "x") &&
+      bodyIsFocused
     ) {
       if ($activeNodeId !== -1) {
         const node = graph.getNode($activeNodeId);
@@ -495,13 +551,22 @@
     }
 
     mouseDown = null;
-    controls.enabled = true;
     boxSelection = false;
     $activeSocket = null;
     $possibleSockets = [];
     $possibleSocketIds = null;
     $hoveredSocket = null;
   }
+
+  onMount(() => {
+    if (localStorage.getItem("cameraPosition")) {
+      const cPosition = JSON.parse(localStorage.getItem("cameraPosition")!);
+      if (Array.isArray(cPosition)) {
+        setCameraTransform(cPosition[0], cPosition[1], cPosition[2]);
+      }
+    }
+    loaded = true;
+  });
 </script>
 
 <svelte:document
@@ -511,17 +576,13 @@
   on:keydown={handleKeyDown}
 />
 
-<svelte:window bind:innerWidth={width} bind:innerHeight={height} />
-
-<Debug />
-
-<Camera
-  bind:controls
-  bind:camera
-  {maxZoom}
-  {minZoom}
-  bind:position={cameraPosition}
+<svelte:window
+  on:wheel={handleMouseScroll}
+  bind:innerWidth={width}
+  bind:innerHeight={height}
 />
+
+<Camera bind:camera position={cameraPosition} />
 
 <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
 

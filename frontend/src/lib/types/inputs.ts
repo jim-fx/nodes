@@ -29,3 +29,8 @@ type DefaultOptions = {
 }
 
 export type NodeInput = (NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;
+
+
+export type NodeInputType<T extends Record<string, NodeInput>> = {
+  [K in keyof T]: T[K]["value"]
+};

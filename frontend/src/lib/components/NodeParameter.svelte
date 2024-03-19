@@ -68,8 +68,6 @@
   class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
   <div class="content" class:disabled={$inputSockets.has(socketId)}>
-    <label>{id}</label>
-
     <NodeInput {node} {input} {id} />
   </div>
 
@@ -150,16 +148,6 @@
 
   :global(.zoom-small) .content {
     display: none;
-  }
-
-  .input {
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 3px;
-    font-size: 1em;
-    padding: 10px;
-    background: #111;
-    background: var(--background-color-lighter);
   }
 
   svg {

@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import type { Vector3 } from "three";
+import { Vector3 } from "three/src/math/Vector3.js";
 
 export const points = writable<Vector3[]>([]);
 

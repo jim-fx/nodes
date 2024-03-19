@@ -22,12 +22,3 @@
     <MeshLineMaterial color="red" linewidth={1} attenuate={false} />
   </T.Mesh>
 {/each}
-
-<style>
-  .wrapper {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    background: white;
-  }
-</style>

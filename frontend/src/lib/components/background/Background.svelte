@@ -3,7 +3,6 @@
 
   import BackgroundVert from "./Background.vert";
   import BackgroundFrag from "./Background.frag";
-  import { Color } from "three";
   import { colors } from "../graph/stores";
 
   export let minZoom = 4;

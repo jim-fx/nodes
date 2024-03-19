@@ -1,43 +1,13 @@
 import { writable, type Writable } from "svelte/store";
-import type { Graph, NodeRegistry as INodeRegistry, NodeType, Node, Edge, Socket } from "./types";
+import { type Graph, type Node, type Edge, type Socket, type NodeRegistry, type RuntimeExecutor } from "./types";
 import { HistoryManager } from "./history-manager";
-
-const nodeTypes: NodeType[] = [
-  {
-    id: "input/float",
-    inputs: {
-      "value": { type: "float", value: 0.1 },
-    },
-    outputs: ["float"],
-  },
-  {
-    id: "math",
-    inputs: {
-      "type": { type: "select", options: ["add", "subtract", "multiply", "divide"], internal: true },
-      "a": { type: "float", value: 0.2 },
-      "b": { type: "float", value: 0.2 },
-    },
-    outputs: ["float"],
-  },
-  {
-    id: "output",
-    inputs: {
-      "input": { type: "float" },
-    },
-    outputs: [],
-  }
-]
-
-export class NodeRegistry implements INodeRegistry {
-  getNode(id: string): NodeType | undefined {
-    return nodeTypes.find((nodeType) => nodeType.id === id);
-  }
-}
-
+import * as templates from "./graphs";
 
 export class GraphManager {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
+
+  graph: Graph = { nodes: [], edges: [] };
 
   private _nodes: Map<number, Node> = new Map();
   nodes: Writable<Map<number, Node>> = writable(new Map());
@@ -48,7 +18,7 @@ export class GraphManager {
 
   history: HistoryManager = new HistoryManager(this);
 
-  private constructor(private graph: Graph, private nodeRegistry: NodeRegistry = new NodeRegistry()) {
+  constructor(private nodeRegistry: NodeRegistry, private runtime: RuntimeExecutor) {
     this.nodes.subscribe((nodes) => {
       this._nodes = nodes;
     });
@@ -72,6 +42,15 @@ export class GraphManager {
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     return { nodes, edges };
   }
+
+  execute() {
+    if (!this.runtime["loaded"]) return;
+    const start = performance.now();
+    const result = this.runtime.execute(this.serialize());
+    const end = performance.now();
+    console.log(`Execution took ${end - start}ms -> ${result}`);
+  }
+
 
   private _init(graph: Graph) {
     const nodes = new Map(graph.nodes.map(node => {
@@ -105,7 +84,9 @@ export class GraphManager {
 
   }
 
-  async load() {
+  async load(graph: Graph) {
+    this.graph = graph;
+    this.status.set("loading");
 
     for (const node of this.graph.nodes) {
       const nodeType = this.nodeRegistry.getNode(node.type);
@@ -120,8 +101,10 @@ export class GraphManager {
 
     this._init(this.graph);
 
-    this.status.set("idle");
-    this.history.save();
+    setTimeout(() => {
+      this.status.set("idle");
+      this.history.save();
+    }, 100)
   }
 
 
@@ -162,9 +145,6 @@ export class GraphManager {
       // these two nodes are not connected
       return;
     }
-  }
-
-  private updateNodeParents(node: Node) {
   }
 
   removeNode(node: Node) {
@@ -307,49 +287,17 @@ export class GraphManager {
       .filter(Boolean) as unknown as [Node, number, Node, string][];
   }
 
-  static createEmptyGraph({ width = 20, height = 20 } = {}): GraphManager {
-
-    const graph: Graph = {
-      edges: [],
-      nodes: [],
-    };
-
-    const amount = width * height;
-
-    for (let i = 0; i < amount; i++) {
-      const x = i % width;
-      const y = Math.floor(i / height);
-
-      graph.nodes.push({
-        id: i,
-        tmp: {
-          visible: false,
-        },
-        position: {
-          x: x * 30,
-          y: y * 40,
-        },
-        props: i == 0 ? { value: 0 } : {},
-        type: i == 0 ? "input/float" : "math",
-      });
-
-      graph.edges.push([i, 0, i + 1, i === amount - 1 ? "input" : "a",]);
+  createTemplate<T extends keyof typeof templates>(template: T, ...args: Parameters<typeof templates[T]>) {
+    switch (template) {
+      case "grid":
+        return templates.grid(args?.[0] || 5, args?.[1] || 5);
+      case "tree":
+        return templates.tree(args?.[0] || 4);
+      default:
+        throw new Error(`Template not found: ${template}`);
     }
 
-    graph.nodes.push({
-      id: amount,
-      tmp: {
-        visible: false,
-      },
-      position: {
-        x: width * 30,
-        y: (height - 1) * 40,
-      },
-      type: "output",
-      props: {},
-    });
 
-    return new GraphManager(graph);
   }
 
 }

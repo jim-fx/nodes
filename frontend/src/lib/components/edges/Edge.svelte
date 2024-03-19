@@ -1,12 +1,20 @@
 <script lang="ts">
   import { T, extend } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { CubicBezierCurve, Mesh, Vector2, Vector3 } from "three";
-
-  extend({ MeshLineGeometry, MeshLineMaterial });
+  import { Color, type Mesh } from "three";
+  import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
+  import { Vector3 } from "three/src/math/Vector3.js";
+  import { Vector2 } from "three/src/math/Vector2.js";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
+
+  const samples = Math.max(
+    5,
+    Math.floor(
+      Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2)) / 2,
+    ),
+  );
 
   const curve = new CubicBezierCurve(
     new Vector2(from.x, from.y),
@@ -22,9 +30,7 @@
 
   let mesh: Mesh;
 
-  import { colors } from "../graph/stores";
-
-  $: color = $colors.backgroundColorLighter;
+  const color = new Color(32 / 255, 32 / 255, 32 / 255);
 
   export const update = function (force = false) {
     if (!force) {
@@ -43,9 +49,6 @@
     //   Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2),
     // );
     //
-    // let samples = Math.max(5, Math.floor(length));
-    // console.log(samples);
-    const samples = 12;
 
     curve.v0.set(from.x, from.y);
     curve.v1.set(mid.x, from.y);

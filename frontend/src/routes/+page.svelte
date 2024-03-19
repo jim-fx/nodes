@@ -1,15 +1,17 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/core";
-  import { onMount } from "svelte";
-  import { PerfMonitor } from "@threlte/extras";
   import { Canvas } from "@threlte/core";
   import { GraphManager } from "$lib/graph-manager";
   import Graph from "$lib/components/graph/Graph.svelte";
   import Details from "$lib/elements/Details.svelte";
   import { JsonView } from "@zerodevx/svelte-json-view";
+  import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
+  import { MemoryNodeRegistry } from "$lib/node-registry";
 
-  const graph = GraphManager.createEmptyGraph({ width: 12, height: 12 });
-  graph.load();
+  const nodeRegistry = new MemoryNodeRegistry();
+  const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
+
+  const graphManager = new GraphManager(nodeRegistry, runtimeExecutor);
+  graphManager.load(graphManager.createTemplate("grid", 5, 5));
 
   let debug: undefined;
 
@@ -30,16 +32,16 @@
   // });
 </script>
 
-<div class="wrapper">
-  <Details>
-    <JsonView json={debug} />
-  </Details>
-</div>
+<!-- <div class="wrapper"> -->
+<!--   <Details> -->
+<!--     <JsonView json={debug} /> -->
+<!--   </Details> -->
+<!-- </div> -->
 
-<div class="canvas-wrapper">
+<div id="canvas-wrapper">
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <!-- <PerfMonitor /> -->
-    <Graph {graph} bind:debug />
+    <Graph graph={graphManager} bind:debug />
   </Canvas>
 </div>
 
@@ -51,7 +53,7 @@
     left: 10px;
   }
 
-  .canvas-wrapper {
+  #canvas-wrapper {
     height: 100vh;
   }
 
