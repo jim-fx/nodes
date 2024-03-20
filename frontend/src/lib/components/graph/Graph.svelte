@@ -118,6 +118,40 @@
     );
   });
 
+  function getNodeIdFromEvent(event: MouseEvent) {
+    let clickedNodeId = -1;
+
+    if (event.button === 0) {
+      // check if the clicked element is a node
+      if (event.target instanceof HTMLElement) {
+        const nodeElement = event.target.closest(".node");
+        const nodeId = nodeElement?.getAttribute?.("data-node-id");
+        if (nodeId) {
+          clickedNodeId = parseInt(nodeId, 10);
+        }
+      }
+
+      // if we do not have an active node,
+      // we are going to check if we clicked on a node by coordinates
+      if (clickedNodeId === -1) {
+        const [downX, downY] = projectScreenToWorld(
+          event.clientX,
+          event.clientY,
+        );
+        for (const node of $nodes.values()) {
+          const x = node.position.x;
+          const y = node.position.y;
+          const height = getNodeHeight(node.type);
+          if (downX > x && downX < x + 20 && downY > y && downY < y + height) {
+            clickedNodeId = node.id;
+            break;
+          }
+        }
+      }
+    }
+    return clickedNodeId;
+  }
+
   setContext("setDownSocket", (socket: Socket) => {
     $activeSocket = socket;
 
@@ -345,39 +379,10 @@
     cameraDown[0] = cameraPosition[0];
     cameraDown[1] = cameraPosition[1];
 
-    let clickedNodeId: number | undefined;
-
-    if (event.buttons === 1) {
-      // check if the clicked element is a node
-      if (event.target instanceof HTMLElement) {
-        const nodeElement = event.target.closest(".node");
-        const nodeId = nodeElement?.getAttribute?.("data-node-id");
-        if (nodeId) {
-          clickedNodeId = parseInt(nodeId, 10);
-        }
-      }
-
-      // if we do not have an active node,
-      // we are going to check if we clicked on a node by coordinates
-      if (clickedNodeId === undefined) {
-        const [downX, downY] = projectScreenToWorld(
-          event.clientX,
-          event.clientY,
-        );
-        for (const node of $nodes.values()) {
-          const x = node.position.x;
-          const y = node.position.y;
-          const height = getNodeHeight(node.type);
-          if (downX > x && downX < x + 20 && downY > y && downY < y + height) {
-            clickedNodeId = node.id;
-            break;
-          }
-        }
-      }
-    }
+    const clickedNodeId = getNodeIdFromEvent(event);
 
     // if we clicked on a node
-    if (clickedNodeId !== undefined) {
+    if (clickedNodeId !== -1) {
       if ($activeNodeId === -1) {
         $activeNodeId = clickedNodeId;
         // if the selected node is the same as the clicked node
@@ -403,15 +408,12 @@
         }
       } else if (!$selectedNodes?.has(clickedNodeId)) {
         $activeNodeId = clickedNodeId;
+        $selectedNodes?.clear();
+        $selectedNodes = $selectedNodes;
       }
     } else if (event.ctrlKey) {
       boxSelection = true;
-    } else {
-      $activeNodeId = -1;
-      $selectedNodes?.clear();
-      $selectedNodes = $selectedNodes;
     }
-
     const node = graph.getNode($activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
@@ -491,17 +493,16 @@
   function handleMouseUp(event: MouseEvent) {
     const activeNode = graph.getNode($activeNodeId);
 
-    if (event.target instanceof HTMLElement && event.button === 0) {
-      const nodeElement = event.target.closest(".node");
-      const _activeNodeId = nodeElement?.getAttribute?.("data-node-id");
-      if (_activeNodeId) {
-        const nodeId = parseInt(_activeNodeId, 10);
-        if (activeNode) {
-          if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
-            $selectedNodes?.clear();
-            $selectedNodes = $selectedNodes;
-            $activeNodeId = nodeId;
-          }
+    const clickedNodeId = getNodeIdFromEvent(event);
+
+    console.log({ clickedNodeId });
+
+    if (clickedNodeId !== -1) {
+      if (activeNode) {
+        if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
+          $selectedNodes?.clear();
+          $selectedNodes = $selectedNodes;
+          $activeNodeId = clickedNodeId;
         }
       }
     }
@@ -579,6 +580,18 @@
         );
       }
       graph.save();
+    }
+
+    // check if camera moved
+    if (
+      clickedNodeId === -1 &&
+      !boxSelection &&
+      cameraDown[0] === cameraPosition[0] &&
+      cameraDown[1] === cameraPosition[1]
+    ) {
+      $activeNodeId = -1;
+      $selectedNodes?.clear();
+      $selectedNodes = $selectedNodes;
     }
 
     mouseDown = null;
