@@ -1,14 +1,8 @@
-import type { Graph, Node, NodeRegistry, NodeType, RuntimeExecutor } from "./types";
+import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "./types";
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
-  loaded = false;
-
-  constructor(private registry: NodeRegistry) {
-    setTimeout(() => {
-      this.loaded = true;
-    }, 500);
-  }
+  constructor(private registry: NodeRegistry) { }
 
   private getNodeTypes(graph: Graph) {
 
@@ -92,7 +86,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
   }
 
   execute(graph: Graph) {
-    if (!this.loaded) return;
 
     // Then we add some metadata to the graph
     const [outputNode, nodes] = this.addMetaData(graph);

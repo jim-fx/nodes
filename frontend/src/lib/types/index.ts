@@ -7,6 +7,7 @@ export type Node = {
   props?: Record<string, any>,
   tmp?: {
     depth?: number;
+    mesh?: any;
     parents?: Node[],
     children?: Node[],
     inputNodes?: Record<string, Node>
@@ -58,6 +59,7 @@ export interface RuntimeExecutor {
 export type Edge = [Node, number, Node, string];
 
 export type Graph = {
+  id: number;
   meta?: {
     title?: string;
     lastModified?: string;

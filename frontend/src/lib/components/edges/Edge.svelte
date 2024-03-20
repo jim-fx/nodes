@@ -19,17 +19,11 @@
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector3 } from "three/src/math/Vector3.js";
   import { Vector2 } from "three/src/math/Vector2.js";
-  import { LineMaterial } from "three/examples/jsm/Addons.js";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
 
-  const samples = Math.max(
-    5,
-    Math.floor(
-      Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2)) / 2,
-    ),
-  );
+  let samples = 5;
 
   const curve = new CubicBezierCurve(
     new Vector2(from.x, from.y),
@@ -45,8 +39,6 @@
 
   let mesh: Mesh;
 
-  const color = new Color(32 / 255, 32 / 255, 32 / 255);
-
   export const update = function (force = false) {
     if (!force) {
       const new_x = from.x + to.x;
@@ -60,18 +52,17 @@
 
     const mid = new Vector2((from.x + to.x) / 2, (from.y + to.y) / 2);
 
-    // const length = Math.sqrt(
-    //   Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2),
-    // );
-    //
+    const length = Math.floor(
+      Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2)) / 4,
+    );
+    samples = Math.min(Math.max(10, length), 100);
 
     curve.v0.set(from.x, from.y);
     curve.v1.set(mid.x, from.y);
     curve.v2.set(mid.x, to.y);
     curve.v3.set(to.x, to.y);
+
     points = curve.getPoints(samples).map((p) => new Vector3(p.x, 0, p.y));
-    // mesh.setGeometry(points);
-    // mesh.needsUpdate = true;
   };
 
   update();
@@ -101,7 +92,9 @@
 </T.Mesh>
 
 <T.Mesh position.y={0.5} bind:ref={mesh}>
-  <MeshLineGeometry {points} />
+  {#key samples}
+    <MeshLineGeometry {points} />
+  {/key}
   <MeshLineMaterial
     width={4}
     attenuate={false}

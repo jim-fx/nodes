@@ -3,12 +3,15 @@ import { type Graph, type Node, type Edge, type Socket, type NodeRegistry, type 
 import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
 import EventEmitter from "./helpers/EventEmitter";
+import throttle from "./helpers/throttle";
 
 export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
+  loaded = false;
 
-  graph: Graph = { nodes: [], edges: [] };
+  graph: Graph = { id: 0, nodes: [], edges: [] };
+  id = writable(0);
 
   private _nodes: Map<number, Node> = new Map();
   nodes: Writable<Map<number, Node>> = writable(new Map());
@@ -32,6 +35,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       }
       this.inputSockets.set(s);
     });
+    this.execute = throttle(() => this._execute(), 100);
   }
 
   serialize(): Graph {
@@ -42,11 +46,12 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       props: node.props,
     }));
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
-    return { nodes, edges };
+    return { id: this.graph.id, nodes, edges };
   }
 
-  execute() {
-    if (!this.runtime["loaded"]) return;
+  execute() { }
+  _execute() {
+    if (this.loaded === false) return;
     const start = performance.now();
     const result = this.runtime.execute(this.serialize());
     const end = performance.now();
@@ -64,12 +69,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       return [node.id, node]
     }));
 
-    this.edges.set(graph.edges.map((edge) => {
+    const edges = graph.edges.map((edge) => {
       const from = nodes.get(edge[0]);
       const to = nodes.get(edge[2]);
       if (!from || !to) {
-        console.error("Edge references non-existing node");
-        return;
+        throw new Error("Edge references non-existing node");
       };
       from.tmp = from.tmp || {};
       from.tmp.children = from.tmp.children || [];
@@ -77,19 +81,22 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       to.tmp = to.tmp || {};
       to.tmp.parents = to.tmp.parents || [];
       to.tmp.parents.push(from);
-      return [from, edge[1], to, edge[3]] as const;
+      return [from, edge[1], to, edge[3]] as Edge;
     })
-      .filter(Boolean) as unknown as [Node, number, Node, string][]
-    );
 
+    this.edges.set(edges);
     this.nodes.set(nodes);
 
   }
 
   async load(graph: Graph) {
+    this.loaded = false;
     this.graph = graph;
+    const a = performance.now();
     this.status.set("loading");
+    this.id.set(graph.id);
 
+    const b = performance.now();
     for (const node of this.graph.nodes) {
       const nodeType = this.nodeRegistry.getNode(node.type);
       if (!nodeType) {
@@ -100,13 +107,24 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       node.tmp = node.tmp || {};
       node.tmp.type = nodeType;
     }
+    const c = performance.now();
 
     this._init(this.graph);
 
-    setTimeout(() => {
-      this.status.set("idle");
-      this.save();
-    }, 100)
+    const d = performance.now();
+
+    this.save();
+
+    const e = performance.now();
+
+    this.status.set("idle");
+
+    this.loaded = true;
+    const f = performance.now();
+    requestAnimationFrame(() => {
+      console.log(`Loading took ${f - a}ms; a-b: ${b - a}ms; b-c: ${c - b}ms; c-d: ${d - c}ms; d-e: ${e - d}ms; e-f: ${f - e}ms`);
+      this.execute();
+    });
   }
 
 

@@ -24,7 +24,7 @@
   .selection {
     width: 40px;
     height: 20px;
-    border: solid 0.2px white;
+    border: solid 0.2px rgba(200, 200, 200, 0.8);
     border-style: dashed;
     border-radius: 2px;
   }

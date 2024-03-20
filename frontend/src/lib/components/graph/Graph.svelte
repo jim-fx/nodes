@@ -24,6 +24,7 @@
   const status = graph.status;
   const nodes = graph.nodes;
   const edges = graph.edges;
+  const graphId = graph.id;
 
   let camera: OrthographicCamera;
   const minZoom = 1;
@@ -523,8 +524,6 @@
 
     const clickedNodeId = getNodeIdFromEvent(event);
 
-    console.log({ clickedNodeId });
-
     if (clickedNodeId !== -1) {
       if (activeNode) {
         if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
@@ -676,7 +675,9 @@
       to={{ x: mousePosition[0], y: mousePosition[1] }}
     />
   {/if}
-  <GraphView {nodes} {edges} {cameraPosition} />
+  {#key $graphId}
+    <GraphView {nodes} {edges} {cameraPosition} />
+  {/key}
 {:else if $status === "loading"}
   <span>Loading</span>
 {:else if $status === "error"}

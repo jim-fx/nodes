@@ -3,6 +3,7 @@ import type { Graph } from "$lib/types";
 export function grid(width: number, height: number) {
 
   const graph: Graph = {
+    id: Math.floor(Math.random() * 100000),
     edges: [],
     nodes: [],
   };

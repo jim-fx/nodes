@@ -68,7 +68,7 @@
     uniforms={{
       uColorBright: { value: colorBright },
       uColorDark: { value: colorDark },
-      uSelectedColor: { value: new Color("#f2be90") },
+      uSelectedColor: { value: new Color("#9d5f28") },
       uActiveColor: { value: new Color("white") },
       uSelected: { value: false },
       uActive: { value: false },
@@ -113,10 +113,8 @@
     transform: translate3d(var(--nx), var(--ny), 0);
     z-index: 1;
     font-weight: 300;
-    display: var(--node-display, block);
     --stroke: var(--background-color-lighter);
     --stroke-width: 2px;
-    opacity: var(--input-opacity);
   }
 
   .node.active {
@@ -125,7 +123,7 @@
   }
 
   .node.selected {
-    --stroke: #f2be90;
+    --stroke: #9d5f28;
     --stroke-width: 1px;
   }
 
