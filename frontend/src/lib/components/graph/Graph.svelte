@@ -30,6 +30,7 @@
   const maxZoom = 40;
   let mousePosition = [0, 0];
   let mouseDown: null | [number, number] = null;
+  let mouseDownId = -1;
   let boxSelection = false;
   let loaded = false;
   const cameraDown = [0, 0];
@@ -285,7 +286,7 @@
     }
 
     // here we are handling dragging of nodes
-    if ($activeNodeId !== -1) {
+    if ($activeNodeId !== -1 && mouseDownId !== -1) {
       const node = graph.getNode($activeNodeId);
       if (!node || event.buttons !== 1) return;
 
@@ -380,6 +381,7 @@
     cameraDown[1] = cameraPosition[1];
 
     const clickedNodeId = getNodeIdFromEvent(event);
+    mouseDownId = clickedNodeId;
 
     // if we clicked on a node
     if (clickedNodeId !== -1) {
@@ -431,13 +433,39 @@
   }
 
   function handleKeyDown(event: KeyboardEvent) {
-    const bodyIsFocused = document.activeElement === document.body;
+    const bodyIsFocused =
+      document.activeElement === document.body ||
+      document?.activeElement?.id === "graph";
 
     if (event.key === "Escape") {
       $activeNodeId = -1;
       $selectedNodes?.clear();
       $selectedNodes = $selectedNodes;
-      document?.activeElement.blur();
+      (document.activeElement as HTMLElement)?.blur();
+    }
+
+    if (event.key === ".") {
+      const average = [0, 0];
+      for (const node of $nodes.values()) {
+        average[0] += node.position.x;
+        average[1] += node.position.y;
+      }
+      average[0] /= $nodes.size;
+      average[1] /= $nodes.size;
+
+      const camX = cameraPosition[0];
+      const camY = cameraPosition[1];
+      const camZ = cameraPosition[2];
+
+      const ease = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+      animate(500, (a: number) => {
+        setCameraTransform(
+          lerp(camX, average[0], ease(a)),
+          lerp(camY, average[1], ease(a)),
+          lerp(camZ, 2, ease(a)),
+        );
+      });
     }
 
     if (event.key === "a" && event.ctrlKey) {

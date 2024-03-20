@@ -12,6 +12,7 @@
   details {
     padding: 1em;
     color: white;
+    background-color: #202020;
     outline: solid 0.1px white;
     border-radius: 2px;
     font-weight: 300;

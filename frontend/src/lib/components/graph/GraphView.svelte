@@ -11,7 +11,6 @@
   export let edges: Writable<EdgeType[]>;
 
   export let cameraPosition = [0, 0, 4];
-  $: console.log(cameraPosition[2]);
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
 

@@ -5,6 +5,8 @@
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry } from "$lib/node-registry";
   import { LinearSRGBColorSpace } from "three";
+  import Details from "$lib/elements/Details.svelte";
+  import { JsonView } from "@zerodevx/svelte-json-view";
 
   const nodeRegistry = new MemoryNodeRegistry();
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -23,29 +25,26 @@
   });
 
   let debug: undefined;
-
-  // onMount(async () => {
-  //   try {
-  //     const res = await invoke("greet", { name: "Dude" });
-  //     console.log({ res });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  //
-  //   try {
-  //     const res2 = await invoke("run_nodes", {});
-  //     console.log({ res2 });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // });
 </script>
 
-<!-- <div class="wrapper"> -->
-<!--   <Details> -->
-<!--     <JsonView json={debug} /> -->
-<!--   </Details> -->
-<!-- </div> -->
+<div class="wrapper">
+  <Details>
+    <button
+      on:click={() => graphManager.load(graphManager.createTemplate("tree", 5))}
+      >load tree</button
+    >
+    <br />
+    <br />
+    <button
+      on:click={() =>
+        graphManager.load(graphManager.createTemplate("grid", 5, 5))}
+      >load grid</button
+    >
+    <br />
+    <br />
+    <JsonView json={debug} />
+  </Details>
+</div>
 
 <div id="canvas-wrapper">
   <Canvas
@@ -62,6 +61,13 @@
 <style>
   #canvas-wrapper {
     height: 100vh;
+  }
+
+  .wrapper {
+    position: absolute;
+    z-index: 100;
+    top: 10px;
+    left: 10px;
   }
 
   :global(html) {
