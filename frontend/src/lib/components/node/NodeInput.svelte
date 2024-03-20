@@ -4,7 +4,7 @@
   import Integer from "$lib/elements/Integer.svelte";
   import Select from "$lib/elements/Select.svelte";
   import type { Node, NodeInput } from "$lib/types";
-  import { getGraphManager } from "./graph/context";
+  import { getGraphManager } from "../graph/context";
 
   export let node: Node;
   export let input: NodeInput;

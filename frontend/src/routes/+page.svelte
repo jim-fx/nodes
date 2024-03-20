@@ -4,6 +4,7 @@
   import Graph from "$lib/components/graph/Graph.svelte";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry } from "$lib/node-registry";
+  import { LinearSRGBColorSpace } from "three";
 
   const nodeRegistry = new MemoryNodeRegistry();
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -14,7 +15,7 @@
   if (graph) {
     graphManager.load(JSON.parse(graph));
   } else {
-    graphManager.load(graphManager.createTemplate("grid", 10, 10));
+    graphManager.load(graphManager.createTemplate("tree", 5));
   }
 
   graphManager.on("save", (graph) => {
@@ -47,7 +48,12 @@
 <!-- </div> -->
 
 <div id="canvas-wrapper">
-  <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
+  <Canvas
+    shadows={false}
+    renderMode="on-demand"
+    colorManagementEnabled={false}
+    colorSpace={LinearSRGBColorSpace}
+  >
     <!-- <PerfMonitor /> -->
     <Graph graph={graphManager} bind:debug />
   </Canvas>

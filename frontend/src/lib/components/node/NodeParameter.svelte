@@ -3,9 +3,9 @@
   import type { Node } from "$lib/types";
   import { getContext } from "svelte";
   import { createNodePath } from "$lib/helpers";
-  import { possibleSocketIds } from "./graph/stores";
+  import { possibleSocketIds } from "../graph/stores";
+  import { getGraphManager } from "../graph/context";
   import NodeInput from "./NodeInput.svelte";
-  import { getGraphManager } from "./graph/context";
 
   export let node: Node;
   export let input: NodeInputType;
@@ -143,7 +143,6 @@
     height: 100%;
     justify-content: space-around;
     box-sizing: border-box;
-    opacity: var(--input-opacity);
   }
 
   :global(.zoom-small) .content {

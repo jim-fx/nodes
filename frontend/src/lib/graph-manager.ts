@@ -140,9 +140,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     //  < - - - - from - - - - to
     const fromParents = this.getParentsOfNode(from);
     if (toParents.includes(from)) {
-      return toParents.splice(toParents.indexOf(from));
+      const fromChildren = this.getChildrenOfNode(from);
+      return toParents.filter(n => fromChildren.includes(n));
     } else if (fromParents.includes(to)) {
-      return [...fromParents.splice(fromParents.indexOf(to)), from];
+      const toChildren = this.getChildrenOfNode(to);
+      return fromParents.filter(n => toChildren.includes(n));
     } else {
       // these two nodes are not connected
       return;

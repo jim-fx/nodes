@@ -1,10 +1,25 @@
+<script context="module">
+  const color = new Color(0x202020);
+  color.convertLinearToSRGB();
+
+  const color2 = color.clone();
+  color2.convertSRGBToLinear();
+
+  const circleMaterial = new MeshBasicMaterial({
+    color,
+    toneMapped: false,
+  });
+</script>
+
 <script lang="ts">
-  import { T, extend } from "@threlte/core";
+  import { T } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { Color, type Mesh } from "three";
+  import { MeshBasicMaterial, type Mesh, LineBasicMaterial } from "three";
+  import { Color } from "three/src/math/Color.js";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector3 } from "three/src/math/Vector3.js";
   import { Vector2 } from "three/src/math/Vector2.js";
+  import { LineMaterial } from "three/examples/jsm/Addons.js";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
@@ -70,9 +85,9 @@
   position.z={from.y}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
+  material={circleMaterial}
 >
   <T.CircleGeometry args={[0.3, 16]} />
-  <T.MeshBasicMaterial {color} />
 </T.Mesh>
 
 <T.Mesh
@@ -80,12 +95,17 @@
   position.z={to.y}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
+  material={circleMaterial}
 >
   <T.CircleGeometry args={[0.3, 16]} />
-  <T.MeshBasicMaterial {color} />
 </T.Mesh>
 
 <T.Mesh position.y={0.5} bind:ref={mesh}>
   <MeshLineGeometry {points} />
-  <MeshLineMaterial width={2} attenuate={false} {color} />
+  <MeshLineMaterial
+    width={4}
+    attenuate={false}
+    color={color2}
+    toneMapped={false}
+  />
 </T.Mesh>

@@ -103,7 +103,6 @@
     }
     const height = 5 + 10 * Object.keys(node.inputs).length;
     nodeHeightCache[nodeTypeId] = height;
-    console.log(node, height);
     return height;
   }
   setContext("getNodeHeight", getNodeHeight);
@@ -310,7 +309,9 @@
 
   const zoomSpeed = 2;
   function handleMouseScroll(event: WheelEvent) {
-    const bodyIsFocused = document.activeElement === document.body;
+    const bodyIsFocused =
+      document.activeElement === document.body ||
+      document?.activeElement?.id === "graph";
     if (!bodyIsFocused) return;
 
     // Define zoom speed and clamp it between -1 and 1
@@ -344,47 +345,71 @@
     cameraDown[0] = cameraPosition[0];
     cameraDown[1] = cameraPosition[1];
 
-    if (event.target instanceof HTMLElement && event.buttons === 1) {
-      const nodeElement = event.target.closest(".node");
-      const _activeNodeId = nodeElement?.getAttribute?.("data-node-id");
-      if (_activeNodeId) {
-        const nodeId = parseInt(_activeNodeId, 10);
-        if ($activeNodeId !== -1) {
-          // if the selected node is the same as the clicked node
-          if ($activeNodeId === nodeId) {
-            //$activeNodeId = -1;
-            // if the clicked node is different from the selected node and secondary
-          } else if (event.ctrlKey) {
-            $selectedNodes = $selectedNodes || new Set();
-            $selectedNodes.add($activeNodeId);
-            $selectedNodes.delete(nodeId);
-            $activeNodeId = nodeId;
-            // select the node
-          } else if (event.shiftKey) {
-            const activeNode = graph.getNode($activeNodeId);
-            const newNode = graph.getNode(nodeId);
-            if (activeNode && newNode) {
-              const edge = graph.getNodesBetween(activeNode, newNode);
-              if (edge) {
-                const selected = new Set(edge.map((n) => n.id));
-                selected.delete(nodeId);
-                $selectedNodes = selected;
-              }
-              $activeNodeId = nodeId;
-            }
-          } else if (!$selectedNodes?.has(nodeId)) {
-            $activeNodeId = nodeId;
-          }
-        } else {
-          $activeNodeId = nodeId;
+    let clickedNodeId: number | undefined;
+
+    if (event.buttons === 1) {
+      // check if the clicked element is a node
+      if (event.target instanceof HTMLElement) {
+        const nodeElement = event.target.closest(".node");
+        const nodeId = nodeElement?.getAttribute?.("data-node-id");
+        if (nodeId) {
+          clickedNodeId = parseInt(nodeId, 10);
         }
-      } else if (event.ctrlKey) {
-        boxSelection = true;
-      } else {
-        $activeNodeId = -1;
-        $selectedNodes?.clear();
-        $selectedNodes = $selectedNodes;
       }
+
+      // if we do not have an active node,
+      // we are going to check if we clicked on a node by coordinates
+      if (clickedNodeId === undefined) {
+        const [downX, downY] = projectScreenToWorld(
+          event.clientX,
+          event.clientY,
+        );
+        for (const node of $nodes.values()) {
+          const x = node.position.x;
+          const y = node.position.y;
+          const height = getNodeHeight(node.type);
+          if (downX > x && downX < x + 20 && downY > y && downY < y + height) {
+            clickedNodeId = node.id;
+            break;
+          }
+        }
+      }
+    }
+
+    // if we clicked on a node
+    if (clickedNodeId !== undefined) {
+      if ($activeNodeId === -1) {
+        $activeNodeId = clickedNodeId;
+        // if the selected node is the same as the clicked node
+      } else if ($activeNodeId === clickedNodeId) {
+        //$activeNodeId = -1;
+        // if the clicked node is different from the selected node and secondary
+      } else if (event.ctrlKey) {
+        $selectedNodes = $selectedNodes || new Set();
+        $selectedNodes.add($activeNodeId);
+        $selectedNodes.delete(clickedNodeId);
+        $activeNodeId = clickedNodeId;
+        // select the node
+      } else if (event.shiftKey) {
+        const activeNode = graph.getNode($activeNodeId);
+        const newNode = graph.getNode(clickedNodeId);
+        if (activeNode && newNode) {
+          const edge = graph.getNodesBetween(activeNode, newNode);
+          if (edge) {
+            const selected = new Set(edge.map((n) => n.id));
+            selected.add(clickedNodeId);
+            $selectedNodes = selected;
+          }
+        }
+      } else if (!$selectedNodes?.has(clickedNodeId)) {
+        $activeNodeId = clickedNodeId;
+      }
+    } else if (event.ctrlKey) {
+      boxSelection = true;
+    } else {
+      $activeNodeId = -1;
+      $selectedNodes?.clear();
+      $selectedNodes = $selectedNodes;
     }
 
     const node = graph.getNode($activeNodeId);

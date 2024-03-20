@@ -2,7 +2,7 @@
   import type { Edge as EdgeType, Node as NodeType } from "$lib/types";
   import { HTML } from "@threlte/extras";
   import Edge from "../edges/Edge.svelte";
-  import Node from "../Node.svelte";
+  import Node from "../node/Node.svelte";
   import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { activeSocket } from "./stores";
@@ -10,7 +10,8 @@
   export let nodes: Writable<Map<number, NodeType>>;
   export let edges: Writable<EdgeType[]>;
 
-  export let cameraPosition = [0, 1, 0];
+  export let cameraPosition = [0, 0, 4];
+  $: console.log(cameraPosition[2]);
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
 
@@ -54,6 +55,7 @@
 <HTML transform={false}>
   <div
     role="tree"
+    id="graph"
     tabindex="0"
     class="wrapper"
     class:zoom-small={cameraPosition[2] < 2}
