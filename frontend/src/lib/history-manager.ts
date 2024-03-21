@@ -1,6 +1,6 @@
-import type { GraphManager } from "./graph-manager";
 import { create, type Delta } from "jsondiffpatch";
 import type { Graph } from "./types";
+import { createLogger, clone } from "./helpers";
 
 
 const diff = create({
@@ -14,82 +14,88 @@ const diff = create({
   }
 })
 
+const log = createLogger("history")
+
 export class HistoryManager {
 
   index: number = -1;
   history: Delta[] = [];
   private initialState: Graph | undefined;
-  private prevState: Graph | undefined;
-  private timeout: number | undefined;
+  private state: Graph | undefined;
 
   private opts = {
     debounce: 400,
     maxHistory: 100,
   }
 
-
-  constructor(private manager: GraphManager, { maxHistory = 100, debounce = 100 } = {}) {
+  constructor({ maxHistory = 100, debounce = 100 } = {}) {
     this.history = [];
     this.index = -1;
     this.opts.debounce = debounce;
     this.opts.maxHistory = maxHistory;
+    globalThis["_history"] = this;
   }
 
-  save() {
-    if (!this.prevState) {
-      this.prevState = this.manager.serialize();
-      this.initialState = globalThis.structuredClone(this.prevState);
+  save(state: Graph) {
+    if (!this.state) {
+      this.state = clone(state);
+      this.initialState = this.state;
+      log.log("initial state saved")
     } else {
-      if (this.timeout) {
-        clearTimeout(this.timeout);
-      }
-
-      this.timeout = setTimeout(() => {
-        const newState = this.manager.serialize();
-        const delta = diff.diff(this.prevState, newState);
-        if (delta) {
-          // Add the delta to history
-          if (this.index < this.history.length - 1) {
-            // Clear the history after the current index if new changes are made
-            this.history.splice(this.index + 1);
-          }
-
-          this.history.push(delta);
-          this.index++;
-
-          // Limit the size of the history
-          if (this.history.length > this.opts.maxHistory) {
-            this.history.shift();
-          }
+      const newState = state;
+      const delta = diff.diff(this.state, newState);
+      if (delta) {
+        log.log("saving state")
+        // Add the delta to history
+        if (this.index < this.history.length - 1) {
+          // Clear the history after the current index if new changes are made
+          this.history.splice(this.index + 1);
         }
-        this.prevState = newState;
-      }, this.opts.debounce) as unknown as number;
+
+        this.history.push(delta);
+        this.index++;
+
+        // Limit the size of the history
+        if (this.history.length > this.opts.maxHistory) {
+          this.history.shift();
+        }
+        this.state = newState;
+      } else {
+        log.log("no changes")
+      }
     }
   }
 
+  reset() {
+    this.history = [];
+    this.index = -1;
+    this.state = undefined;
+    this.initialState = undefined;
+  }
+
   undo() {
-    if (this.index > 0) {
+    if (this.index === -1 && this.initialState) {
+      log.log("reached start, loading initial state")
+      return clone(this.initialState);
+    } else {
       const delta = this.history[this.index];
-      const prevState = diff.unpatch(this.prevState, delta) as Graph;
-      this.manager._init(prevState);
-      this.index--;
-      this.prevState = prevState;
-    } else if (this.index === 0 && this.initialState) {
-      this.manager._init(globalThis.structuredClone(this.initialState));
-      console.log("Reached start", this.index, this.history.length)
+      const prevState = diff.unpatch(this.state, delta) as Graph;
+      this.state = prevState;
+      this.index = Math.max(-1, this.index - 1);
+      return clone(prevState);
     }
   }
 
   redo() {
-    if (this.index < this.history.length - 1) {
-      const nextIndex = this.index + 1;
+    if (this.index <= this.history.length - 1) {
+      const nextIndex = Math.min(this.history.length - 1, this.index + 1);
       const delta = this.history[nextIndex];
-      const nextState = diff.patch(this.prevState, delta) as Graph;
-      this.manager._init(nextState);
+      const nextState = diff.patch(this.state, delta) as Graph;
       this.index = nextIndex;
-      this.prevState = nextState;
+      this.state = nextState;
+      return clone(nextState);
     } else {
-      console.log("Reached end")
+      log.log("reached end")
     }
   }
 }

@@ -1,7 +1,6 @@
 
 import throttle from './throttle';
 
-const debug = { amountEmitters: 0, amountCallbacks: 0, emitters: [] };
 
 
 type EventMap = Record<string, unknown>;
@@ -13,8 +12,6 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
   index = 0;
   public eventMap: T = {} as T;
   constructor() {
-    this.index = debug.amountEmitters;
-    debug.amountEmitters++;
   }
 
   private cbs: { [key: string]: ((data?: unknown) => unknown)[] } = {};
@@ -42,24 +39,9 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
     });
     this.cbs = cbs;
 
-    debug.emitters[this.index] = {
-      name: this.constructor.name,
-      cbs: Object.fromEntries(
-        Object.keys(this.cbs).map((key) => [key, this.cbs[key].length]),
-      ),
-    };
-    debug.amountCallbacks++;
-
     // console.log('New EventEmitter ', this.constructor.name);
     return () => {
-      debug.amountCallbacks--;
       cbs[event]?.splice(cbs[event].indexOf(cb), 1);
-      debug.emitters[this.index] = {
-        name: this.constructor.name,
-        cbs: Object.fromEntries(
-          Object.keys(this.cbs).map((key) => [key, this.cbs[key].length]),
-        ),
-      };
     };
   }
 
@@ -77,14 +59,11 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
   }
 
   public destroyEventEmitter() {
-    debug.amountEmitters--;
     Object.keys(this.cbs).forEach((key) => {
-      debug.amountCallbacks -= this.cbs[key].length;
       delete this.cbs[key];
     });
     Object.keys(this.cbsOnce).forEach((key) => delete this.cbsOnce[key]);
     this.cbs = {};
     this.cbsOnce = {};
-    delete debug.emitters[this.index];
   }
 }

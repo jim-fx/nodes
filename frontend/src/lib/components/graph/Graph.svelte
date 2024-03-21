@@ -6,7 +6,7 @@
   import { onMount, setContext } from "svelte";
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
-  import type { Node as NodeType } from "$lib/types";
+  import type { Node, Node as NodeType } from "$lib/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
   import type { Socket } from "$lib/types";
   import {
@@ -38,6 +38,10 @@
   const cameraDown = [0, 0];
   let cameraPosition: [number, number, number] = [0, 0, 4];
   let addMenuPosition: [number, number] | null = null;
+  let clipboard: null | {
+    nodes: Node[];
+    edges: [number, number, number, string][];
+  } = null;
 
   $: if (cameraPosition && loaded) {
     localStorage.setItem("cameraPosition", JSON.stringify(cameraPosition));
@@ -438,22 +442,59 @@
     }
   }
 
+  function copyNodes() {
+    if ($activeNodeId === -1 && !$selectedNodes?.size) return;
+    let _nodes = [$activeNodeId, ...($selectedNodes?.values() || [])]
+      .map((id) => graph.getNode(id))
+      .filter(Boolean) as Node[];
+
+    const _edges = graph.getEdgesBetweenNodes(_nodes);
+
+    _nodes = _nodes.map((_node) => {
+      const node = globalThis.structuredClone({
+        ..._node,
+        tmp: {
+          downX: mousePosition[0] - _node.position[0],
+          downY: mousePosition[1] - _node.position[1],
+        },
+      });
+      return node;
+    });
+
+    clipboard = {
+      nodes: _nodes,
+      edges: _edges,
+    };
+  }
+
+  function pasteNodes() {
+    if (!clipboard) return;
+
+    const _nodes = clipboard.nodes
+      .map((node) => {
+        node.tmp = node.tmp || {};
+        node.position[0] = mousePosition[0] - (node?.tmp?.downX || 0);
+        node.position[1] = mousePosition[1] - (node?.tmp?.downY || 0);
+        return node;
+      })
+      .filter(Boolean) as Node[];
+
+    const newNodes = graph.createGraph(_nodes, clipboard.edges);
+    $selectedNodes = new Set(newNodes.map((n) => n.id));
+  }
+
   function handleKeyDown(event: KeyboardEvent) {
     const bodyIsFocused =
       document.activeElement === document.body ||
       document?.activeElement?.id === "graph";
 
     if (event.key === "l") {
-      if (event.ctrlKey) {
-        const activeNode = graph.getNode($activeNodeId);
-        if (activeNode) {
-          const nodes = graph.getLinkedNodes(activeNode);
-          $selectedNodes = new Set(nodes.map((n) => n.id));
-        }
-      } else {
-        const activeNode = graph.getNode($activeNodeId);
-        console.log(activeNode);
+      const activeNode = graph.getNode($activeNodeId);
+      if (activeNode) {
+        const nodes = graph.getLinkedNodes(activeNode);
+        $selectedNodes = new Set(nodes.map((n) => n.id));
       }
+      console.log(activeNode);
     }
 
     if (event.key === "Escape") {
@@ -497,20 +538,22 @@
     }
 
     if (event.key === "c" && event.ctrlKey) {
+      copyNodes();
     }
 
     if (event.key === "v" && event.ctrlKey) {
+      pasteNodes();
     }
 
     if (event.key === "z" && event.ctrlKey) {
-      graph.history.undo();
+      graph.undo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
     }
 
     if (event.key === "y" && event.ctrlKey) {
-      graph.history.redo();
+      graph.redo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }

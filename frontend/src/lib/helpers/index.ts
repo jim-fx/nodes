@@ -70,3 +70,27 @@ export const debounce = (fn: Function, ms = 300) => {
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
 };
+
+export const clone: <T>(v: T) => T = "structedClone" in globalThis ? globalThis.structuredClone : (obj) => JSON.parse(JSON.stringify(obj));
+
+export const createLogger = (() => {
+  let maxLength = 5;
+  return (scope: string) => {
+    maxLength = Math.max(maxLength, scope.length);
+    let muted = false;
+    return {
+      log: (...args: any[]) => !muted && console.log(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
+      info: (...args: any[]) => !muted && console.info(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
+      warn: (...args: any[]) => !muted && console.warn(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
+      error: (...args: any[]) => console.error(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #f88", ...args),
+      mute() {
+        muted = true;
+      },
+      unmute() {
+        muted = false;
+      }
+
+    }
+  }
+})();
+

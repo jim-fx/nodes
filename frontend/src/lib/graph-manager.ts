@@ -4,6 +4,9 @@ import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
 import EventEmitter from "./helpers/EventEmitter";
 import throttle from "./helpers/throttle";
+import { createLogger } from "./helpers";
+
+const logger = createLogger("graph-manager");
 
 export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
@@ -22,7 +25,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
   inputSockets: Writable<Set<string>> = writable(new Set());
 
-  history: HistoryManager = new HistoryManager(this);
+  history: HistoryManager = new HistoryManager();
 
   constructor(private nodeRegistry: NodeRegistry, private runtime: RuntimeExecutor) {
     super();
@@ -41,12 +44,13 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   }
 
   serialize(): Graph {
+    logger.log("serializing graph")
     const nodes = Array.from(this._nodes.values()).map(node => ({
       id: node.id,
-      position: node.position,
+      position: [...node.position],
       type: node.type,
       props: node.props,
-    }));
+    })) as Node[];
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     return { id: this.graph.id, nodes, edges };
   }
@@ -57,7 +61,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     const start = performance.now();
     const result = this.runtime.execute(this.serialize());
     const end = performance.now();
-    console.log(`Execution took ${end - start}ms -> ${result}`);
+    logger.log(`Execution took ${end - start}ms -> ${result}`);
   }
 
   getNodeTypes() {
@@ -77,6 +81,25 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       stack.push(...newNodes);
     }
     return [...nodes.values()];
+  }
+
+
+  getEdgesBetweenNodes(nodes: Node[]): [number, number, number, string][] {
+
+    const edges = [];
+    for (const node of nodes) {
+      const children = node.tmp?.children || [];
+      for (const child of children) {
+        if (nodes.includes(child)) {
+          const edge = this._edges.find(e => e[0].id === node.id && e[2].id === child.id);
+          if (edge) {
+            edges.push([edge[0].id, edge[1], edge[2].id, edge[3]] as [number, number, number, string]);
+          }
+        }
+      }
+    }
+
+    return edges;
   }
 
 
@@ -116,36 +139,28 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   async load(graph: Graph) {
     this.loaded = false;
     this.graph = graph;
-    const a = performance.now();
     this.status.set("loading");
     this.id.set(graph.id);
 
-    const b = performance.now();
     for (const node of this.graph.nodes) {
       const nodeType = this.nodeRegistry.getNode(node.type);
       if (!nodeType) {
-        console.error(`Node type not found: ${node.type}`);
+        logger.error(`Node type not found: ${node.type}`);
         this.status.set("error");
         return;
       }
       node.tmp = node.tmp || {};
       node.tmp.type = nodeType;
     }
-    const c = performance.now();
 
+    this.history.reset();
     this._init(this.graph);
 
-    const d = performance.now();
-
     this.save();
-
-    const e = performance.now();
 
     this.status.set("idle");
 
     this.loaded = true;
-    const f = performance.now();
-    console.log(`Loading took ${f - a}ms; a-b: ${b - a}ms; b-c: ${c - b}ms; c-d: ${d - c}ms; d-e: ${e - d}ms; e-f: ${f - e}ms`);
   }
 
 
@@ -224,11 +239,60 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     this.save();
   }
 
-  private createNodeId() {
-    return Math.max(...this.getAllNodes().map(n => n.id), 0) + 1;
+  createNodeId() {
+    const max = Math.max(...this._nodes.keys());
+    return max + 1;
   }
 
-  createNode({ type, position }: { type: string, position: [number, number] }) {
+  createGraph(nodes: Node[], edges: [number, number, number, string][]) {
+
+    // map old ids to new ids
+    const idMap = new Map<number, number>();
+
+    const startId = this.createNodeId();
+
+    nodes = nodes.map((node, i) => {
+      const id = startId + i;
+      idMap.set(node.id, id);
+      const type = this.nodeRegistry.getNode(node.type);
+      if (!type) {
+        throw new Error(`Node type not found: ${node.type}`);
+      }
+      return { ...node, id, tmp: { type } };
+    });
+
+    const _edges = edges.map(edge => {
+      const from = nodes.find(n => n.id === idMap.get(edge[0]));
+      const to = nodes.find(n => n.id === idMap.get(edge[2]));
+
+      if (!from || !to) {
+        throw new Error("Edge references non-existing node");
+      }
+
+      to.tmp = to.tmp || {};
+      to.tmp.parents = to.tmp.parents || [];
+      to.tmp.parents.push(from);
+
+      from.tmp = from.tmp || {};
+      from.tmp.children = from.tmp.children || [];
+      from.tmp.children.push(to);
+
+      return [from, edge[1], to, edge[3]] as Edge;
+    });
+
+    for (const node of nodes) {
+      this._nodes.set(node.id, node);
+    }
+
+    this._edges.push(..._edges);
+
+    this.nodes.set(this._nodes);
+    this.edges.set(this._edges);
+    this.save();
+    return nodes;
+  }
+
+  createNode({ type, position, props = {} }: { type: Node["type"], position: Node["position"], props: Node["props"] }) {
 
     const nodeType = this.nodeRegistry.getNode(type);
     if (!nodeType) {
@@ -236,7 +300,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       return;
     }
 
-    const node: Node = { id: this.createNodeId(), type, position, tmp: { type: nodeType } };
+    const node: Node = { id: this.createNodeId(), type, position, tmp: { type: nodeType }, props };
 
     this.nodes.update((nodes) => {
       nodes.set(node.id, node);
@@ -294,6 +358,24 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     }
   }
 
+  undo() {
+    const nextState = this.history.undo();
+    if (nextState) {
+      this._init(nextState);
+      this.emit("save", this.serialize());
+    }
+  }
+
+
+  redo() {
+    const nextState = this.history.redo();
+    if (nextState) {
+      this._init(nextState);
+      this.emit("save", this.serialize());
+    }
+
+  }
+
   startUndoGroup() {
     this.currentUndoGroup = 1;
   }
@@ -305,8 +387,10 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
   save() {
     if (this.currentUndoGroup) return;
-    this.emit("save", this.serialize());
-    this.history.save();
+    const state = this.serialize();
+    this.history.save(state);
+    this.emit("save", state);
+    logger.log("saving graph");
   }
 
   getParentsOfNode(node: Node) {
