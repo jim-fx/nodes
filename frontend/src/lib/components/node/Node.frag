@@ -40,7 +40,7 @@ void main(){
   vec2 size = vec2(uWidth, uHeight);
   vec2 uv = (vUv - 0.5) * 2.0;
 
-  float u_border_radius = 1.5;
+  float u_border_radius = 0.4;
   vec4 distance = roundedBoxSDF(uv * size, size, u_border_radius*2.0, 0.0);
 
   if (distance.w > 0.0 ) {

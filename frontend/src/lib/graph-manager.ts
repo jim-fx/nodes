@@ -62,6 +62,21 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     return this.nodeRegistry.getAllNodes();
   }
 
+  getLinkedNodes(node: Node) {
+    const nodes = new Set<Node>();
+    const stack = [node];
+    while (stack.length) {
+      const n = stack.pop();
+      if (!n) continue;
+      nodes.add(n);
+      const children = this.getChildrenOfNode(n);
+      const parents = this.getParentsOfNode(n);
+      const newNodes = [...children, ...parents].filter(n => !nodes.has(n));
+      stack.push(...newNodes);
+    }
+    return [...nodes.values()];
+  }
+
 
   private _init(graph: Graph) {
     const nodes = new Map(graph.nodes.map(node => {
@@ -91,6 +106,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     this.edges.set(edges);
     this.nodes.set(nodes);
+
+    this.execute();
 
   }
 
@@ -126,10 +143,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     this.loaded = true;
     const f = performance.now();
-    requestAnimationFrame(() => {
-      console.log(`Loading took ${f - a}ms; a-b: ${b - a}ms; b-c: ${c - b}ms; c-d: ${d - c}ms; d-e: ${e - d}ms; e-f: ${f - e}ms`);
-      this.execute();
-    });
+    console.log(`Loading took ${f - a}ms; a-b: ${b - a}ms; b-c: ${c - b}ms; c-d: ${d - c}ms; d-e: ${e - d}ms; e-f: ${f - e}ms`);
   }
 
 

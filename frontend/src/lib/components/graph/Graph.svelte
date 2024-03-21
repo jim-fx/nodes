@@ -444,8 +444,16 @@
       document?.activeElement?.id === "graph";
 
     if (event.key === "l") {
-      const activeNode = graph.getNode($activeNodeId);
-      console.log(activeNode);
+      if (event.ctrlKey) {
+        const activeNode = graph.getNode($activeNodeId);
+        if (activeNode) {
+          const nodes = graph.getLinkedNodes(activeNode);
+          $selectedNodes = new Set(nodes.map((n) => n.id));
+        }
+      } else {
+        const activeNode = graph.getNode($activeNodeId);
+        console.log(activeNode);
+      }
     }
 
     if (event.key === "Escape") {
