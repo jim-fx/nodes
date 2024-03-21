@@ -522,10 +522,11 @@
         event.key === "x") &&
       bodyIsFocused
     ) {
+      graph.startUndoGroup();
       if ($activeNodeId !== -1) {
         const node = graph.getNode($activeNodeId);
         if (node) {
-          graph.removeNode(node);
+          graph.removeNode(node, { restoreEdges: event.ctrlKey });
           $activeNodeId = -1;
         }
       }
@@ -533,12 +534,13 @@
         for (const nodeId of $selectedNodes) {
           const node = graph.getNode(nodeId);
           if (node) {
-            graph.removeNode(node);
+            graph.removeNode(node, { restoreEdges: event.ctrlKey });
           }
         }
         $selectedNodes.clear();
         $selectedNodes = $selectedNodes;
       }
+      graph.saveUndoGroup();
     }
   }
 

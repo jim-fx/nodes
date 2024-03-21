@@ -18,6 +18,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
+  currentUndoGroup: number | null = null;
+
   inputSockets: Writable<Set<string>> = writable(new Set());
 
   history: HistoryManager = new HistoryManager(this);
@@ -188,9 +190,31 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     }
   }
 
-  removeNode(node: Node) {
-    const edges = this._edges.filter((edge) => edge[0].id !== node.id && edge[2].id !== node.id);
-    this.edges.set(edges);
+  removeNode(node: Node, { restoreEdges = false } = {}) {
+
+    const edgesToNode = this._edges.filter((edge) => edge[2].id === node.id);
+    const edgesFromNode = this._edges.filter((edge) => edge[0].id === node.id);
+    for (const edge of [...edgesToNode, ...edgesFromNode]) {
+      this.removeEdge(edge, { applyDeletion: false });
+    }
+
+    if (restoreEdges) {
+      const outputSockets = edgesToNode.map(e => [e[0], e[1]] as const);
+      const inputSockets = edgesFromNode.map(e => [e[2], e[3]] as const);
+
+      for (const [to, toSocket] of inputSockets) {
+        for (const [from, fromSocket] of outputSockets) {
+          const outputType = from.tmp?.type?.outputs?.[fromSocket];
+          const inputType = to?.tmp?.type?.inputs?.[toSocket]?.type;
+          if (outputType === inputType) {
+            this.createEdge(from, fromSocket, to, toSocket, { applyUpdate: false });
+            continue;
+          }
+        }
+      }
+    }
+
+    this.edges.set(this._edges);
 
     this.nodes.update((nodes) => {
       nodes.delete(node.id);
@@ -222,7 +246,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     this.save();
   }
 
-  createEdge(from: Node, fromSocket: number, to: Node, toSocket: string) {
+  createEdge(from: Node, fromSocket: number, to: Node, toSocket: string, { applyUpdate = true } = {}) {
 
     const existingEdges = this.getEdgesToNode(to);
 
@@ -245,12 +269,16 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     const edgeToBeReplaced = this._edges.find(e => e[2].id === to.id && e[3] === toSocket);
     if (edgeToBeReplaced) {
-      this.removeEdge(edgeToBeReplaced);
+      this.removeEdge(edgeToBeReplaced, { applyDeletion: applyUpdate });
     }
 
-    this.edges.update((edges) => {
-      return [...edges, [from, fromSocket, to, toSocket]];
-    });
+    if (applyUpdate) {
+      this.edges.update((edges) => {
+        return [...edges, [from, fromSocket, to, toSocket]];
+      });
+    } else {
+      this._edges.push([from, fromSocket, to, toSocket]);
+    }
 
     from.tmp = from.tmp || {};
     from.tmp.children = from.tmp.children || [];
@@ -261,10 +289,22 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     to.tmp.parents.push(from);
 
     this.execute();
+    if (applyUpdate) {
+      this.save();
+    }
+  }
+
+  startUndoGroup() {
+    this.currentUndoGroup = 1;
+  }
+
+  saveUndoGroup() {
+    this.currentUndoGroup = null;
     this.save();
   }
 
   save() {
+    if (this.currentUndoGroup) return;
     this.emit("save", this.serialize());
     this.history.save();
   }
@@ -341,7 +381,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
   }
 
-  removeEdge(edge: Edge) {
+  removeEdge(edge: Edge, { applyDeletion = true }: { applyDeletion?: boolean } = {}) {
     const id0 = edge[0].id;
     const sid0 = edge[1];
     const id2 = edge[2].id;
@@ -349,10 +389,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     const _edge = this._edges.find((e) => e[0].id === id0 && e[1] === sid0 && e[2].id === id2 && e[3] === sid2);
     if (!_edge) return;
-
-    this.edges.update((edges) => {
-      return edges.filter(e => e !== _edge);
-    });
 
     edge[0].tmp = edge[0].tmp || {};
     if (edge[0].tmp.children) {
@@ -364,8 +400,16 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       edge[2].tmp.parents = edge[2].tmp.parents.filter(n => n.id !== id0);
     }
 
-    this.execute();
-    this.save();
+    if (applyDeletion) {
+      this.edges.update((edges) => {
+        return edges.filter(e => e !== _edge);
+      });
+      this.execute();
+      this.save();
+    } else {
+      this._edges = this._edges.filter(e => e !== _edge);
+    }
+
   }
 
   getEdgesToNode(node: Node) {
@@ -401,7 +445,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       default:
         throw new Error(`Template not found: ${template}`);
     }
-
 
   }
 

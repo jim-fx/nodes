@@ -79,6 +79,6 @@
     height: 0px;
     transform: scale(calc(var(--cz) * 0.1));
     display: var(--node-display, block);
-    opacity: calc((var(--cz) - 2) / 5);
+    opacity: calc((var(--cz) - 2.5) / 3.5);
   }
 </style>
