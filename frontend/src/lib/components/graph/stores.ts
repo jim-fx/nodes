@@ -11,7 +11,6 @@ export const hoveredSocket: Writable<Socket | null> = writable(null);
 export const possibleSockets: Writable<Socket[]> = writable([]);
 export const possibleSocketIds: Writable<Set<string> | null> = writable(null);
 
-
 export const colors = writable({
   backgroundColorDarker: new Color().setStyle("#101010"),
   backgroundColor: new Color().setStyle("#151515"),
@@ -38,13 +37,7 @@ if (browser) {
 
   }
 
-
-  globalThis["updateColors"] = updateColors;
-
   body.addEventListener("transitionstart", () => {
     updateColors();
   })
-  window.onload = () => {
-    updateColors();
-  }
 }

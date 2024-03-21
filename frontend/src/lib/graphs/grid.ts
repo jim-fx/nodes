@@ -19,10 +19,7 @@ export function grid(width: number, height: number) {
       tmp: {
         visible: false,
       },
-      position: {
-        x: x * 30,
-        y: y * 40,
-      },
+      position: [x * 30, y * 40],
       props: i == 0 ? { value: 0 } : {},
       type: i == 0 ? "input/float" : "math",
     });
@@ -35,10 +32,7 @@ export function grid(width: number, height: number) {
     tmp: {
       visible: false,
     },
-    position: {
-      x: width * 30,
-      y: (height - 1) * 40,
-    },
+    position: [width * 30, (height - 1) * 40],
     type: "output",
     props: {},
   });

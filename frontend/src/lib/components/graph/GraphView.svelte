@@ -29,14 +29,14 @@
   onMount(() => {
     for (const node of $nodes.values()) {
       if (node?.tmp?.ref) {
-        node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
+        node.tmp.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
+        node.tmp.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
       }
     }
   });
 </script>
 
-{#each $edges as edge (edge[0].id + edge[2].id + edge[3])}
+{#each $edges as edge (`${edge[0].id}-${edge[1]}-${edge[2].id}-${edge[3]}`)}
   {@const pos = getEdgePosition(edge)}
   {@const [x1, y1, x2, y2] = pos}
   <Edge

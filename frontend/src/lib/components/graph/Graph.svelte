@@ -18,6 +18,7 @@
     selectedNodes,
   } from "./stores";
   import BoxSelection from "../BoxSelection.svelte";
+  import AddMenu from "../AddMenu.svelte";
 
   export let graph: GraphManager;
   setContext("graphManager", graph);
@@ -36,6 +37,7 @@
   let loaded = false;
   const cameraDown = [0, 0];
   let cameraPosition: [number, number, number] = [0, 0, 4];
+  let addMenuPosition: [number, number] | null = null;
 
   $: if (cameraPosition && loaded) {
     localStorage.setItem("cameraPosition", JSON.stringify(cameraPosition));
@@ -79,16 +81,19 @@
         node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
         node.tmp.mesh.position.x = node.tmp.x + 10;
         node.tmp.mesh.position.z = node.tmp.y + getNodeHeight(node.type) / 2;
-        if (node.tmp.x === node.position.x && node.tmp.y === node.position.y) {
+        if (
+          node.tmp.x === node.position[0] &&
+          node.tmp.y === node.position[1]
+        ) {
           delete node.tmp.x;
           delete node.tmp.y;
         }
       } else {
-        node.tmp.ref.style.setProperty("--nx", `${node.position.x * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.position.y * 10}px`);
-        node.tmp.mesh.position.x = node.position.x + 10;
+        node.tmp.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
+        node.tmp.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
+        node.tmp.mesh.position.x = node.position[0] + 10;
         node.tmp.mesh.position.z =
-          node.position.y + getNodeHeight(node.type) / 2;
+          node.position[1] + getNodeHeight(node.type) / 2;
       }
     }
   }
@@ -113,10 +118,10 @@
     const height = getNodeHeight(node.type);
     const width = 20;
     return (
-      node.position.x > cameraBounds[0] - width &&
-      node.position.x < cameraBounds[1] &&
-      node.position.y > cameraBounds[2] - height &&
-      node.position.y < cameraBounds[3]
+      node.position[0] > cameraBounds[0] - width &&
+      node.position[0] < cameraBounds[1] &&
+      node.position[1] > cameraBounds[2] - height &&
+      node.position[1] < cameraBounds[3]
     );
   });
 
@@ -141,8 +146,8 @@
           event.clientY,
         );
         for (const node of $nodes.values()) {
-          const x = node.position.x;
-          const y = node.position.y;
+          const x = node.position[0];
+          const y = node.position[1];
           const height = getNodeHeight(node.type);
           if (downX > x && downX < x + 20 && downY > y && downY < y + height) {
             clickedNodeId = node.id;
@@ -213,14 +218,14 @@
   ): [number, number] {
     if (typeof index === "number") {
       return [
-        (node?.tmp?.x ?? node.position.x) + 20,
-        (node?.tmp?.y ?? node.position.y) + 2.5 + 10 * index,
+        (node?.tmp?.x ?? node.position[0]) + 20,
+        (node?.tmp?.y ?? node.position[1]) + 2.5 + 10 * index,
       ];
     } else {
       const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
       return [
-        node?.tmp?.x ?? node.position.x,
-        (node?.tmp?.y ?? node.position.y) + 10 + 10 * _index,
+        node?.tmp?.x ?? node.position[0],
+        (node?.tmp?.y ?? node.position[1]) + 10 + 10 * _index,
       ];
     }
   }
@@ -273,8 +278,8 @@
       const y2 = Math.max(mouseD[1], mousePosition[1]);
       for (const node of $nodes.values()) {
         if (!node?.tmp) continue;
-        const x = node.position.x;
-        const y = node.position.y;
+        const x = node.position[0];
+        const y = node.position[1];
         const height = getNodeHeight(node.type);
         if (x > x1 - 20 && x < x2 && y > y1 - height && y < y2) {
           $selectedNodes?.add(node.id);
@@ -420,15 +425,15 @@
     const node = graph.getNode($activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
-    node.tmp.downX = node.position.x;
-    node.tmp.downY = node.position.y;
+    node.tmp.downX = node.position[0];
+    node.tmp.downY = node.position[1];
     if ($selectedNodes) {
       for (const nodeId of $selectedNodes) {
         const n = graph.getNode(nodeId);
         if (!n) continue;
         n.tmp = n.tmp || {};
-        n.tmp.downX = n.position.x;
-        n.tmp.downY = n.position.y;
+        n.tmp.downX = n.position[0];
+        n.tmp.downY = n.position[1];
       }
     }
   }
@@ -438,6 +443,11 @@
       document.activeElement === document.body ||
       document?.activeElement?.id === "graph";
 
+    if (event.key === "l") {
+      const activeNode = graph.getNode($activeNodeId);
+      console.log(activeNode);
+    }
+
     if (event.key === "Escape") {
       $activeNodeId = -1;
       $selectedNodes?.clear();
@@ -445,14 +455,18 @@
       (document.activeElement as HTMLElement)?.blur();
     }
 
+    if (event.key === "A" && event.shiftKey) {
+      addMenuPosition = [mousePosition[0], mousePosition[1]];
+    }
+
     if (event.key === ".") {
       const average = [0, 0];
       for (const node of $nodes.values()) {
-        average[0] += node.position.x;
-        average[1] += node.position.y;
+        average[0] += node.position[0];
+        average[1] += node.position[1];
       }
-      average[0] /= $nodes.size;
-      average[1] /= $nodes.size;
+      average[0] = average[0] ? average[0] / $nodes.size : 0;
+      average[1] = average[1] ? average[1] / $nodes.size : 0;
 
       const camX = cameraPosition[0];
       const camY = cameraPosition[1];
@@ -466,6 +480,7 @@
           lerp(camY, average[1], ease(a)),
           lerp(camZ, 2, ease(a)),
         );
+        if (mouseDown) return false;
       });
     }
 
@@ -538,12 +553,12 @@
       activeNode.tmp = activeNode.tmp || {};
       activeNode.tmp.isMoving = false;
       const snapLevel = getSnapLevel();
-      activeNode.position.x = snapToGrid(
-        activeNode?.tmp?.x ?? activeNode.position.x,
+      activeNode.position[0] = snapToGrid(
+        activeNode?.tmp?.x ?? activeNode.position[0],
         5 / snapLevel,
       );
-      activeNode.position.y = snapToGrid(
-        activeNode?.tmp?.y ?? activeNode.position.y,
+      activeNode.position[1] = snapToGrid(
+        activeNode?.tmp?.y ?? activeNode.position[1],
         5 / snapLevel,
       );
       const nodes = [
@@ -551,8 +566,8 @@
       ] as NodeType[];
 
       const vec = [
-        activeNode.position.x - (activeNode?.tmp.x || 0),
-        activeNode.position.y - (activeNode?.tmp.y || 0),
+        activeNode.position[0] - (activeNode?.tmp.x || 0),
+        activeNode.position[1] - (activeNode?.tmp.y || 0),
       ];
 
       for (const node of nodes) {
@@ -560,8 +575,8 @@
         node.tmp = node.tmp || {};
         const { x, y } = node.tmp;
         if (x !== undefined && y !== undefined) {
-          node.position.x = x + vec[0];
-          node.position.y = y + vec[1];
+          node.position[0] = x + vec[0];
+          node.position[1] = y + vec[1];
         }
       }
       nodes.push(activeNode);
@@ -572,8 +587,8 @@
             node.tmp["x"] !== undefined &&
             node.tmp["y"] !== undefined
           ) {
-            node.tmp.x = lerp(node.tmp.x, node.position.x, a);
-            node.tmp.y = lerp(node.tmp.y, node.position.y, a);
+            node.tmp.x = lerp(node.tmp.x, node.position[0], a);
+            node.tmp.y = lerp(node.tmp.y, node.position[1], a);
             updateNodePosition(node);
             if (node?.tmp?.isMoving) {
               return false;
@@ -627,6 +642,7 @@
     $possibleSockets = [];
     $possibleSocketIds = null;
     $hoveredSocket = null;
+    addMenuPosition = null;
   }
 
   onMount(() => {
@@ -669,12 +685,17 @@
 {/if}
 
 {#if $status === "idle"}
+  {#if addMenuPosition}
+    <AddMenu bind:position={addMenuPosition} {graph} />
+  {/if}
+
   {#if $activeSocket}
     <FloatingEdge
       from={{ x: $activeSocket.position[0], y: $activeSocket.position[1] }}
       to={{ x: mousePosition[0], y: mousePosition[1] }}
     />
   {/if}
+
   {#key $graphId}
     <GraphView {nodes} {edges} {cameraPosition} />
   {/key}

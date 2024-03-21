@@ -53,8 +53,8 @@
 </script>
 
 <T.Mesh
-  position.x={node.position.x + 10}
-  position.z={node.position.y + height / 2}
+  position.x={node.position[0] + 10}
+  position.z={node.position[1] + height / 2}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
   bind:ref={meshRef}

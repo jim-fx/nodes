@@ -41,5 +41,8 @@ export class MemoryNodeRegistry implements NodeRegistry {
   getNode(id: string): NodeType | undefined {
     return nodeTypes.find((nodeType) => nodeType.id === id);
   }
+  getAllNodes(): NodeType[] {
+    return [...nodeTypes];
+  }
 }
 

@@ -1,4 +1,4 @@
-import type { NodeInput, NodeInputType } from "./inputs";
+import type { NodeInput } from "./inputs";
 export type { NodeInput } from "./inputs";
 
 export type Node = {
@@ -24,10 +24,7 @@ export type Node = {
     title?: string;
     lastModified?: string;
   },
-  position: {
-    x: number;
-    y: number;
-  }
+  position: [x: number, y: number]
 }
 
 export type NodeType = {
@@ -49,6 +46,7 @@ export type Socket = {
 
 export interface NodeRegistry {
   getNode: (id: string) => NodeType | undefined;
+  getAllNodes: () => NodeType[];
 }
 
 export interface RuntimeExecutor {

@@ -6,12 +6,12 @@ export function tree(depth: number): Graph {
     {
       id: 0,
       type: "output",
-      position: { x: 0, y: 0 }
+      position: [0, 0]
     },
     {
       id: 1,
       type: "math",
-      position: { x: -40, y: -10 }
+      position: [-40, -10]
     }
   ]
 
@@ -34,13 +34,13 @@ export function tree(depth: number): Graph {
       nodes.push({
         id: id0,
         type: "math",
-        position: { x, y: y },
+        position: [x, y],
       });
       edges.push([id0, 0, parent, "a"]);
       nodes.push({
         id: id1,
         type: "math",
-        position: { x, y: y + 35 },
+        position: [x, y + 35],
       });
       edges.push([id1, 0, parent, "b"]);
     }

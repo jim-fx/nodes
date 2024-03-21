@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { type Graph, type Node, type Edge, type Socket, type NodeRegistry, type RuntimeExecutor } from "./types";
+import { type Graph, type Node, type Edge, type Socket, type NodeRegistry, type RuntimeExecutor, } from "./types";
 import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
 import EventEmitter from "./helpers/EventEmitter";
@@ -35,13 +35,13 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       }
       this.inputSockets.set(s);
     });
-    this.execute = throttle(() => this._execute(), 100);
+    this.execute = throttle(() => this._execute(), 50);
   }
 
   serialize(): Graph {
     const nodes = Array.from(this._nodes.values()).map(node => ({
       id: node.id,
-      position: { x: node.position.x, y: node.position.y },
+      position: node.position,
       type: node.type,
       props: node.props,
     }));
@@ -58,13 +58,18 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     console.log(`Execution took ${end - start}ms -> ${result}`);
   }
 
+  getNodeTypes() {
+    return this.nodeRegistry.getAllNodes();
+  }
+
 
   private _init(graph: Graph) {
     const nodes = new Map(graph.nodes.map(node => {
       const nodeType = this.nodeRegistry.getNode(node.type);
       if (nodeType) {
-        node.tmp = node.tmp || {};
-        node.tmp.type = nodeType;
+        node.tmp = {
+          type: nodeType
+        };
       }
       return [node.id, node]
     }));
@@ -177,6 +182,29 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       nodes.delete(node.id);
       return nodes;
     });
+    this.execute()
+    this.save();
+  }
+
+  private createNodeId() {
+    return Math.max(...this.getAllNodes().map(n => n.id), 0) + 1;
+  }
+
+  createNode({ type, position }: { type: string, position: [number, number] }) {
+
+    const nodeType = this.nodeRegistry.getNode(type);
+    if (!nodeType) {
+      console.error(`Node type not found: ${type}`);
+      return;
+    }
+
+    const node: Node = { id: this.createNodeId(), type, position, tmp: { type: nodeType } };
+
+    this.nodes.update((nodes) => {
+      nodes.set(node.id, node);
+      return nodes;
+    });
+
     this.save();
   }
 
@@ -205,6 +233,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       return [...edges.filter(e => e[2].id !== to.id || e[3] !== toSocket), [from, fromSocket, to, toSocket]];
     });
 
+    this.execute();
     this.save();
   }
 
@@ -216,7 +245,13 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   getParentsOfNode(node: Node) {
     const parents = [];
     const stack = node.tmp?.parents?.slice(0);
+
+
     while (stack?.length) {
+      if (parents.length > 1000000) {
+        console.log("Infinite loop detected")
+        break;
+      }
       const parent = stack.pop();
       if (!parent) continue;
       parents.push(parent);
@@ -287,6 +322,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     this.edges.update((edges) => {
       return edges.filter((e) => e[0].id !== id0 || e[1] !== sid0 || e[2].id !== id2 || e[3] !== sid2);
     });
+    this.execute();
     this.save();
   }
 
