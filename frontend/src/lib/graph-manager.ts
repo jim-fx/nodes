@@ -229,9 +229,22 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
       return;
     }
 
+    const edgeToBeReplaced = this._edges.find(e => e[2].id === to.id && e[3] === toSocket);
+    if (edgeToBeReplaced) {
+      this.removeEdge(edgeToBeReplaced);
+    }
+
     this.edges.update((edges) => {
-      return [...edges.filter(e => e[2].id !== to.id || e[3] !== toSocket), [from, fromSocket, to, toSocket]];
+      return [...edges, [from, fromSocket, to, toSocket]];
     });
+
+    from.tmp = from.tmp || {};
+    from.tmp.children = from.tmp.children || [];
+    from.tmp.children.push(to);
+
+    to.tmp = to.tmp || {};
+    to.tmp.parents = to.tmp.parents || [];
+    to.tmp.parents.push(from);
 
     this.execute();
     this.save();
@@ -319,9 +332,24 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     const sid0 = edge[1];
     const id2 = edge[2].id;
     const sid2 = edge[3];
+
+    const _edge = this._edges.find((e) => e[0].id === id0 && e[1] === sid0 && e[2].id === id2 && e[3] === sid2);
+    if (!_edge) return;
+
     this.edges.update((edges) => {
-      return edges.filter((e) => e[0].id !== id0 || e[1] !== sid0 || e[2].id !== id2 || e[3] !== sid2);
+      return edges.filter(e => e !== _edge);
     });
+
+    edge[0].tmp = edge[0].tmp || {};
+    if (edge[0].tmp.children) {
+      edge[0].tmp.children = edge[0].tmp.children.filter(n => n.id !== id2);
+    }
+
+    edge[2].tmp = edge[2].tmp || {};
+    if (edge[2].tmp.parents) {
+      edge[2].tmp.parents = edge[2].tmp.parents.filter(n => n.id !== id0);
+    }
+
     this.execute();
     this.save();
   }
