@@ -137,6 +137,9 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   }
 
   async load(graph: Graph) {
+
+    const a = performance.now();
+
     this.loaded = false;
     this.graph = graph;
     this.status.set("loading");
@@ -161,6 +164,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     this.status.set("idle");
 
     this.loaded = true;
+    logger.log(`Graph loaded in ${performance.now() - a}ms`);
   }
 
 
@@ -296,7 +300,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     const nodeType = this.nodeRegistry.getNode(type);
     if (!nodeType) {
-      console.error(`Node type not found: ${type}`);
+      logger.error(`Node type not found: ${type}`);
       return;
     }
 
@@ -317,8 +321,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     // check if this exact edge already exists
     const existingEdge = existingEdges.find(e => e[0].id === from.id && e[1] === fromSocket && e[3] === toSocket);
     if (existingEdge) {
-      console.log("Edge already exists");
-      console.log(existingEdge)
+      logger.error("Edge already exists", existingEdge);
       return;
     };
 
@@ -327,7 +330,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     const toSocketType = to.tmp?.type?.inputs?.[toSocket]?.type;
 
     if (fromSocketType !== toSocketType) {
-      console.error(`Socket types do not match: ${fromSocketType} !== ${toSocketType}`);
+      logger.error(`Socket types do not match: ${fromSocketType} !== ${toSocketType}`);
       return;
     }
 
@@ -396,11 +399,9 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
   getParentsOfNode(node: Node) {
     const parents = [];
     const stack = node.tmp?.parents?.slice(0);
-
-
     while (stack?.length) {
       if (parents.length > 1000000) {
-        console.log("Infinite loop detected")
+        logger.warn("Infinite loop detected")
         break;
       }
       const parent = stack.pop();

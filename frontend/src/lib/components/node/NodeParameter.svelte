@@ -15,6 +15,7 @@
   const socketId = `${node.id}-${id}`;
 
   const graph = getGraphManager();
+  const graphId = graph.id;
   const inputSockets = graph.inputSockets;
 
   const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
@@ -67,24 +68,26 @@
   class="wrapper"
   class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
-  <div class="content" class:disabled={$inputSockets.has(socketId)}>
-    <NodeInput {node} {input} {id} />
-  </div>
+  {#key id && graphId}
+    <div class="content" class:disabled={$inputSockets.has(socketId)}>
+      <NodeInput {node} {input} {id} />
+    </div>
 
-  {#if node.tmp?.type?.inputs?.[id].internal !== true}
-    <div
-      class="large target"
-      on:mousedown={handleMouseDown}
-      role="button"
-      tabindex="0"
-    />
-    <div
-      class="small target"
-      on:mousedown={handleMouseDown}
-      role="button"
-      tabindex="0"
-    />
-  {/if}
+    {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}
+      <div
+        class="large target"
+        on:mousedown={handleMouseDown}
+        role="button"
+        tabindex="0"
+      />
+      <div
+        class="small target"
+        on:mousedown={handleMouseDown}
+        role="button"
+        tabindex="0"
+      />
+    {/if}
+  {/key}
 
   <svg
     xmlns="http://www.w3.org/2000/svg"

@@ -749,9 +749,7 @@
     />
   {/if}
 
-  {#key $graphId}
-    <GraphView {nodes} {edges} {cameraPosition} />
-  {/key}
+  <GraphView {nodes} {edges} {cameraPosition} />
 {:else if $status === "loading"}
   <span>Loading</span>
 {:else if $status === "error"}

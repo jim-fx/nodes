@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" lang="ts">
   const color = new Color(0x202020);
   color.convertLinearToSRGB();
 
@@ -9,63 +9,72 @@
     color,
     toneMapped: false,
   });
+
+  const lineCache = new Map<number, BufferGeometry>();
+
+  const curve = new CubicBezierCurve(
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+    new Vector2(0, 0),
+  );
 </script>
 
 <script lang="ts">
   import { T } from "@threlte/core";
-  import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { MeshBasicMaterial, type Mesh, LineBasicMaterial } from "three";
+  import { MeshLineMaterial } from "@threlte/extras";
+  import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
   import { Color } from "three/src/math/Color.js";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
-  import { Vector3 } from "three/src/math/Vector3.js";
   import { Vector2 } from "three/src/math/Vector2.js";
+  import { createEdgeGeometry } from "./createEdgeGeometry";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
 
   let samples = 5;
 
-  const curve = new CubicBezierCurve(
-    new Vector2(from.x, from.y),
-    new Vector2(from.x + 2, from.y),
-    new Vector2(to.x - 2, to.y),
-    new Vector2(to.x, to.y),
-  );
+  let geometry: BufferGeometry;
 
-  let points: Vector3[] = [];
+  let lastId: number | null = null;
 
-  let last_from_x = 0;
-  let last_from_y = 0;
+  const primeA = 31;
+  const primeB = 37;
 
-  let mesh: Mesh;
-
-  export const update = function (force = false) {
-    if (!force) {
-      const new_x = from.x + to.x;
-      const new_y = from.y + to.y;
-      if (last_from_x === new_x && last_from_y === new_y) {
-        return;
-      }
-      last_from_x = new_x;
-      last_from_y = new_y;
+  export const update = function () {
+    const new_x = to.x - from.x;
+    const new_y = to.y - from.y;
+    const curveId = new_x * primeA + new_y * primeB;
+    if (lastId === curveId) {
+      return;
     }
 
-    const mid = new Vector2((from.x + to.x) / 2, (from.y + to.y) / 2);
+    const mid = new Vector2(new_x / 2, new_y / 2);
+
+    if (lineCache.has(curveId)) {
+      geometry = lineCache.get(curveId)!;
+      return;
+    }
 
     const length = Math.floor(
-      Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2)) / 4,
+      Math.sqrt(Math.pow(new_x, 2) + Math.pow(new_y, 2)) / 4,
     );
-    samples = Math.min(Math.max(10, length), 100);
+    samples = Math.min(Math.max(10, length), 60);
 
-    curve.v0.set(from.x, from.y);
-    curve.v1.set(mid.x, from.y);
-    curve.v2.set(mid.x, to.y);
-    curve.v3.set(to.x, to.y);
+    curve.v0.set(0, 0);
+    curve.v1.set(mid.x, 0);
+    curve.v2.set(mid.x, new_y);
+    curve.v3.set(new_x, new_y);
 
-    points = curve.getPoints(samples).map((p) => new Vector3(p.x, 0, p.y));
+    const points = curve
+      .getPoints(samples)
+      .map((p) => new Vector3(p.x, 0, p.y))
+      .flat();
+
+    geometry = createEdgeGeometry(points);
+    lineCache.set(curveId, geometry);
   };
 
-  update();
   $: if (from || to) {
     update();
   }
@@ -91,14 +100,13 @@
   <T.CircleGeometry args={[0.3, 16]} />
 </T.Mesh>
 
-<T.Mesh position.y={0.5} bind:ref={mesh}>
-  {#key samples}
-    <MeshLineGeometry {points} />
-  {/key}
-  <MeshLineMaterial
-    width={4}
-    attenuate={false}
-    color={color2}
-    toneMapped={false}
-  />
-</T.Mesh>
+{#if geometry}
+  <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
+    <MeshLineMaterial
+      width={4}
+      attenuate={false}
+      color={color2}
+      toneMapped={false}
+    />
+  </T.Mesh>
+{/if}
