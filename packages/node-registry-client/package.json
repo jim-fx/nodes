@@ -1,5 +1,5 @@
 {
-  "name": "@nodes/types",
+  "name": "@node/registry-client",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",

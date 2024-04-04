@@ -1,12 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-  "packages/runtime_executor_rust",
-  "nodes/add",
-  "nodes/subtract",
-  "frontend/src-tauri",
-  "packages/node_registry_rust", "nodes/multiply", "packages/node_registry_server",
-]
+members = ["app/src-tauri", "nodes/max/plantarium/*", "packages/plantarium"]
 
 [profile.release]
 lto = true
