@@ -24,17 +24,20 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_op_type: JsValue, var_a: JsValue, var_b: JsValue) -> f64 {
+pub fn execute(var_op_type: JsValue, var_a: JsValue, var_b: JsValue) -> String {
     utils::set_panic_hook();
 
-    let op_type = unwrap_int(var_op_type);
-    let a = unwrap_float(var_a);
-    let b = unwrap_float(var_b);
+    utils::set_panic_hook();
+    // Convert JsValues to strings
+    let min_str = unwrap_string(var_min);
+    let max_str = unwrap_string(var_max);
+    let seed_str = unwrap_string(var_seed);
 
-    match op_type {
-        1 => return a - b,
-        2 => return a * b,
-        3 => return a / b,
-        _ => return a + b,
-    }
+    // Interpolate strings into JSON format
+    let json_string = format!(
+        r#"{{"parameter": "random", "min": {}, "max": {}, "seed": {}}}"#,
+        min_str, max_str, seed_str
+    );
+
+    json_string
 }

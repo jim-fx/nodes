@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "build": "wasm-pack build --release"
+    "build": "wasm-pack build --release --out-name index --no-default-features"
   }
 }
