@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "build:nodes": "pnpm -r --filter './nodes/**' build"
+  }
+}
