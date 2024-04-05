@@ -6,6 +6,8 @@ settings:
 
 importers:
 
+  .: {}
+
   app:
     dependencies:
       '@nodes/input-elements':
@@ -42,8 +44,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0(three@0.159.0)
       plantarium-nodes-math:
-        specifier: link:../nodes/math/pkg
-        version: link:../nodes/math/pkg
+        specifier: link:../nodes/max/plantarium/math/pkg
+        version: link:../nodes/max/plantarium/math/pkg
       three:
         specifier: ^0.159.0
         version: 0.159.0
@@ -99,6 +101,16 @@ importers:
       vite-plugin-wasm:
         specifier: ^3.3.0
         version: 3.3.0(vite@5.1.4)
+
+  nodes/max/plantarium/math: {}
+
+  nodes/max/plantarium/math/pkg: {}
+
+  nodes/max/plantarium/random: {}
+
+  nodes/max/plantarium/random/old-pkg: {}
+
+  nodes/max/plantarium/random/pkg: {}
 
   packages/input-elements:
     dependencies:

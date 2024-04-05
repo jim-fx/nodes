@@ -26,6 +26,7 @@ type NodeInputSelect = {
 
 type DefaultOptions = {
   internal?: boolean;
+  title?: string;
 }
 
 export type NodeInput = (NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;

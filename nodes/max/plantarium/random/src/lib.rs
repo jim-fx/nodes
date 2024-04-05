@@ -1,6 +1,4 @@
 mod utils;
-
-use plantarium::*;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -25,19 +23,14 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_min: JsValue, var_max: JsValue, var_seed: JsValue) -> String {
+pub fn execute(var_min: String, var_max: String, var_seed: i32) -> String {
     utils::set_panic_hook();
-    // Convert JsValues to strings
-    let min_str = unwrap_string(var_min);
-    let max_str = unwrap_string(var_max);
-    let seed_str = unwrap_string(var_seed);
 
     // Interpolate strings into JSON format
     let json_string = format!(
         r#"{{"parameter": "random", "min": {}, "max": {}, "seed": {}}}"#,
-        min_str, max_str, seed_str
+        var_min, var_max, var_seed
     );
 
     json_string
 }
-

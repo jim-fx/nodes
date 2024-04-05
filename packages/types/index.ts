@@ -45,7 +45,24 @@ export type Socket = {
 
 
 export interface NodeRegistry {
+  /**
+   * Load the nodes with the given ids
+  * @param nodeIds - The ids of the nodes to load
+  * @returns A promise that resolves when the nodes are loaded
+  * @throws An error if the nodes could not be loaded
+  * @remarks This method should be called before calling getNode or getAllNodes
+  */
+  load: (nodeIds: string[]) => Promise<void>;
+  /**
+   * Get a node by id
+   * @param id - The id of the node to get
+   * @returns The node with the given id, or undefined if no such node exists
+   */
   getNode: (id: string) => NodeType | undefined;
+  /**
+   * Get all nodes
+   * @returns An array of all nodes
+   */
   getAllNodes: () => NodeType[];
 }
 

@@ -10,7 +10,7 @@ export function tree(depth: number): Graph {
     },
     {
       id: 1,
-      type: "math",
+      type: "max/plantarium/math",
       position: [-40, -10]
     }
   ]
@@ -33,13 +33,13 @@ export function tree(depth: number): Graph {
 
       nodes.push({
         id: id0,
-        type: "math",
+        type: "max/plantarium/math",
         position: [x, y],
       });
       edges.push([id0, 0, parent, "a"]);
       nodes.push({
         id: id1,
-        type: "math",
+        type: "max/plantarium/math",
         position: [x, y + 35],
       });
       edges.push([id1, 0, parent, "b"]);

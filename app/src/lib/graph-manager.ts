@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import  type {  Graph,  Node,  Edge,  Socket,  NodeRegistry,  RuntimeExecutor, } from "@nodes/s";
+import type { Graph, Node, Edge, Socket, NodeRegistry, RuntimeExecutor, } from "@nodes/s";
 import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
 import EventEmitter from "./helpers/EventEmitter";
@@ -145,6 +145,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
     this.status.set("loading");
     this.id.set(graph.id);
 
+    this.nodeRegistry.load();
+
     for (const node of this.graph.nodes) {
       const nodeType = this.nodeRegistry.getNode(node.type);
       if (!nodeType) {
@@ -165,6 +167,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph }> {
 
     this.loaded = true;
     logger.log(`Graph loaded in ${performance.now() - a}ms`);
+    setTimeout(() => this.execute(), 100);
   }
 
 

@@ -69,7 +69,7 @@
 >
   {#key id && graphId}
     <div class="content" class:disabled={$inputSockets.has(socketId)}>
-      <NodeInput {node} {input} {id} />
+      <NodeInput {node} {input} label={input?.title || id} />
     </div>
 
     {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}

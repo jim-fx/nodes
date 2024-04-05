@@ -53,7 +53,7 @@
 
 <div class="wrapper" data-node-id={node.id}>
   <div class="content">
-    {node.type} / {node.id}
+    {node.type.split("/").pop()}
   </div>
   <div
     class="click-target"
