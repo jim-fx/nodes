@@ -101,7 +101,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // we execute the nodes from the bottom up
     const sortedNodes = nodes.sort((a, b) => (b.tmp?.depth || 0) - (a.tmp?.depth || 0));
 
-
     // here we store the intermediate results of the nodes
     const results: Record<string, string | boolean | number> = {};
 
@@ -109,6 +108,11 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       if (node?.tmp && node?.tmp?.type?.execute) {
         const inputs: Record<string, string | number | boolean> = {};
         for (const [key, input] of Object.entries(node.tmp.type.inputs || {})) {
+
+          if (input.type === "seed") {
+            inputs[key] = Math.floor(Math.random() * 100000000);
+            continue;
+          }
 
           // check if the input is connected to another node
           const inputNode = node.tmp.inputNodes?.[key];
@@ -122,6 +126,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           // if the input is not connected to another node, we use the value from the node itself
           inputs[key] = node.props?.[key] ?? input?.value;
+
         }
 
         // execute the node and store the result

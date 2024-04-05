@@ -951,6 +951,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "float"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "plantarium",
+ "serde",
+ "serde-wasm-bindgen",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1627,18 +1639,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "input-float"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "plantarium",
- "serde",
- "serde-wasm-bindgen",
- "wasm-bindgen",
- "wasm-bindgen-test",
-]
-
-[[package]]
 name = "instant"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2234,6 +2234,7 @@ dependencies = [
  "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "serde_json",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -2486,6 +2487,8 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 name = "plantarium"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "wasm-bindgen",
 ]
 

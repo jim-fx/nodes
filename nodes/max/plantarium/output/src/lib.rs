@@ -1,5 +1,5 @@
 mod utils;
-use plantarium::unwrap_string;
+use plantarium::evaluate_parameters;
 use wasm_bindgen::prelude::*;
 
 // lifted from the `console_log` example
@@ -15,11 +15,6 @@ pub fn get_outputs() -> Vec<String> {
 }
 
 #[wasm_bindgen]
-pub fn get_id() -> String {
-    "float".to_string()
-}
-
-#[wasm_bindgen]
 pub fn get_input_types() -> String {
     utils::set_panic_hook();
     r#"{
@@ -27,14 +22,11 @@ pub fn get_input_types() -> String {
     }"#
     .to_string()
 }
-
 #[wasm_bindgen]
-pub fn execute(var_value: JsValue) -> String {
+pub fn execute(var_value: JsValue) -> f64 {
     utils::set_panic_hook();
 
-    let str = unwrap_string(var_value);
+    let res = evaluate_parameters(var_value);
 
-    log(&format!("str: {}", str));
-
-    return str;
+    return res;
 }

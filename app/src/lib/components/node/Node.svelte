@@ -23,7 +23,9 @@
 
   const type = node?.tmp?.type;
 
-  const parameters = Object.entries(type?.inputs || {});
+  const parameters = Object.entries(type?.inputs || {}).filter(
+    (p) => p[1].type !== "seed",
+  );
 
   let ref: HTMLDivElement;
   let meshRef: Mesh;

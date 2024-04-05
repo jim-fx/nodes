@@ -39,8 +39,13 @@
     <br />
     <button
       on:click={() =>
-        graphManager.load(graphManager.createTemplate("grid", 3, 3))}
+        graphManager.load(graphManager.createTemplate("grid", 10, 10))}
       >load grid</button
+    >
+    <button
+      on:click={() =>
+        graphManager.load(graphManager.createTemplate("grid", 2, 2))}
+      >load small grid</button
     >
     <br />
     <br />

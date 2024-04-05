@@ -8,11 +8,6 @@ pub fn get_outputs() -> Vec<String> {
 }
 
 #[wasm_bindgen]
-pub fn get_id() -> String {
-    "float".to_string()
-}
-
-#[wasm_bindgen]
 pub fn get_input_types() -> String {
     utils::set_panic_hook();
     r#"{

@@ -35,10 +35,9 @@ export async function getNode(id: `${string}/${string}/${string}`) {
 
   const wrapper = await getNodeWasm(id);
 
-  const node_id = wrapper.get_id();
   const outputs = wrapper.get_outputs();
   const inputTypes = JSON.parse(wrapper.get_input_types());
 
-  return { id: node_id, outputs, inputs: inputTypes }
+  return { id, outputs, inputs: inputTypes }
 
 }

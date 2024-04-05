@@ -9,15 +9,10 @@ pub fn get_outputs() -> Vec<String> {
 }
 
 #[wasm_bindgen]
-pub fn get_id() -> String {
-    "math".to_string()
-}
-
-#[wasm_bindgen]
 pub fn get_input_types() -> String {
     utils::set_panic_hook();
     r#"{
-        "op_type": { "type": "select", "labels": ["add", "subtract", "multiply", "divide"], "internal": true, "value": 0 },
+        "op_type": { "label": "type", "type": "select", "labels": ["add", "subtract", "multiply", "divide"], "internal": true, "value": 0 },
         "a": { "type": "float", "value": 2 },
         "b": { "type": "float", "value": 2 }
     }"#.to_string()
@@ -44,7 +39,7 @@ pub fn execute(var_op_type: u8, var_a: JsValue, var_b: JsValue) -> String {
 
     // Interpolate strings into JSON format
     let json_string = format!(
-        r#"{{"parameter": "math", "op_type": {}, "a": {}, "b": {}}}"#,
+        r#"{{"__type": "math", "op_type": {}, "a": {}, "b": {}}}"#,
         var_op_type, a, b
     );
 

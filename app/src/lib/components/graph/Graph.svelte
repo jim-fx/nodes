@@ -111,7 +111,8 @@
     if (!node?.inputs) {
       return 5;
     }
-    const height = 5 + 10 * Object.keys(node.inputs).length;
+    const height =
+      5 + 10 * Object.keys(node.inputs).filter((i) => i !== "seed").length;
     nodeHeightCache[nodeTypeId] = height;
     return height;
   }
@@ -385,6 +386,17 @@
 
   function handleMouseDown(event: MouseEvent) {
     if (mouseDown) return;
+
+    if (event.target instanceof HTMLElement) {
+      if (
+        event.target.nodeName !== "CANVAS" &&
+        !event.target.classList.contains("node") &&
+        !event.target.classList.contains("content")
+      ) {
+        return;
+      }
+    }
+
     mouseDown = [event.clientX, event.clientY];
     cameraDown[0] = cameraPosition[0];
     cameraDown[1] = cameraPosition[1];

@@ -1,11 +1,10 @@
 import type { NodeRegistry, NodeType } from "@nodes/types";
 
-import * as d from "plantarium-nodes-math";
 import { createLogger } from "./helpers";
 
 const nodeTypes: NodeType[] = [
   {
-    id: "max/plantarium/input-float",
+    id: "max/plantarium/float",
     inputs: {
       "value": { type: "float", value: 0.1, internal: true },
     },
@@ -48,6 +47,8 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   async load(nodeIds: string[]) {
     const a = performance.now();
+    nodeIds.push("max/plantarium/random");
+    nodeIds.push("max/plantarium/float");
     for (const id of nodeIds) {
       const nodeUrl = `${this.url}/n/${id}`;
       const response = await fetch(nodeUrl);
@@ -70,10 +71,7 @@ wasm = val;`);
         throw new Error(`Failed to load node ${id}`);
       }
       const node = await response.json();
-      node.execute = (...args) => {
-        console.log("Executing", id, args);
-        return wasmWrapper.execute(...args)
-      };
+      node.execute = wasmWrapper.execute;
       this.nodes.set(id, node);
     }
 

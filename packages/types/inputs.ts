@@ -24,13 +24,17 @@ type NodeInputSelect = {
   value?: number;
 }
 
+type NodeInputSeed = {
+  type: "seed"
+}
+
 type DefaultOptions = {
   internal?: boolean;
   external?: boolean;
-  title?: string;
+  label?: string;
 }
 
-export type NodeInput = (NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;
+export type NodeInput = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;
 
 
 export type NodeInputType<T extends Record<string, NodeInput>> = {

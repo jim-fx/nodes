@@ -1,14 +1,17 @@
 mod utils;
+use plantarium::{unwrap_int, unwrap_string};
 use wasm_bindgen::prelude::*;
+
+// lifted from the `console_log` example
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
 
 #[wasm_bindgen]
 pub fn get_outputs() -> Vec<String> {
     vec!["float".to_string()]
-}
-
-#[wasm_bindgen]
-pub fn get_id() -> String {
-    "random".to_string()
 }
 
 #[wasm_bindgen]
@@ -23,13 +26,36 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_min: String, var_max: String, var_seed: i32) -> String {
+pub fn execute(var_min: JsValue, var_max: JsValue, var_seed: JsValue) -> String {
     utils::set_panic_hook();
+
+    let min: String;
+    if var_min.is_string() {
+        min = unwrap_string(var_min);
+    } else {
+        min = unwrap_int(var_min).to_string();
+    }
+
+    let max: String;
+    if var_max.is_string() {
+        max = unwrap_string(var_max);
+    } else {
+        max = unwrap_int(var_max).to_string();
+    }
+
+    let seed: String;
+    if var_seed.is_string() {
+        seed = unwrap_string(var_seed);
+    } else {
+        seed = unwrap_int(var_seed).to_string();
+    }
+
+    log(&format!("min: {}, max: {}, seed: {}", min, max, seed));
 
     // Interpolate strings into JSON format
     let json_string = format!(
-        r#"{{"parameter": "random", "min": {}, "max": {}, "seed": {}}}"#,
-        var_min, var_max, var_seed
+        r#"{{"__type": "random", "min": {}, "max": {}, "seed": {}}}"#,
+        min, max, seed
     );
 
     json_string

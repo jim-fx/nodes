@@ -20,8 +20,8 @@ export function grid(width: number, height: number) {
         visible: false,
       },
       position: [x * 30, y * 40],
-      props: i == 0 ? { value: 0 } : { op_type: 1, a: 2, b: i },
-      type: i == 0 ? "max/plantarium/input-float" : "max/plantarium/math",
+      props: i == 0 ? { value: 0 } : { op_type: 2, a: 2, b: 2 },
+      type: i == 0 ? "max/plantarium/float" : "max/plantarium/math",
     });
 
     graph.edges.push([i, 0, i + 1, i === amount - 1 ? "input" : "a",]);
