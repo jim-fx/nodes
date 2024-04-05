@@ -26,6 +26,7 @@ type NodeInputSelect = {
 
 type DefaultOptions = {
   internal?: boolean;
+  external?: boolean;
   title?: string;
 }
 

@@ -23,7 +23,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // First, lets check if all nodes have a type
     const typeMap = this.getNodeTypes(graph);
 
-    const outputNode = graph.nodes.find(node => node.type === "output");
+    const outputNode = graph.nodes.find(node => node.type.endsWith("/output"));
     if (!outputNode) {
       throw new Error("No output node found");
     }
@@ -125,13 +125,13 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         }
 
         // execute the node and store the result
-        results[node.id] = node.tmp.type.execute(inputs) as number;;
+        results[node.id] = node.tmp.type.execute(...Object.values(inputs)) as number;
 
       }
     }
 
     // return the result of the parent of the output node
-    const res = results[outputNode.tmp?.parents?.[0].id as number] as string
+    const res = results[outputNode.id] as string
 
 
     return res;

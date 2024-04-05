@@ -5,17 +5,19 @@
 
   export let node: Node;
   export let input: NodeInput;
-  export let label: string;
+  export let id: string;
+  export let label: string | undefined;
 
   const graph = getGraphManager();
 
-  let value = node?.props?.[label] ?? input.value;
+  let value = node?.props?.[id] ?? input.value;
 
-  $: if (node?.props?.[label] !== value) {
-    node.props = { ...node.props, [label]: value };
+  $: if (node?.props?.[id] !== value) {
+    node.props = { ...node.props, [id]: value };
+    graph.save();
     graph.execute();
   }
 </script>
 
-<label for="asd">{label}</label>
+<label for="asd">{label || id}</label>
 <Input {input} bind:value />

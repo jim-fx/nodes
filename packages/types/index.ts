@@ -34,7 +34,7 @@ export type NodeType = {
   meta?: {
     title?: string;
   },
-  execute?: (inputs: Record<string, string | number | boolean>) => unknown;
+  execute?: (...args: (string | number | boolean)[]) => unknown;
 }
 
 export type Socket = {

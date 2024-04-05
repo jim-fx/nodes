@@ -1,6 +1,7 @@
 import type { NodeRegistry, NodeType } from "@nodes/types";
 
 import * as d from "plantarium-nodes-math";
+import { createLogger } from "./helpers";
 
 const nodeTypes: NodeType[] = [
   {
@@ -9,7 +10,7 @@ const nodeTypes: NodeType[] = [
       "value": { type: "float", value: 0.1, internal: true },
     },
     outputs: ["float"],
-    execute: ({ value }) => { return [0, value] }
+    execute: (value) => { return value; }
   },
   {
     id: "max/plantarium/math",
@@ -19,7 +20,7 @@ const nodeTypes: NodeType[] = [
       "b": { type: "float" },
     },
     outputs: ["float"],
-    execute: ({ op_type, a, b }: { op_type: number, a: number, b: number }) => {
+    execute: (op_type: number, a: number, b: number) => {
       switch (op_type) {
         case 0: return a + b;
         case 1: return a - b;
@@ -29,7 +30,7 @@ const nodeTypes: NodeType[] = [
     }
   },
   {
-    id: "output",
+    id: "max/plantarium/output",
     inputs: {
       "input": { type: "float" },
     },
@@ -37,6 +38,8 @@ const nodeTypes: NodeType[] = [
   }
 ]
 
+
+const log = createLogger("node-registry");
 export class RemoteNodeRegistry implements NodeRegistry {
 
   private nodes: Map<string, NodeType> = new Map();
@@ -44,13 +47,39 @@ export class RemoteNodeRegistry implements NodeRegistry {
   constructor(private url: string) { }
 
   async load(nodeIds: string[]) {
+    const a = performance.now();
     for (const id of nodeIds) {
-      const response = await fetch(`${this.url}/nodes/${id}`);
-      const node = this.getNode(id);
-      if (node) {
-        this.nodes.set(id, node);
+      const nodeUrl = `${this.url}/n/${id}`;
+      const response = await fetch(nodeUrl);
+      const wasmResponse = await fetch(`${nodeUrl}/wasm`);
+      const wrapperReponse = await fetch(`${nodeUrl}/wrapper`);
+      if (!wrapperReponse.ok) {
+        throw new Error(`Failed to load node ${id}`);
       }
+
+      let wrapperCode = await wrapperReponse.text();
+      wrapperCode = wrapperCode.replace("wasm = val;", `if(wasm) return;
+wasm = val;`);
+      const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}`);
+
+      const module = new WebAssembly.Module(await wasmResponse.arrayBuffer());
+      const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wasmWrapper });
+      wasmWrapper.__wbg_set_wasm(instance.exports);
+
+      if (!response.ok) {
+        throw new Error(`Failed to load node ${id}`);
+      }
+      const node = await response.json();
+      node.execute = (...args) => {
+        console.log("Executing", id, args);
+        return wasmWrapper.execute(...args)
+      };
+      this.nodes.set(id, node);
     }
+
+    const duration = performance.now() - a;
+
+    log.log("loaded nodes in", duration, "ms");
   }
 
   getNode(id: string) {

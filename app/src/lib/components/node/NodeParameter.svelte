@@ -5,6 +5,7 @@
   import { possibleSocketIds } from "../graph/stores";
   import { getGraphManager } from "../graph/context";
   import NodeInput from "./NodeInput.svelte";
+  import Node from "./Node.svelte";
 
   export let node: Node;
   export let input: NodeInputType;
@@ -68,9 +69,11 @@
   class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
-    <div class="content" class:disabled={$inputSockets.has(socketId)}>
-      <NodeInput {node} {input} label={input?.title || id} />
-    </div>
+    {#if node?.tmp?.type?.inputs?.[id]?.external !== true}
+      <div class="content" class:disabled={$inputSockets.has(socketId)}>
+        <NodeInput {node} {input} {id} label={input.title} />
+      </div>
+    {/if}
 
     {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}
       <div

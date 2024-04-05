@@ -5,7 +5,7 @@ export function tree(depth: number): Graph {
   const nodes: Node[] = [
     {
       id: 0,
-      type: "output",
+      type: "max/plantarium/output",
       position: [0, 0]
     },
     {

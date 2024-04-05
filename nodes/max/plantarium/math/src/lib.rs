@@ -24,13 +24,28 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_op_type: u8, var_a: String, var_b: String) -> String {
+pub fn execute(var_op_type: u8, var_a: JsValue, var_b: JsValue) -> String {
     utils::set_panic_hook();
+
+    let a: String;
+    let b: String;
+
+    if var_a.is_string() {
+        a = unwrap_string(var_a);
+    } else {
+        a = unwrap_float(var_a).to_string();
+    }
+
+    if var_b.is_string() {
+        b = unwrap_string(var_b);
+    } else {
+        b = unwrap_float(var_b).to_string();
+    }
 
     // Interpolate strings into JSON format
     let json_string = format!(
         r#"{{"parameter": "math", "op_type": {}, "a": {}, "b": {}}}"#,
-        var_op_type, var_a, var_b
+        var_op_type, a, b
     );
 
     json_string

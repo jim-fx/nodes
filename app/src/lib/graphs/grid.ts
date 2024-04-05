@@ -33,7 +33,7 @@ export function grid(width: number, height: number) {
       visible: false,
     },
     position: [width * 30, (height - 1) * 40],
-    type: "output",
+    type: "max/plantarium/output",
     props: {},
   });
 

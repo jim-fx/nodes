@@ -17,5 +17,5 @@
 {:else if input.type === "boolean"}
   <Checkbox bind:value />
 {:else if input.type === "select"}
-  <Select labels={input.labels} bind:value />
+  <Select bind:value labels={input.labels} />
 {/if}

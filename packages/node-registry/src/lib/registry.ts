@@ -1,16 +1,25 @@
 export async function getNodeWrapper(id: `${string}/${string}/${string}`) {
 
-  let wrapperCode = await (await fetch(`/${id}/wrapper`)).text();
+  const wrapperReponse = await fetch(`/n/${id}/wrapper`);
+  if (!wrapperReponse.ok) {
+    throw new Error(`Failed to load node ${id}`);
+  }
+
+  let wrapperCode = await wrapperReponse.text();
   wrapperCode = wrapperCode.replace("wasm = val;", `if(wasm) return;
 wasm = val;`);
-  const wasmWrapper = await import(/*vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}`);
+  const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}`);
 
   return wasmWrapper;
 }
 
 export async function getNodeWasm(id: `${string}/${string}/${string}`): Promise<WebAssembly.Instance> {
 
-  const wasmResponse = await fetch(`/${id}/wasm`);
+  const wasmResponse = await fetch(`/n/${id}/wasm`);
+
+  if (!wasmResponse.ok) {
+    throw new Error(`Failed to load node ${id}`);
+  }
 
   const wasmWrapper = await getNodeWrapper(id);
 

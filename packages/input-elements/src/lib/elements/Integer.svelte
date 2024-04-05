@@ -7,3 +7,13 @@
 
 <input type="number" bind:value {min} {max} {step} />
 
+<style>
+  input {
+    background: var(--background-color-lighter);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    padding: 0.8em 1em;
+    border-radius: 5px;
+    border: none;
+  }
+</style>

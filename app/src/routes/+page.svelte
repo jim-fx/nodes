@@ -3,12 +3,14 @@
   import { GraphManager } from "$lib/graph-manager";
   import Graph from "$lib/components/graph/Graph.svelte";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
-  import { MemoryNodeRegistry } from "$lib/node-registry";
+  import { MemoryNodeRegistry, RemoteNodeRegistry } from "$lib/node-registry";
   import { LinearSRGBColorSpace } from "three";
   import Details from "$lib/components/Details.svelte";
   import { JsonView } from "@zerodevx/svelte-json-view";
 
-  const nodeRegistry = new MemoryNodeRegistry();
+  const memNodeRegistry = new MemoryNodeRegistry();
+  const nodeRegistry = new RemoteNodeRegistry("http://localhost:5174");
+
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
   const graphManager = new GraphManager(nodeRegistry, runtimeExecutor);
