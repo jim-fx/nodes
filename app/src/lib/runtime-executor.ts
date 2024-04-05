@@ -1,93 +1,6 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
 
 
-function numberToBinaryArray(number: number): number[] {
-  const binaryArray: number[] = [];
-  for (let i = 31; i >= 0; i--) {
-    const bit = (number >> i) & 1;
-    binaryArray.push(bit);
-  }
-  return binaryArray;
-}
-
-function evaluate_node([node_type, ...args]: number[]) {
-
-  // Float node
-  if (node_type === 0) {
-    return args[0];
-  }
-
-  console.log(args);
-
-  // Math node
-  if (node_type === 1) {
-    if (args[0] === 0) {
-      return args[1] + args[2];
-    } else if (args[0] === 1) {
-      return args[1] - args[2];
-    } else if (args[0] === 2) {
-      return args[1] * args[1];
-    } else {
-      return args[1] / args[2];
-    }
-  }
-}
-
-
-function read_node(index: number, params: number[], depth = 0) {
-  if (depth > 20) {
-    throw new Error("Max depth reached");
-  }
-
-  const node_type = params[index];
-  const amount_of_args = params[index + 1];
-  const bitmask = params[index + 2];
-  console.log("READ_NODE", index, { node_type, bitmask, amount_of_args });
-
-  const mask = numberToBinaryArray(bitmask);
-
-  // there are not nodes connected to this node, lets evaluate
-  if (bitmask === 0) {
-    console.log("EVALUATE", index, params);
-  }
-
-  const args = [];
-
-  for (let i = 0; i < amount_of_args; i++) {
-    const isNode = mask[i] === 1;
-    if (isNode) {
-      console.log("NODE", index + 3 + i, params.slice(index + 3 + i, index + 3 + i + 5));
-      args[i] = read_node(params[index + 3 + i], params, depth + 1);
-    } else {
-      args[i] = params[index + 3 + i];
-    }
-  }
-
-  console.log({ node_type, amount_of_args, args, bitmask });
-  return evaluate_node([node_type, ...args]);
-
-}
-
-function split_params(params: number[]) {
-  const result = [];
-  let index = 0;
-  while (index < params.length) {
-    const amount_of_args = params[index + 1];
-    const node_size = 3 + amount_of_args;
-    result.push(params.slice(index, index + node_size));
-    index += node_size;
-  }
-  return result;
-}
-
-function evaluate(params: number[]) {
-  console.log("PARAMS", split_params(params));
-  const node = read_node(0, params);
-
-  console.log("RESULT: ", node);
-
-}
-
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   constructor(private registry: NodeRegistry) { }
@@ -219,8 +132,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     // return the result of the parent of the output node
     const res = results[outputNode.tmp?.parents?.[0].id as number] as string
-
-    evaluate(res);
 
 
     return res;

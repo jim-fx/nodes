@@ -1,12 +1,6 @@
 import type { NodeRegistry, NodeType } from "@nodes/types";
 
-function binaryArrayToNumber(binaryArray: number[]): number {
-  let result = 0;
-  for (let i = 0; i < binaryArray.length; i++) {
-    result = (result << 1) + binaryArray[i];
-  }
-  return result;
-}
+import * as d from "plantarium-nodes-math";
 
 const nodeTypes: NodeType[] = [
   {
@@ -15,7 +9,7 @@ const nodeTypes: NodeType[] = [
       "value": { type: "float", value: 0.1, internal: true },
     },
     outputs: ["float"],
-    execute: ({ value }) => { return [0, 1, 0, value] }
+    execute: ({ value }) => { return [0, value] }
   },
   {
     id: "max/plantarium/math",
@@ -26,33 +20,12 @@ const nodeTypes: NodeType[] = [
     },
     outputs: ["float"],
     execute: ({ op_type, a, b }: { op_type: number, a: number, b: number }) => {
-
-      const res = [1, 3, -1, op_type, 0, 0];
-
-      const bitmask = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-      console.log({ a, b });
-
-      if (Array.isArray(a)) {
-        res[4] = res.length;
-        res.push(...a);
-        bitmask[1] = 1;
-        console.log("A", res.length, a.length);
-      } else {
-        res[4] = a;
+      switch (op_type) {
+        case 0: return a + b;
+        case 1: return a - b;
+        case 2: return a * b;
+        case 3: return a / b;
       }
-
-      if (Array.isArray(b)) {
-        res[5] = res.length;
-        res.push(...b);
-        bitmask[2] = 1;
-      } else {
-        res[5] = b;
-      }
-
-      res[2] = binaryArrayToNumber(bitmask);
-
-      return res
     }
   },
   {
