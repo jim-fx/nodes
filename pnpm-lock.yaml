@@ -10,9 +10,12 @@ importers:
 
   app:
     dependencies:
-      '@nodes/input-elements':
-        specifier: link:../packages/input-elements
-        version: link:../packages/input-elements
+      '@nodes/graph-interface':
+        specifier: link:../packages/graph-interface
+        version: link:../packages/graph-interface
+      '@nodes/ui':
+        specifier: link:../packages/ui
+        version: link:../packages/ui
       '@sveltejs/kit':
         specifier: ^2.5.0
         version: 2.5.2(@sveltejs/vite-plugin-svelte@3.0.2)(svelte@4.2.12)(vite@5.1.4)
@@ -34,24 +37,9 @@ importers:
       '@types/three':
         specifier: ^0.159.0
         version: 0.159.0
-      input-elements:
-        specifier: link:../packages/input-elements
-        version: link:../packages/input-elements
-      jsondiffpatch:
-        specifier: ^0.6.0
-        version: 0.6.0
-      meshline:
-        specifier: ^3.2.0
-        version: 3.2.0(three@0.159.0)
-      plantarium-nodes-math:
-        specifier: link:../nodes/max/plantarium/math/pkg
-        version: link:../nodes/max/plantarium/math/pkg
       three:
         specifier: ^0.159.0
         version: 0.159.0
-      three.meshline:
-        specifier: ^1.4.0
-        version: 1.4.0
     devDependencies:
       '@histoire/plugin-svelte':
         specifier: ^0.17.9
@@ -102,22 +90,55 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0(vite@5.1.4)
 
+  nodes/max/plantarium/float: {}
+
+  nodes/max/plantarium/float/pkg: {}
+
   nodes/max/plantarium/math: {}
 
   nodes/max/plantarium/math/pkg: {}
 
-  nodes/max/plantarium/random: {}
+  nodes/max/plantarium/output: {}
 
-  nodes/max/plantarium/random/old-pkg: {}
+  nodes/max/plantarium/output/pkg: {}
+
+  nodes/max/plantarium/random: {}
 
   nodes/max/plantarium/random/pkg: {}
 
-  packages/input-elements:
+  packages/graph-interface:
     dependencies:
       '@nodes/types':
         specifier: link:../types
         version: link:../types
+      '@nodes/ui':
+        specifier: link:../ui
+        version: link:../ui
+      '@threlte/core':
+        specifier: ^7.1.0
+        version: 7.1.0(svelte@4.2.12)(three@0.159.0)
+      '@threlte/extras':
+        specifier: ^8.7.5
+        version: 8.8.0(svelte@4.2.12)(three@0.159.0)
+      '@threlte/flex':
+        specifier: ^1.0.1
+        version: 1.0.1(svelte@4.2.12)(three@0.159.0)
+      '@types/three':
+        specifier: ^0.159.0
+        version: 0.159.0
+      jsondiffpatch:
+        specifier: ^0.6.0
+        version: 0.6.0
+      three:
+        specifier: ^0.159.0
+        version: 0.159.0
+      vite-plugin-glsl:
+        specifier: ^1.2.1
+        version: 1.2.1(vite@5.1.4)
     devDependencies:
+      '@histoire/plugin-svelte':
+        specifier: ^0.17.9
+        version: 0.17.9(histoire@0.17.9)(svelte@4.2.12)(vite@5.1.4)
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
         version: 3.2.0(@sveltejs/kit@2.5.2)
@@ -142,9 +163,18 @@ importers:
       eslint:
         specifier: ^8.56.0
         version: 8.57.0
+      eslint-config-prettier:
+        specifier: ^9.1.0
+        version: 9.1.0(eslint@8.57.0)
       eslint-plugin-svelte:
         specifier: ^2.35.1
         version: 2.35.1(eslint@8.57.0)(svelte@4.2.12)
+      prettier:
+        specifier: ^3.1.1
+        version: 3.2.5
+      prettier-plugin-svelte:
+        specifier: ^3.1.2
+        version: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       publint:
         specifier: ^0.1.9
         version: 0.1.16
@@ -163,9 +193,6 @@ importers:
       vite:
         specifier: ^5.0.11
         version: 5.1.4
-      vitest:
-        specifier: ^1.2.0
-        version: 1.4.0
 
   packages/node-registry:
     dependencies:
@@ -231,6 +258,61 @@ importers:
   packages/node-registry-client: {}
 
   packages/types: {}
+
+  packages/ui:
+    dependencies:
+      '@nodes/types':
+        specifier: link:../types
+        version: link:../types
+    devDependencies:
+      '@sveltejs/adapter-auto':
+        specifier: ^3.0.0
+        version: 3.2.0(@sveltejs/kit@2.5.2)
+      '@sveltejs/kit':
+        specifier: ^2.0.0
+        version: 2.5.2(@sveltejs/vite-plugin-svelte@3.0.2)(svelte@4.2.12)(vite@5.1.4)
+      '@sveltejs/package':
+        specifier: ^2.0.0
+        version: 2.3.0(svelte@4.2.12)(typescript@5.3.3)
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.0.0
+        version: 3.0.2(svelte@4.2.12)(vite@5.1.4)
+      '@types/eslint':
+        specifier: ^8.56.0
+        version: 8.56.7
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^7.0.0
+        version: 7.5.0(@typescript-eslint/parser@7.5.0)(eslint@8.57.0)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^7.0.0
+        version: 7.5.0(eslint@8.57.0)(typescript@5.3.3)
+      eslint:
+        specifier: ^8.56.0
+        version: 8.57.0
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.35.1(eslint@8.57.0)(svelte@4.2.12)
+      publint:
+        specifier: ^0.1.9
+        version: 0.1.16
+      svelte:
+        specifier: ^4.2.7
+        version: 4.2.12
+      svelte-check:
+        specifier: ^3.6.0
+        version: 3.6.4(postcss@8.4.35)(svelte@4.2.12)
+      tslib:
+        specifier: ^2.4.1
+        version: 2.6.2
+      typescript:
+        specifier: ^5.0.0
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.11
+        version: 5.1.4
+      vitest:
+        specifier: ^1.2.0
+        version: 1.4.0
 
 packages:
 
@@ -706,7 +788,6 @@ packages:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
-    dev: true
 
   /@rollup/rollup-android-arm-eabi@4.12.0:
     resolution: {integrity: sha512-+ac02NL/2TCKRrJu2wffk1kZ+RyqxVUlbjSagNgPm94frxtr+XDL12E5Ll1enWskLrtrZ2r8L3wED1orIibV/w==}
@@ -1997,7 +2078,6 @@ packages:
 
   /estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
-    dev: true
 
   /estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
@@ -2739,14 +2819,6 @@ packages:
     engines: {node: '>= 8'}
     dev: true
 
-  /meshline@3.2.0(three@0.159.0):
-    resolution: {integrity: sha512-ZaJkC967GTuef7UBdO0rGPX544oIWaNo7tYedVHSoR2lje6RR16fX8IsgMxgxoYYERtjqsRWIYBSPBxG4QR84Q==}
-    peerDependencies:
-      three: '>=0.137'
-    dependencies:
-      three: 0.159.0
-    dev: false
-
   /meshoptimizer@0.18.1:
     resolution: {integrity: sha512-ZhoIoL7TNV4s5B6+rx5mC//fw8/POGyNxS/DZyCJeiZ12ScLfVwRE/GfsxwiTkMYYD5DmK2/JXnEVXqL4rF+Sw==}
     dev: false
@@ -3076,7 +3148,6 @@ packages:
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
-    dev: true
 
   /pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
@@ -3624,10 +3695,6 @@ packages:
       tweakpane: 3.1.10
     dev: false
 
-  /three.meshline@1.4.0:
-    resolution: {integrity: sha512-A8IsiMrWP8zmHisGDAJ76ZD7t/dOF/oCe/FUKNE6Bu01ZYEx8N6IlU/1Plb2aOZtAuWM2A8s8qS3hvY0OFuvOw==}
-    dev: false
-
   /three@0.159.0:
     resolution: {integrity: sha512-eCmhlLGbBgucuo4VEA9IO3Qpc7dh8Bd4VKzr7WfW4+8hMcIfoAVi1ev0pJYN9PTTsCslbcKgBwr2wNZ1EvLInA==}
     dev: false
@@ -3882,7 +3949,6 @@ packages:
       vite: 5.1.4
     transitivePeerDependencies:
       - rollup
-    dev: true
 
   /vite-plugin-wasm@3.3.0(vite@5.1.4):
     resolution: {integrity: sha512-tVhz6w+W9MVsOCHzxo6SSMSswCeIw4HTrXEi6qL3IRzATl83jl09JVO1djBqPSwfjgnpVHNLYcaMbaDX5WB/pg==}

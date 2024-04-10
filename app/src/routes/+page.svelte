@@ -1,63 +1,46 @@
 <script lang="ts">
   import Grid from "$lib/grid";
-  import Graph from "$lib/components/graph";
-  import { GraphManager } from "$lib/graph-manager";
+  import Graph from "@nodes/graph-interface";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry, RemoteNodeRegistry } from "$lib/node-registry";
-  import Details from "$lib/components/Details.svelte";
-  import { JsonView } from "@zerodevx/svelte-json-view";
+  import * as templates from "$lib/graph-templates";
 
   const memNodeRegistry = new MemoryNodeRegistry();
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
-
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
-  const graphManager = new GraphManager(nodeRegistry, runtimeExecutor);
+  let res = 0;
 
-  let graph = localStorage.getItem("graph");
-  if (graph) {
-    graphManager.load(JSON.parse(graph));
-  } else {
-    graphManager.load(graphManager.createTemplate("tree", 5));
+  let graph = localStorage.getItem("graph")
+    ? JSON.parse(localStorage.getItem("graph")!)
+    : templates.grid(3, 3);
+
+  function handleResult(event) {
+    console.log("Res", event);
+    res = runtimeExecutor.execute(event.detail);
+    console.log(res);
   }
 
-  graphManager.on("save", (graph) => {
-    localStorage.setItem("graph", JSON.stringify(graph));
-  });
-
-  let debug: undefined;
+  function handleSave(event) {
+    localStorage.setItem("graph", JSON.stringify(event.detail));
+  }
 </script>
-
-<div class="details-wrapper">
-  <Details>
-    <button
-      on:click={() => graphManager.load(graphManager.createTemplate("tree", 5))}
-      >load tree</button
-    >
-    <br />
-    <br />
-    <button
-      on:click={() =>
-        graphManager.load(graphManager.createTemplate("grid", 10, 10))}
-      >load grid</button
-    >
-    <button
-      on:click={() =>
-        graphManager.load(graphManager.createTemplate("grid", 2, 2))}
-      >load small grid</button
-    >
-    <br />
-    <br />
-    <JsonView json={debug} />
-  </Details>
-</div>
 
 <div class="wrapper">
   <header>header</header>
   <Grid.Row>
-    <Grid.Cell></Grid.Cell>
     <Grid.Cell>
-      <Graph manager={graphManager} />
+      {res}
+    </Grid.Cell>
+    <Grid.Cell>
+      {#key graph}
+        <Graph
+          registry={nodeRegistry}
+          {graph}
+          on:result={handleResult}
+          on:save={handleSave}
+        />
+      {/key}
     </Grid.Cell>
   </Grid.Row>
 </div>
@@ -76,10 +59,10 @@
   }
 
   .details-wrapper {
-    position: absolute;
+    position: fixed;
     z-index: 100;
-    top: 10px;
-    left: 10px;
+    bottom: 10px;
+    right: 10px;
   }
 
   :global(html) {

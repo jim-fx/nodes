@@ -13,7 +13,8 @@
     "story:preview": "histoire preview"
   },
   "dependencies": {
-    "@nodes/input-elements": "link:../packages/input-elements",
+    "@nodes/graph-interface": "link:../packages/graph-interface",
+    "@nodes/ui": "link:../packages/ui",
     "@sveltejs/kit": "^2.5.0",
     "@tauri-apps/api": "2.0.0-beta.2",
     "@tauri-apps/plugin-shell": "^2.0.0-beta.0",
@@ -21,12 +22,7 @@
     "@threlte/extras": "^8.7.5",
     "@threlte/flex": "^1.0.1",
     "@types/three": "^0.159.0",
-    "input-elements": "link:../packages/input-elements",
-    "jsondiffpatch": "^0.6.0",
-    "meshline": "^3.2.0",
-    "plantarium-nodes-math": "link:../nodes/max/plantarium/math/pkg",
-    "three": "^0.159.0",
-    "three.meshline": "^1.4.0"
+    "three": "^0.159.0"
   },
   "devDependencies": {
     "@histoire/plugin-svelte": "^0.17.9",

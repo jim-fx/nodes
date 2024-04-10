@@ -2,7 +2,7 @@
   import { setContext, getContext } from "svelte";
   import localStore from "$lib/helpers/localStore";
 
-  const gridId = getContext<string>("grid-id");
+  const gridId = getContext<string>("grid-id") || "grid-0";
   let sizes = localStore<string[]>(gridId, []);
 
   let registerIndex = 0;
