@@ -51,6 +51,9 @@ export class RemoteNodeRegistry implements NodeRegistry {
     const a = performance.now();
     nodeIds.push("max/plantarium/random");
     nodeIds.push("max/plantarium/float");
+    nodeIds.push("max/plantarium/array");
+    nodeIds.push("max/plantarium/sum");
+
     for (const id of nodeIds) {
       const nodeUrl = `${this.url}/n/${id}`;
       const response = await fetch(nodeUrl);
@@ -95,6 +98,8 @@ wasm = val;`);
 }
 
 export class MemoryNodeRegistry implements NodeRegistry {
+
+  status: "loading" | "ready" | "error" = "ready";
 
   async load(nodeIds: string[]) {
     // Do nothing

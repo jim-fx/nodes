@@ -135,7 +135,12 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         }
 
         // execute the node and store the result
-        results[node.id] = node.tmp.type.execute(...Object.values(inputs)) as number;
+        try {
+          console.log(`Executing node ${node.tmp.type.id || node.id}`, inputs);
+          results[node.id] = node.tmp.type.execute(...Object.values(inputs)) as number;
+        } catch (e) {
+          console.error(`Error executing node ${node.tmp.type.id || node.id}`, e);
+        }
 
       }
     }

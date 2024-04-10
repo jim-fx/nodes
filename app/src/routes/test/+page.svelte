@@ -8,7 +8,8 @@
   console.log("INPUT");
   console.log(input);
 
-  const encoded = encode(input);
+  let encoded = encode(input);
+  encoded = [0, 3, 5, ...encoded.slice(2).slice(0, -4), 5, 5, 1, 1];
   console.log("ENCODED");
   console.log(encoded);
 

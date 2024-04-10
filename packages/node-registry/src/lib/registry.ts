@@ -36,8 +36,13 @@ export async function getNode(id: `${string}/${string}/${string}`) {
   const wrapper = await getNodeWasm(id);
 
   const outputs = wrapper.get_outputs();
-  const inputTypes = JSON.parse(wrapper.get_input_types());
+  const rawInputs = wrapper.get_input_types();
+  try {
+    const inputTypes = JSON.parse(rawInputs);
+    return { id, outputs, inputs: inputTypes }
+  } catch (e) {
+    console.log("Failed to parse input types for node", { id, rawInputs });
+  }
 
-  return { id, outputs, inputs: inputTypes }
 
 }

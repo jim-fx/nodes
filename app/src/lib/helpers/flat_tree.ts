@@ -1,4 +1,3 @@
-
 type SparseArray<T = number> = (T | T[] | SparseArray<T>)[];
 
 // Encodes a nested array into a flat array with bracket and distance notation

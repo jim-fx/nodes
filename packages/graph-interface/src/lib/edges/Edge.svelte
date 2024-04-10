@@ -27,7 +27,7 @@
   import { Color } from "three/src/math/Color.js";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
-  import { createEdgeGeometry } from "./createEdgeGeometry";
+  import { createEdgeGeometry } from "./createEdgeGeometry.js";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
