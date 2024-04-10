@@ -14,7 +14,7 @@ const nodeTypes: NodeType[] = [
   {
     id: "max/plantarium/math",
     inputs: {
-      "op_type": { title: "type", type: "select", labels: ["add", "subtract", "multiply", "divide"], value: 0 },
+      "op_type": { label: "type", type: "select", labels: ["add", "subtract", "multiply", "divide"], value: 0 },
       "a": { type: "float" },
       "b": { type: "float" },
     },

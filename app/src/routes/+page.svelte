@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { Canvas } from "@threlte/core";
+  import Grid from "$lib/grid";
+  import Graph from "$lib/components/graph";
   import { GraphManager } from "$lib/graph-manager";
-  import Graph from "$lib/components/graph/Graph.svelte";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry, RemoteNodeRegistry } from "$lib/node-registry";
-  import { LinearSRGBColorSpace } from "three";
   import Details from "$lib/components/Details.svelte";
   import { JsonView } from "@zerodevx/svelte-json-view";
 
   const memNodeRegistry = new MemoryNodeRegistry();
-  const nodeRegistry = new RemoteNodeRegistry("http://localhost:5174");
+  const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
 
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
@@ -29,7 +28,7 @@
   let debug: undefined;
 </script>
 
-<div class="wrapper">
+<div class="details-wrapper">
   <Details>
     <button
       on:click={() => graphManager.load(graphManager.createTemplate("tree", 5))}
@@ -53,24 +52,30 @@
   </Details>
 </div>
 
-<div id="canvas-wrapper">
-  <Canvas
-    shadows={false}
-    renderMode="on-demand"
-    colorManagementEnabled={false}
-    colorSpace={LinearSRGBColorSpace}
-  >
-    <!-- <PerfMonitor /> -->
-    <Graph graph={graphManager} bind:debug />
-  </Canvas>
+<div class="wrapper">
+  <header>header</header>
+  <Grid.Row>
+    <Grid.Cell></Grid.Cell>
+    <Grid.Cell>
+      <Graph manager={graphManager} />
+    </Grid.Cell>
+  </Grid.Row>
 </div>
 
 <style>
-  #canvas-wrapper {
-    height: 100vh;
+  header {
+    border-bottom: solid thin white;
   }
 
   .wrapper {
+    height: 100vh;
+    width: 100vw;
+    color: white;
+    display: grid;
+    grid-template-rows: 50px 1fr;
+  }
+
+  .details-wrapper {
     position: absolute;
     z-index: 100;
     top: 10px;
@@ -89,7 +94,5 @@
   :global(body) {
     margin: 0;
     position: relative;
-    width: 100vw;
-    height: 100vh;
   }
 </style>

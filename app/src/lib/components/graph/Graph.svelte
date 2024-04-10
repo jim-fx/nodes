@@ -1,5 +1,7 @@
 <script lang="ts">
   import { animate, lerp, snapToGrid } from "$lib/helpers";
+  import { LinearSRGBColorSpace } from "three";
+  import { Canvas } from "@threlte/core";
   import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
   import type { GraphManager } from "$lib/graph-manager";
@@ -25,6 +27,12 @@
   const nodes = graph.nodes;
   const edges = graph.edges;
   const graphId = graph.id;
+
+  let wrapper: HTMLDivElement;
+  $: rect =
+    wrapper && width
+      ? wrapper.getBoundingClientRect()
+      : { x: 0, y: 0, width: 0, height: 0 };
 
   let camera: OrthographicCamera;
   const minZoom = 1;
@@ -132,6 +140,9 @@
   function getNodeIdFromEvent(event: MouseEvent) {
     let clickedNodeId = -1;
 
+    let mx = event.clientX - rect.x;
+    let my = event.clientY - rect.y;
+
     if (event.button === 0) {
       // check if the clicked element is a node
       if (event.target instanceof HTMLElement) {
@@ -145,10 +156,7 @@
       // if we do not have an active node,
       // we are going to check if we clicked on a node by coordinates
       if (clickedNodeId === -1) {
-        const [downX, downY] = projectScreenToWorld(
-          event.clientX,
-          event.clientY,
-        );
+        const [downX, downY] = projectScreenToWorld(mx, my);
         for (const node of $nodes.values()) {
           const x = node.position[0];
           const y = node.position[1];
@@ -243,7 +251,10 @@
   }
 
   function handleMouseMove(event: MouseEvent) {
-    mousePosition = projectScreenToWorld(event.clientX, event.clientY);
+    let mx = event.clientX - rect.x;
+    let my = event.clientY - rect.y;
+
+    mousePosition = projectScreenToWorld(mx, my);
 
     if (!mouseDown) return;
 
@@ -305,8 +316,8 @@
       const oldX = node.tmp.downX || 0;
       const oldY = node.tmp.downY || 0;
 
-      let newX = oldX + (event.clientX - mouseDown[0]) / cameraPosition[2];
-      let newY = oldY + (event.clientY - mouseDown[1]) / cameraPosition[2];
+      let newX = oldX + (mx - mouseDown[0]) / cameraPosition[2];
+      let newY = oldY + (my - mouseDown[1]) / cameraPosition[2];
 
       if (event.ctrlKey) {
         const snapLevel = getSnapLevel();
@@ -344,18 +355,18 @@
     }
 
     // here we are handling panning of camera
-    let newX =
-      cameraDown[0] - (event.clientX - mouseDown[0]) / cameraPosition[2];
-    let newY =
-      cameraDown[1] - (event.clientY - mouseDown[1]) / cameraPosition[2];
+    let newX = cameraDown[0] - (mx - mouseDown[0]) / cameraPosition[2];
+    let newY = cameraDown[1] - (my - mouseDown[1]) / cameraPosition[2];
 
     setCameraTransform(newX, newY, cameraPosition[2]);
   }
 
   const zoomSpeed = 2;
   function handleMouseScroll(event: WheelEvent) {
+    console.log(event);
     const bodyIsFocused =
       document.activeElement === document.body ||
+      document.activeElement === wrapper ||
       document?.activeElement?.id === "graph";
     if (!bodyIsFocused) return;
 
@@ -397,7 +408,10 @@
       }
     }
 
-    mouseDown = [event.clientX, event.clientY];
+    let mx = event.clientX - rect.x;
+    let my = event.clientY - rect.y;
+
+    mouseDown = [mx, my];
     cameraDown[0] = cameraPosition[0];
     cameraDown[1] = cameraPosition[1];
 
@@ -720,49 +734,66 @@
   });
 </script>
 
-<svelte:document
-  on:mousemove={handleMouseMove}
-  on:mouseup={handleMouseUp}
-  on:mousedown={handleMouseDown}
-  on:keydown={handleKeyDown}
-/>
-
-<svelte:window
+<div
   on:wheel={handleMouseScroll}
-  bind:innerWidth={width}
-  bind:innerHeight={height}
-/>
+  bind:this={wrapper}
+  class="wrapper"
+  aria-label="Graph"
+  role="button"
+  tabindex="0"
+  bind:clientWidth={width}
+  bind:clientHeight={height}
+  on:keydown={handleKeyDown}
+  on:mousemove={handleMouseMove}
+  on:mousedown={handleMouseDown}
+  on:mouseup={handleMouseUp}
+>
+  <Canvas
+    shadows={false}
+    renderMode="on-demand"
+    colorManagementEnabled={false}
+    colorSpace={LinearSRGBColorSpace}
+  >
+    <Camera bind:camera position={cameraPosition} />
 
-<Camera bind:camera position={cameraPosition} />
+    <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
 
-<Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
+    {#if boxSelection && mouseDown}
+      <BoxSelection
+        {cameraPosition}
+        p1={{
+          x: cameraPosition[0] + (mouseDown[0] - width / 2) / cameraPosition[2],
+          y:
+            cameraPosition[1] + (mouseDown[1] - height / 2) / cameraPosition[2],
+        }}
+        p2={{ x: mousePosition[0], y: mousePosition[1] }}
+      />
+    {/if}
 
-{#if boxSelection && mouseDown}
-  <BoxSelection
-    {cameraPosition}
-    p1={{
-      x: cameraPosition[0] + (mouseDown[0] - width / 2) / cameraPosition[2],
-      y: cameraPosition[1] + (mouseDown[1] - height / 2) / cameraPosition[2],
-    }}
-    p2={{ x: mousePosition[0], y: mousePosition[1] }}
-  />
-{/if}
+    {#if $status === "idle"}
+      {#if addMenuPosition}
+        <AddMenu bind:position={addMenuPosition} {graph} />
+      {/if}
 
-{#if $status === "idle"}
-  {#if addMenuPosition}
-    <AddMenu bind:position={addMenuPosition} {graph} />
-  {/if}
+      {#if $activeSocket}
+        <FloatingEdge
+          from={{ x: $activeSocket.position[0], y: $activeSocket.position[1] }}
+          to={{ x: mousePosition[0], y: mousePosition[1] }}
+        />
+      {/if}
 
-  {#if $activeSocket}
-    <FloatingEdge
-      from={{ x: $activeSocket.position[0], y: $activeSocket.position[1] }}
-      to={{ x: mousePosition[0], y: mousePosition[1] }}
-    />
-  {/if}
+      <GraphView {nodes} {edges} {cameraPosition} />
+    {:else if $status === "loading"}
+      <span>Loading</span>
+    {:else if $status === "error"}
+      <span>Error</span>
+    {/if}
+  </Canvas>
+</div>
 
-  <GraphView {nodes} {edges} {cameraPosition} />
-{:else if $status === "loading"}
-  <span>Loading</span>
-{:else if $status === "error"}
-  <span>Error</span>
-{/if}
+<style>
+  .wrapper {
+    position: relative;
+    height: 100%;
+  }
+</style>

@@ -1,5 +1,6 @@
 {
   "scripts": {
-    "build:nodes": "pnpm -r --filter './nodes/**' build"
+    "build:nodes": "pnpm -r --filter './nodes/**' build",
+    "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"
   }
 }

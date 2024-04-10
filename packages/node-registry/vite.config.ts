@@ -4,6 +4,10 @@ import wasm from 'vite-plugin-wasm';
 
 export default defineConfig({
   plugins: [sveltekit(), wasm()],
+
+  server: {
+    port: 3001,
+  },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}']
   }

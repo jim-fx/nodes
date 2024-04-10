@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import type { Graph, Node, Edge, Socket, NodeRegistry, RuntimeExecutor, } from "@nodes/s";
+import type { Graph, Node, Edge, Socket, NodeRegistry, RuntimeExecutor, } from "@nodes/types";
 import { HistoryManager } from "./history-manager";
 import * as templates from "./graphs";
 import EventEmitter from "./helpers/EventEmitter";

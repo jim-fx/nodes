@@ -59,6 +59,10 @@ body.theme-catppuccin {
   --background-color-darker: #11111b;
 }
 
+body {
+  margin: 0;
+}
+
 /* canvas { */
 /*   display: none !important; */
 /* } */
