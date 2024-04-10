@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "test": "vitest",
     "preview": "vite preview",
     "tauri:dev": "tauri dev",
     "story:dev": "histoire dev",
@@ -40,6 +41,7 @@
     "typescript": "^5.0.2",
     "vite": "^5.1.4",
     "vite-plugin-glsl": "^1.2.1",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-wasm": "^3.3.0",
+    "vitest": "^1.2.0"
   }
 }

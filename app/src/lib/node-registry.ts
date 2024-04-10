@@ -41,6 +41,8 @@ const nodeTypes: NodeType[] = [
 const log = createLogger("node-registry");
 export class RemoteNodeRegistry implements NodeRegistry {
 
+
+  status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeType> = new Map();
 
   constructor(private url: string) { }
@@ -55,6 +57,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
       const wasmResponse = await fetch(`${nodeUrl}/wasm`);
       const wrapperReponse = await fetch(`${nodeUrl}/wrapper`);
       if (!wrapperReponse.ok) {
+        this.status = "error";
         throw new Error(`Failed to load node ${id}`);
       }
 
@@ -68,6 +71,7 @@ wasm = val;`);
       wasmWrapper.__wbg_set_wasm(instance.exports);
 
       if (!response.ok) {
+        this.status = "error";
         throw new Error(`Failed to load node ${id}`);
       }
       const node = await response.json();
@@ -78,6 +82,7 @@ wasm = val;`);
     const duration = performance.now() - a;
 
     log.log("loaded nodes in", duration, "ms");
+    this.status = "ready";
   }
 
   getNode(id: string) {

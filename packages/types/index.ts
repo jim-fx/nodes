@@ -46,6 +46,11 @@ export type Socket = {
 
 export interface NodeRegistry {
   /**
+  * The status of the node registry
+  * @remarks The status should be "loading" when the registry is loading, "ready" when the registry is ready, and "error" if an error occurred while loading the registry
+  */
+  status: "loading" | "ready" | "error";
+  /**
    * Load the nodes with the given ids
   * @param nodeIds - The ids of the nodes to load
   * @returns A promise that resolves when the nodes are loaded
@@ -67,6 +72,11 @@ export interface NodeRegistry {
 }
 
 export interface RuntimeExecutor {
+  /**
+  * Execute the given graph
+  * @param graph - The graph to execute
+  * @returns The result of the execution
+  */
   execute: (graph: Graph) => void;
 }
 

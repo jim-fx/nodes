@@ -1,27 +1,29 @@
 <script lang="ts">
   import Grid from "$lib/grid";
-  import Graph from "@nodes/graph-interface";
+  import GraphInterface from "@nodes/graph-interface";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { MemoryNodeRegistry, RemoteNodeRegistry } from "$lib/node-registry";
   import * as templates from "$lib/graph-templates";
+  import type { Graph } from "@nodes/types";
 
-  const memNodeRegistry = new MemoryNodeRegistry();
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
-  let res = 0;
+  let res = "2";
+  let time = 0;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.grid(3, 3);
 
-  function handleResult(event) {
-    console.log("Res", event);
+  function handleResult(event: CustomEvent<Graph>) {
+    let a = performance.now();
     res = runtimeExecutor.execute(event.detail);
+    time = performance.now() - a;
     console.log(res);
   }
 
-  function handleSave(event) {
+  function handleSave(event: CustomEvent<Graph>) {
     localStorage.setItem("graph", JSON.stringify(event.detail));
   }
 </script>
@@ -30,11 +32,13 @@
   <header>header</header>
   <Grid.Row>
     <Grid.Cell>
-      {res}
+      result: {res}
+      <br />
+      time: {time}ms
     </Grid.Cell>
     <Grid.Cell>
       {#key graph}
-        <Graph
+        <GraphInterface
           registry={nodeRegistry}
           {graph}
           on:result={handleResult}

@@ -89,6 +89,9 @@ importers:
       vite-plugin-wasm:
         specifier: ^3.3.0
         version: 3.3.0(vite@5.1.4)
+      vitest:
+        specifier: ^1.2.0
+        version: 1.4.0
 
   nodes/max/plantarium/float: {}
 

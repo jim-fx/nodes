@@ -6,6 +6,11 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
   constructor(private registry: NodeRegistry) { }
 
   private getNodeTypes(graph: Graph) {
+
+    if (this.registry.status !== "ready") {
+      throw new Error("Node registry is not ready");
+    }
+
     const typeMap = new Map<string, NodeType>();
     for (const node of graph.nodes) {
       if (!typeMap.has(node.type)) {
