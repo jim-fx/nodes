@@ -1,6 +1,8 @@
 [workspace]
 resolver = "2"
-members = ["app/src-tauri", "nodes/max/plantarium/*", "packages/plantarium"]
+members = ["nodes/max/plantarium/*", "packages/plantarium"]
 
 [profile.release]
 lto = true
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"

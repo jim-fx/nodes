@@ -13,6 +13,8 @@
   console.log("ENCODED");
   console.log(encoded);
 
+  encoded = [0, 2, 1, 0, 4, 4, 2, 4, 1, 2, 2, 0, 3, 2, 3, 1, 1, 1, 1];
+
   const decoded = decode(encoded);
   console.log("DECODED");
   console.log(decoded);
