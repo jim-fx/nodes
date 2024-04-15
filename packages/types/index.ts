@@ -89,6 +89,7 @@ export type Graph = {
     title?: string;
     lastModified?: string;
   },
+  settings?: Record<string, any>,
   nodes: Node[];
   edges: [number, number, number, string][];
 }

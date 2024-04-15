@@ -106,7 +106,12 @@
 		if (!node?.inputs) {
 			return 5;
 		}
-		const height = 5 + 10 * Object.keys(node.inputs).filter((i) => i !== 'seed').length;
+		const height =
+			5 +
+			10 *
+				Object.keys(node.inputs)
+					.filter((i) => i !== 'seed')
+					.filter((p) => node?.inputs && !('setting' in node?.inputs?.[p])).length;
 		nodeHeightCache[nodeTypeId] = height;
 		return height;
 	}

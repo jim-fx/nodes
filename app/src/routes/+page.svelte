@@ -1,6 +1,6 @@
 <script lang="ts">
   import Grid from "$lib/grid";
-  import GraphInterface from "@nodes/graph-interface";
+  import GraphInterface from "$lib/graph-interface";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { RemoteNodeRegistry } from "$lib/node-registry";
   import * as templates from "$lib/graph-templates";
@@ -25,7 +25,8 @@
     let a = performance.now();
     let _res: any = runtimeExecutor.execute(event.detail);
     if (_res instanceof Int32Array) {
-      res = decodeFloat(_res[0], _res[1]);
+      const f = decodeFloat(_res[0], _res[1]);
+      res = Math.round(f * 100_000) / 100_000;
     } else {
       res = _res;
     }

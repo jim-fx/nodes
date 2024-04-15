@@ -67,6 +67,10 @@ pub fn evaluate_node(input_args: &[i32]) -> (i32, i32) {
 }
 
 pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
+    if input_args.len() == 4 && input_args[0] == 0 && input_args[1] == 3 {
+        return vec![input_args[2], input_args[3]];
+    }
+
     let args = get_args(input_args);
 
     let mut resolved: Vec<i32> = Vec::new();

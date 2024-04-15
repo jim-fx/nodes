@@ -1,0 +1,10 @@
+{
+  "value": {
+    "type": "float",
+    "value": 4.2
+  },
+  "amount": {
+    "type": "integer",
+    "value": 2
+  }
+}

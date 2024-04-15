@@ -1,0 +1,27 @@
+{
+  "op_type": {
+    "label": "type",
+    "type": "select",
+    "labels": [
+      "add",
+      "subtract",
+      "multiply",
+      "divide"
+    ],
+    "internal": true,
+    "value": 0
+  },
+  "a": {
+    "type": "float",
+    "value": 2
+  },
+  "b": {
+    "type": "float",
+    "value": 2
+  },
+  "clip": {
+    "type": "boolean",
+    "value": 0,
+    "setting": "math.clipping"
+  }
+}

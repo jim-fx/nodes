@@ -1,8 +1,10 @@
 <script lang="ts">
   export let value: boolean;
+
+  export let id: string;
 </script>
 
-<input type="checkbox" bind:checked={value} />
+<input {id} type="checkbox" bind:checked={value} />
 
 <style>
   input[type="checkbox"] {

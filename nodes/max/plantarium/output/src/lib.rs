@@ -17,7 +17,7 @@ pub fn get_input_types() -> String {
 }
 #[wasm_bindgen]
 pub fn execute(args: &[i32]) -> Vec<i32> {
-    // utils::set_panic_hook();
+    utils::set_panic_hook();
 
     // console::log_1(&format!("WASM(output_node): input: {:?}", args).into());
 

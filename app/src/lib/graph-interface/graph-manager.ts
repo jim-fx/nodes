@@ -1,9 +1,10 @@
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import type { Graph, Node, Edge, Socket, NodeRegistry, } from "@nodes/types";
 import { HistoryManager } from "./history-manager.js"
 import EventEmitter from "./helpers/EventEmitter.js";
 import throttle from "./helpers/throttle.js";
 import { createLogger } from "./helpers/index.js";
+import type { NodeInput } from "@nodes/types";
 
 const logger = createLogger("graph-manager");
 
@@ -17,6 +18,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
 
   private _nodes: Map<number, Node> = new Map();
   nodes: Writable<Map<number, Node>> = writable(new Map());
+  settingTypes: NodeInput[] = [];
+  settings: Writable<Record<string, any>> = writable({});
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
@@ -51,7 +54,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
       props: node.props,
     })) as Node[];
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
-    return { id: this.graph.id, nodes, edges };
+    const settings = get(this.settings);
+    return { id: this.graph.id, settings, nodes, edges };
   }
 
   execute() { }
@@ -141,6 +145,12 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     this.status.set("loading");
     this.id.set(graph.id);
 
+    if (graph.settings) {
+      this.settings.set(graph.settings);
+    } else {
+      this.settings.set({});
+    }
+
     const nodeIds = Array.from(new Set([...graph.nodes.map(n => n.type)]));
     await this.nodeRegistry.load(nodeIds);
 
@@ -154,6 +164,20 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
       node.tmp = node.tmp || {};
       node.tmp.type = nodeType;
     }
+
+    let settings: Record<string, NodeInput> = {};
+    const types = this.getNodeTypes();
+    for (const type of types) {
+      if (type.inputs) {
+        for (const key in type.inputs) {
+          let settingId = type.inputs[key].setting;
+          if (settingId) {
+            settings[settingId] = type.inputs[key];
+          }
+        }
+      }
+    }
+    console.log(settings);
 
     this.history.reset();
     this._init(this.graph);

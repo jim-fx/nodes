@@ -8,7 +8,7 @@ export async function getNodeWrapper(id: `${string}/${string}/${string}`) {
   let wrapperCode = await wrapperReponse.text();
   wrapperCode = wrapperCode.replace("wasm = val;", `if(wasm) return;
 wasm = val;`);
-  const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}?id=${id}`);
+  const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}#${id}${Math.random().toString().slice(2)}`);
 
   return wasmWrapper;
 }
@@ -41,6 +41,7 @@ export async function getNode(id: `${string}/${string}/${string}`) {
     const inputTypes = JSON.parse(rawInputs);
     return { id, outputs, inputs: inputTypes }
   } catch (e) {
+    console.log(rawInputs);
     console.log("Failed to parse input types for node", { id, rawInputs });
   }
 

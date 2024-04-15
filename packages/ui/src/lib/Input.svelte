@@ -8,14 +8,15 @@
 
   export let input: NodeInput;
   export let value: any;
+  export let id: string;
 </script>
 
 {#if input.type === "float"}
-  <Float bind:value />
+  <Float {id} bind:value />
 {:else if input.type === "integer"}
-  <Integer bind:value />
+  <Integer {id} bind:value />
 {:else if input.type === "boolean"}
-  <Checkbox bind:value />
+  <Checkbox {id} bind:value />
 {:else if input.type === "select"}
-  <Select bind:value labels={input.labels} />
+  <Select {id} bind:value labels={input.labels} />
 {/if}

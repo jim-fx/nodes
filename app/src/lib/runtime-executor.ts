@@ -1,11 +1,22 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
 import { encodeFloat } from "./helpers/encode";
 import { concat_encoded, encode } from "./helpers/flat_tree";
+import fastHash from "./helpers/fastHash";
+
+
+async function hashIntArray(arr: Int32Array): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', arr.buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
 
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   private typeMap: Map<string, NodeType> = new Map();
+
+  private cache: Record<string, { eol: number, value: any }> = {};
 
   constructor(private registry: NodeRegistry) { }
 
@@ -111,6 +122,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // here we store the intermediate results of the nodes
     const results: Record<string, string | boolean | number> = {};
 
+    console.log(this.cache);
+
     for (const node of sortedNodes) {
 
       const node_type = this.typeMap.get(node.type)!;
@@ -139,24 +152,65 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
         }
 
+
+        console.log(" ");
+        console.log("--> EXECUTING NODE " + node_type.id, node.id);
+
+
         // execute the node and store the result
         try {
+          const a0 = performance.now();
+
           const node_inputs = Object.entries(inputs);
+          const cacheKey = `${node.id}/${fastHash(node_inputs.map(([_, value]: [string, any]) => {
+            if (value instanceof Int32Array) {
+              return hashIntArray(value);
+            }
+            console.log(value);
+            return `${value}`
+          }).join("/"))}`;
+
+          const a1 = performance.now();
+          console.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
+
+          if (this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
+            results[node.id] = this.cache[cacheKey].value;
+            console.log(`Using cached value`);
+            continue;
+          }
+
           const transformed_inputs = node_inputs.map(([key, value]: [string, any]) => {
             const input_type = node_type.inputs?.[key]!;
             if (value instanceof Int32Array) {
-              return [...value.slice(0, value.length)];
+              let _v = new Array(value.length);
+              for (let i = 0; i < value.length; i++) {
+                _v[i] = value[i];
+              }
+              return _v;
             }
 
             if (input_type.type === "float") {
               return encode(encodeFloat(value as number));
             }
+
             return value;
           });
+
+          const a2 = performance.now();
+
+          console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
+
           const _inputs = concat_encoded(transformed_inputs);
-          // console.log(`Executing node ${node_type.id || node.id}`, { _inputs, inputs, node_type });
+          const a3 = performance.now();
           results[node.id] = node_type.execute(_inputs) as number;
-          // console.log("--> result", results[node.id]);
+          const duration = performance.now() - a3;
+          if (duration > 5) {
+            this.cache[cacheKey] = { eol: Date.now() + 10_000, value: results[node.id] };
+            console.log(`Caching for 10 seconds`);
+          }
+          console.log(`${duration}ms Executed`);
+          const a4 = performance.now();
+          console.log(`${a4 - a0}ms e2e duration`);
         } catch (e) {
           console.error(`Error executing node ${node_type.id || node.id}`, e);
         }

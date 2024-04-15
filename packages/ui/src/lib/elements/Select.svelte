@@ -1,9 +1,10 @@
 <script lang="ts">
   export let labels: string[] = [];
   export let value: number = 0;
+  export let id: string;
 </script>
 
-<select bind:value>
+<select {id} bind:value>
   {#each labels as label, i}
     <option value={i}>{label}</option>
   {/each}

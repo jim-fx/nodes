@@ -26,11 +26,13 @@ type NodeInputSelect = {
 
 type NodeInputSeed = {
   type: "seed"
+  value?: number;
 }
 
 type DefaultOptions = {
   internal?: boolean;
   external?: boolean;
+  setting?: string;
   label?: string;
 }
 

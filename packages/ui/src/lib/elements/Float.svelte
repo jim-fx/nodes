@@ -3,9 +3,10 @@
   export let min = 0;
   export let max = 10;
   export let step = 0.1;
+  export let id: string;
 </script>
 
-<input type="number" bind:value {min} {max} {step} />
+<input {id} type="number" bind:value {min} {max} {step} />
 
 <style>
   input {
