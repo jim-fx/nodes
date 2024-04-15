@@ -3,6 +3,8 @@ import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/type
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
+  private typeMap: Map<string, NodeType> = new Map();
+
   constructor(private registry: NodeRegistry) { }
 
   private getNodeTypes(graph: Graph) {
@@ -26,7 +28,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
   private addMetaData(graph: Graph) {
 
     // First, lets check if all nodes have a type
-    const typeMap = this.getNodeTypes(graph);
+    this.typeMap = this.getNodeTypes(graph);
 
     const outputNode = graph.nodes.find(node => node.type.endsWith("/output"));
     if (!outputNode) {
@@ -62,8 +64,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       const node = stack.pop();
       if (node) {
         node.tmp = node.tmp || {};
-
-        node.tmp.type = typeMap.get(node.type);
 
         if (node?.tmp?.depth === undefined) {
           node.tmp.depth = 0;
@@ -110,9 +110,12 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     const results: Record<string, string | boolean | number> = {};
 
     for (const node of sortedNodes) {
-      if (node?.tmp && node?.tmp?.type?.execute) {
+
+      const node_type = this.typeMap.get(node.type)!;
+
+      if (node?.tmp && node_type?.execute) {
         const inputs: Record<string, string | number | boolean> = {};
-        for (const [key, input] of Object.entries(node.tmp.type.inputs || {})) {
+        for (const [key, input] of Object.entries(node_type.inputs || {})) {
 
           if (input.type === "seed") {
             inputs[key] = Math.floor(Math.random() * 100000000);
@@ -136,10 +139,18 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
         // execute the node and store the result
         try {
-          console.log(`Executing node ${node.tmp.type.id || node.id}`, inputs);
-          results[node.id] = node.tmp.type.execute(...Object.values(inputs)) as number;
+          const node_inputs = Object.entries(inputs);
+          const transformed_inputs = node_inputs.map(([key, value]) => {
+            const input_type = node_type.inputs[key];
+            if (input.type === "float") {
+              return
+            }
+            console.log(key, input_type);
+          });
+          console.log(`Executing node ${node_type.id || node.id}`, node_inputs);
+          results[node.id] = node_type.execute(...Object.values(inputs)) as number;
         } catch (e) {
-          console.error(`Error executing node ${node.tmp.type.id || node.id}`, e);
+          console.error(`Error executing node ${node_type.id || node.id}`, e);
         }
 
       }

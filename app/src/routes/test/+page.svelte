@@ -1,5 +1,22 @@
 <script lang="ts">
+  import { decodeFloat, encodeFloat } from "$lib/helpers/encode";
   import { decode, encode } from "$lib/helpers/flat_tree";
+
+  let maxError = 0;
+  new Array(10_000).fill(null).forEach((v, i) => {
+    const input = i < 5_000 ? i : Math.random() * 100;
+    const encoded = encodeFloat(input);
+    const output = decodeFloat(encoded[0], encoded[1]);
+
+    const error = Math.abs(input - output);
+    if (error > maxError) {
+      maxError = error;
+    }
+  });
+
+  console.log("DECODE FLOAT");
+  console.log(maxError);
+  console.log(encodeFloat(2.0));
 
   // const input = [5, [6, 1], [7, 2, [5, 1]]];
   // const input = [5, [], [6, []], []];

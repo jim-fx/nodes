@@ -1,5 +1,4 @@
 mod utils;
-use plantarium::unwrap_float;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -17,8 +16,8 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_value: JsValue) -> f64 {
+pub fn execute(args: &[i32]) -> Vec<i32> {
     utils::set_panic_hook();
 
-    return unwrap_float(var_value);
+    args.into()
 }
