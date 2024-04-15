@@ -1,4 +1,4 @@
-pub fn get_args<'a>(args: &'a Vec<i32>) -> Vec<&[i32]> {
+pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     let mut idx: usize = 0;
     let mut depth = -1;
 
@@ -57,12 +57,59 @@ pub fn get_args<'a>(args: &'a Vec<i32>) -> Vec<&[i32]> {
         arg_start_index = idx;
     }
 
-    return out_args;
+    out_args
+}
+
+pub fn evaluate_node(input_args: &[i32]) -> (i32, i32) {
+    let node_type = input_args[0];
+
+    match node_type {
+        0 => crate::nodes::math_node(&input_args[1..]),
+        _ => (0, 0),
+    }
+}
+
+pub fn evaluate_args(input_args: &[i32]) -> (i32, i32) {
+    let args = get_args(input_args);
+
+    let mut resolved: Vec<i32> = Vec::new();
+
+    for arg in args {
+        if arg.len() == 1 {
+            resolved.push(arg[0]);
+        } else {
+            let res = evaluate_args(arg);
+            resolved.push(res.0);
+            resolved.push(res.1);
+        }
+    }
+
+    if resolved.len() > 1 {
+        evaluate_node(&resolved)
+    } else {
+        (resolved[0], resolved[1])
+    }
 }
 
 #[cfg(test)]
 mod tests {
+
+    use crate::encoding::decode_float;
+
     use super::*;
+
+    #[test]
+    fn test_resursive_evaluation() {
+        let input = vec![0, 3, 0, 0, 0, 7, 0, 2, 0, 128, 0, 128, 1, 6, 0, 128];
+        // this is an encoded version of a math node that multiplies 2 * 2
+        // and another math node that adds 2 to that result
+        // the numbers are f32 floats encoded as two i32's
+
+        let result = evaluate_args(&input);
+        let decoded = decode_float(result.0, result.1);
+
+        assert_eq!(decoded, 6.0);
+    }
 
     #[test]
     fn test_example_input_a() {
