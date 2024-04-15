@@ -1,41 +1,77 @@
 <script lang="ts">
   import { decodeFloat, encodeFloat } from "$lib/helpers/encode";
-  import { decode, encode } from "$lib/helpers/flat_tree";
+  import { decode, encode, concat_encoded } from "$lib/helpers/flat_tree";
 
-  let maxError = 0;
-  new Array(10_000).fill(null).forEach((v, i) => {
-    const input = i < 5_000 ? i : Math.random() * 100;
-    const encoded = encodeFloat(input);
-    const output = decodeFloat(encoded[0], encoded[1]);
+  console.clear();
 
-    const error = Math.abs(input - output);
-    if (error > maxError) {
-      maxError = error;
+  {
+    const input_a = encode([1, 2, 3]);
+    const input_b = 2;
+    const input_c = 89;
+    const input_d = encode([4, 5, 6]);
+
+    const output = concat_encoded([input_a, input_b, input_c, input_d]);
+
+    const decoded = decode(output);
+    console.log("CONCAT", [input_a, input_b, input_c, input_d]);
+    console.log(output);
+    console.log(decoded);
+  }
+
+  if (false) {
+    let maxError = 0;
+    new Array(10_000).fill(null).forEach((v, i) => {
+      const input = i < 5_000 ? i : Math.random() * 100;
+      const encoded = encodeFloat(input);
+      const output = decodeFloat(encoded[0], encoded[1]);
+
+      const error = Math.abs(input - output);
+      if (error > maxError) {
+        maxError = error;
+      }
+    });
+
+    console.log("DECODE FLOAT");
+    console.log(maxError);
+    console.log(encodeFloat(2.0));
+    console.log("----");
+  }
+
+  if (false) {
+    console.log("Turning Int32Array into Array");
+    const test_size = 2_000_000;
+    const a = new Int32Array(test_size);
+    let t0 = performance.now();
+    for (let i = 0; i < test_size; i++) {
+      a[i] = Math.floor(Math.random() * 100);
     }
-  });
+    console.log("TIME", performance.now() - t0);
+    t0 = performance.now();
+    const b = [...a.slice(0, test_size)];
+    console.log("TIME", performance.now() - t0);
+    console.log(typeof b, Array.isArray(b), b instanceof Int32Array);
+  }
 
-  console.log("DECODE FLOAT");
-  console.log(maxError);
-  console.log(encodeFloat(2.0));
+  if (false) {
+    // const input = [5, [6, 1], [7, 2, [5, 1]]];
+    // const input = [5, [], [6, []], []];
+    // const input = [52];
+    const input = [0, 0, [0, 2, 0, 128, 0, 128], 0, 128];
 
-  // const input = [5, [6, 1], [7, 2, [5, 1]]];
-  // const input = [5, [], [6, []], []];
-  // const input = [52];
-  const input = [0, 0, [0, 2, 0, 128, 0, 128], 0, 128];
+    console.log("INPUT");
+    console.log(input);
 
-  console.log("INPUT");
-  console.log(input);
+    let encoded = encode(input);
+    // encoded = [];
+    console.log("ENCODED");
+    console.log(encoded);
 
-  let encoded = encode(input);
-  // encoded = [];
-  console.log("ENCODED");
-  console.log(encoded);
+    encoded = [0, 2, 1, 0, 4, 4, 2, 4, 1, 2, 2, 0, 3, 2, 3, 1, 1, 1, 1];
 
-  encoded = [0, 2, 1, 0, 4, 4, 2, 4, 1, 2, 2, 0, 3, 2, 3, 1, 1, 1, 1];
+    const decoded = decode(encoded);
+    console.log("DECODED");
+    console.log(decoded);
 
-  const decoded = decode(encoded);
-  console.log("DECODED");
-  console.log(decoded);
-
-  console.log("EQUALS", JSON.stringify(input) === JSON.stringify(decoded));
+    console.log("EQUALS", JSON.stringify(input) === JSON.stringify(decoded));
+  }
 </script>

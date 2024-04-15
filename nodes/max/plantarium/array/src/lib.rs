@@ -1,5 +1,3 @@
-mod utils;
-use plantarium::{evaluate_parameters, unwrap_int, unwrap_string};
 use wasm_bindgen::prelude::*;
 
 // lifted from the `console_log` example
@@ -16,7 +14,6 @@ pub fn get_outputs() -> Vec<String> {
 
 #[wasm_bindgen]
 pub fn get_input_types() -> String {
-    utils::set_panic_hook();
     r#"{
         "length": { "type": "float", "value": 2 }
     }"#
@@ -26,8 +23,6 @@ pub fn get_input_types() -> String {
 #[rustfmt::skip]
 #[wasm_bindgen]
 pub fn execute(var_length: i32) -> Vec<f64> {
-    utils::set_panic_hook();
-
 
     let length = var_length;//evaluate_parameters(var_length);
 
@@ -39,6 +34,6 @@ pub fn execute(var_length: i32) -> Vec<f64> {
 
     log("executing array");
 
-    return res;
+    res
 
 }

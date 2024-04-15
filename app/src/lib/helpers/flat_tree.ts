@@ -1,5 +1,34 @@
 type SparseArray<T = number> = (T | T[] | SparseArray<T>)[];
 
+export function concat_encoded(input: (number | number[])[]): number[] {
+
+  if (input.length === 1 && Array.isArray(input[0])) {
+    return input[0]
+  }
+
+  const result = [0, 1]; // opening bracket
+
+  let last_closing_bracket = 1;
+
+  for (let i = 0; i < input.length; i++) {
+    const item = input[i];
+    if (Array.isArray(item)) {
+      result.push(...item);
+      if (item.length > 2) {
+        if (item[item.length - 2] !== 1 && item[item.length - 1] !== 1) {
+          result.push(1, 1); // add closing bracket if missing
+        }
+      }
+      last_closing_bracket = result.length - 1;
+    } else {
+      result[last_closing_bracket]++;
+      result.push(item);
+    }
+  }
+
+  return result
+}
+
 // Encodes a nested array into a flat array with bracket and distance notation
 export function encode(array: SparseArray): number[] {
   const encoded = [0, 0]; // Initialize encoded array with root bracket notation
@@ -16,7 +45,7 @@ export function encode(array: SparseArray): number[] {
       } else {
         // Recursively encode non-empty arrays
         const child = encode(item);
-        encoded.push(...child, 1, 0); // Note: The trailing comma after 0 can be removed
+        encoded.push(...child, 1, 0);
       }
       // Update missingBracketIndex to the position of the newly added bracket
       missingBracketIndex = encoded.length - 1;

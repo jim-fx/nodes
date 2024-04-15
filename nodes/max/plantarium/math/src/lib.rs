@@ -1,7 +1,5 @@
-mod utils;
-
-use plantarium::*;
 use wasm_bindgen::prelude::*;
+// use web_sys::console;
 
 #[wasm_bindgen]
 pub fn get_outputs() -> Vec<String> {
@@ -10,7 +8,6 @@ pub fn get_outputs() -> Vec<String> {
 
 #[wasm_bindgen]
 pub fn get_input_types() -> String {
-    utils::set_panic_hook();
     r#"{
         "op_type": { "label": "type", "type": "select", "labels": ["add", "subtract", "multiply", "divide"], "internal": true, "value": 0 },
         "a": { "type": "float", "value": 2 },
@@ -19,29 +16,21 @@ pub fn get_input_types() -> String {
 }
 
 #[wasm_bindgen]
-pub fn execute(var_op_type: u8, var_a: JsValue, var_b: JsValue) -> String {
-    utils::set_panic_hook();
+pub fn execute(args: &[i32]) -> Vec<i32> {
+    // let d = args
+    //     .iter()
+    //     .map(|&num| num.to_string()) // Convert each integer to a String
+    //     .collect::<Vec<String>>() // Collect all Strings into a Vec
+    //     .join(","); // Join all Strings in the Vec with a dot
+    // console::log_1(&format!("Math: {:?}", d).into());
 
-    let a: String;
-    let b: String;
+    let mut result = Vec::with_capacity(args.len() + 3);
+    result.push(0); // encoding the [ bracket
+    result.push(args[1] + 1);
+    result.push(0); // adding the node-type, math: 0
+    result.extend_from_slice(&args[2..]);
+    result.push(1);
+    result.push(1); // closing bracket
 
-    if var_a.is_string() {
-        a = unwrap_string(var_a);
-    } else {
-        a = unwrap_float(var_a).to_string();
-    }
-
-    if var_b.is_string() {
-        b = unwrap_string(var_b);
-    } else {
-        b = unwrap_float(var_b).to_string();
-    }
-
-    // Interpolate strings into JSON format
-    let json_string = format!(
-        r#"{{"__type": "math", "op_type": {}, "a": {}, "b": {}}}"#,
-        var_op_type, a, b
-    );
-
-    json_string
+    result
 }

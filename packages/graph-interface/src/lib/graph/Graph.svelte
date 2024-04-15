@@ -47,10 +47,6 @@
 		edges: [number, number, number, string][];
 	} = null;
 
-	$: if (cameraPosition && loaded) {
-		localStorage.setItem('cameraPosition', JSON.stringify(cameraPosition));
-	}
-
 	let width = globalThis?.innerWidth ?? 100;
 	let height = globalThis?.innerHeight ?? 100;
 
@@ -61,12 +57,14 @@
 		cameraPosition[1] - height / cameraPosition[2] / 2,
 		cameraPosition[1] + height / cameraPosition[2] / 2
 	];
-	function setCameraTransform(x: number, y: number, z: number) {
-		if (!camera) return;
-		camera.position.x = x;
-		camera.position.z = y;
-		camera.zoom = z;
+	function setCameraTransform(x = cameraPosition[0], y = cameraPosition[1], z = cameraPosition[2]) {
+		if (camera) {
+			camera.position.x = x;
+			camera.position.z = y;
+			camera.zoom = z;
+		}
 		cameraPosition = [x, y, z];
+		localStorage.setItem('cameraPosition', JSON.stringify(cameraPosition));
 	}
 
 	export let debug = {};
@@ -534,7 +532,7 @@
 			});
 		}
 
-		if (event.key === 'a' && event.ctrlKey) {
+		if (event.key === 'a' && event.ctrlKey && bodyIsFocused) {
 			$selectedNodes = new Set($nodes.keys());
 		}
 
@@ -697,7 +695,6 @@
 				setCameraTransform(cPosition[0], cPosition[1], cPosition[2]);
 			}
 		}
-		loaded = true;
 	});
 </script>
 

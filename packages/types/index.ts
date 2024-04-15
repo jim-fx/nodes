@@ -34,7 +34,7 @@ export type NodeType = {
   meta?: {
     title?: string;
   },
-  execute?: (...args: (string | number | boolean)[]) => unknown;
+  execute?: (args: number[]) => unknown;
 }
 
 export type Socket = {

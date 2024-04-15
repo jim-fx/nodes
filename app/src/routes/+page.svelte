@@ -2,9 +2,14 @@
   import Grid from "$lib/grid";
   import GraphInterface from "@nodes/graph-interface";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
-  import { MemoryNodeRegistry, RemoteNodeRegistry } from "$lib/node-registry";
+  import { RemoteNodeRegistry } from "$lib/node-registry";
   import * as templates from "$lib/graph-templates";
   import type { Graph } from "@nodes/types";
+  import { decode, encode } from "$lib/helpers/flat_tree";
+  import { decodeFloat } from "$lib/helpers/encode";
+
+  globalThis.decode = decode;
+  globalThis.encode = encode;
 
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -18,7 +23,12 @@
 
   function handleResult(event: CustomEvent<Graph>) {
     let a = performance.now();
-    res = runtimeExecutor.execute(event.detail);
+    let _res: any = runtimeExecutor.execute(event.detail);
+    if (_res instanceof Int32Array) {
+      res = decodeFloat(_res[0], _res[1]);
+    } else {
+      res = _res;
+    }
     time = performance.now() - a;
     console.log(res);
   }
@@ -29,7 +39,14 @@
 </script>
 
 <div class="wrapper">
-  <header>header</header>
+  <header>
+    header
+    <button
+      on:click={() => {
+        graph = templates.grid(10, 10);
+      }}>grid stress-test</button
+    >
+  </header>
   <Grid.Row>
     <Grid.Cell>
       result: {res}
@@ -60,13 +77,6 @@
     color: white;
     display: grid;
     grid-template-rows: 50px 1fr;
-  }
-
-  .details-wrapper {
-    position: fixed;
-    z-index: 100;
-    bottom: 10px;
-    right: 10px;
   }
 
   :global(html) {

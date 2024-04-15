@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
-members = ["nodes/max/plantarium/*", "packages/plantarium"]
+members = ["nodes/max/plantarium/*", "packages/utils"]
+
 
 [profile.release]
 lto = true

@@ -93,6 +93,10 @@ importers:
         specifier: ^1.2.0
         version: 1.4.0
 
+  nodes/max/plantarium/array: {}
+
+  nodes/max/plantarium/array/pkg: {}
+
   nodes/max/plantarium/float: {}
 
   nodes/max/plantarium/float/pkg: {}
@@ -108,6 +112,14 @@ importers:
   nodes/max/plantarium/random: {}
 
   nodes/max/plantarium/random/pkg: {}
+
+  nodes/max/plantarium/sum: {}
+
+  nodes/max/plantarium/sum/pkg: {}
+
+  nodes/max/plantarium/triangle: {}
+
+  nodes/max/plantarium/triangle/pkg: {}
 
   packages/graph-interface:
     dependencies:

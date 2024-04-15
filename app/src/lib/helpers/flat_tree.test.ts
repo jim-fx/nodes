@@ -1,5 +1,20 @@
 import { expect, test } from 'vitest'
-import { decode, encode } from './flat_tree'
+import { decode, encode, concat_encoded } from './flat_tree'
+
+test("it correctly concats nested arrays", () => {
+
+  const input_a = encode([1, 2, 3]);
+  const input_b = 2;
+  const input_c = encode([4, 5, 6]);
+
+  const output = concat_encoded([input_a, input_b, input_c]);
+
+  const decoded = decode(output);
+
+  expect(decoded[0]).toEqual([1, 2, 3]);
+
+
+});
 
 // Original test case
 test('it correctly decodes/encodes complex nested arrays', () => {
@@ -55,7 +70,7 @@ test('it correctly handles sequential nesting', () => {
 // If not, you can ignore or remove this test.
 test('it correctly handles arrays with mixed data types', () => {
   const input = [1, 'text', [true, [null, ['another text']]]];
-  // @ts-ignore
+  //@ts-ignore
   const decoded = decode(encode(input));
   expect(decoded).toEqual(input);
 });

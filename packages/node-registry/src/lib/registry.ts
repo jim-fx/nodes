@@ -8,7 +8,7 @@ export async function getNodeWrapper(id: `${string}/${string}/${string}`) {
   let wrapperCode = await wrapperReponse.text();
   wrapperCode = wrapperCode.replace("wasm = val;", `if(wasm) return;
 wasm = val;`);
-  const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}`);
+  const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}?id=${id}`);
 
   return wasmWrapper;
 }

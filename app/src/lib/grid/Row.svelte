@@ -12,7 +12,6 @@
     if (registerIndex > $sizes.length) {
       $sizes = [...$sizes, "1fr"];
     }
-    console.log("registering cell", registerIndex);
     return index;
   });
 

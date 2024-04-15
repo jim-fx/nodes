@@ -7,18 +7,18 @@ name = "array"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
 
 [[package]]
 name = "bumpalo"
-version = "3.15.4"
+version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ff69b9dd49fd426c69a0db9fc04dd934cdb6645ff000864d98f7e2af8830eaa"
+checksum = "79296716171880943b8470b5f8d03aa55eb2e645a4874bdbb28adb49162e012c"
 
 [[package]]
 name = "cfg-if"
@@ -41,9 +41,9 @@ name = "float"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -74,11 +74,12 @@ name = "math"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]
@@ -92,37 +93,29 @@ name = "output"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
-]
-
-[[package]]
-name = "plantarium"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.79"
+version = "1.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e835ff2298f5721608eb1a980ecaee1aef2c132bf95ecc026a11b7bf3c01c02e"
+checksum = "a56dea16b0a29e94408b9aa5e2940a4eedbd128a1ba20e8f7ae60fd3d465af0e"
 dependencies = [
  "unicode-ident",
 ]
 
 [[package]]
 name = "quote"
-version = "1.0.35"
+version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "291ec9ab5efd934aaf503a6466c5d5251535d108ee747472c3977cc5acc868ef"
+checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
 dependencies = [
  "proc-macro2",
 ]
@@ -132,9 +125,9 @@ name = "random"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -198,18 +191,18 @@ name = "sum"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
 
 [[package]]
 name = "syn"
-version = "2.0.58"
+version = "2.0.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44cfb93f38070beee36b3fef7d4f5a16f27751d94b187b666a5cc5e9b0d30687"
+checksum = "4a6531ffc7b071655e4ce2e04bd464c4830bb585a61cabb96cf808f05172615a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -221,9 +214,9 @@ name = "triangle"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "plantarium",
  "serde",
  "serde-wasm-bindgen",
+ "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -233,6 +226,16 @@ name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+
+[[package]]
+name = "utils"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "wasm-bindgen"

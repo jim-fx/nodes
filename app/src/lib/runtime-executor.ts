@@ -1,4 +1,6 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
+import { encodeFloat } from "./helpers/encode";
+import { concat_encoded, encode } from "./helpers/flat_tree";
 
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
@@ -140,15 +142,21 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         // execute the node and store the result
         try {
           const node_inputs = Object.entries(inputs);
-          const transformed_inputs = node_inputs.map(([key, value]) => {
-            const input_type = node_type.inputs[key];
-            if (input.type === "float") {
-              return
+          const transformed_inputs = node_inputs.map(([key, value]: [string, any]) => {
+            const input_type = node_type.inputs?.[key]!;
+            if (value instanceof Int32Array) {
+              return [...value.slice(0, value.length)];
             }
-            console.log(key, input_type);
+
+            if (input_type.type === "float") {
+              return encode(encodeFloat(value as number));
+            }
+            return value;
           });
-          console.log(`Executing node ${node_type.id || node.id}`, node_inputs);
-          results[node.id] = node_type.execute(...Object.values(inputs)) as number;
+          const _inputs = concat_encoded(transformed_inputs);
+          // console.log(`Executing node ${node_type.id || node.id}`, { _inputs, inputs, node_type });
+          results[node.id] = node_type.execute(_inputs) as number;
+          // console.log("--> result", results[node.id]);
         } catch (e) {
           console.error(`Error executing node ${node_type.id || node.id}`, e);
         }
@@ -158,7 +166,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     // return the result of the parent of the output node
     const res = results[outputNode.id] as string
-
 
     return res;
 

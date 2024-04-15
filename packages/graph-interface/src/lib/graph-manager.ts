@@ -393,7 +393,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     const state = this.serialize();
     this.history.save(state);
     this.emit("save", state);
-    logger.log("saving graph");
+    logger.log("saving graphs", state);
   }
 
   getParentsOfNode(node: Node) {

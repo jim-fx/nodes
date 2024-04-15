@@ -15,7 +15,8 @@ wasm-bindgen = "0.2.84"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.4"
 console_error_panic_hook = { version = "0.1.7", optional = true }
-plantarium = { version = "0.1.0", path = "../../../../packages/plantarium" }
+utils = { version = "0.1.0", path = "../../../../packages/utils" }
+web-sys = { version = "0.3.69", features = ["console"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
