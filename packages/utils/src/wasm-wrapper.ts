@@ -1,6 +1,7 @@
+import { NodeType } from "@nodes/types";
 
 const cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
-const cachedTextEncoder = new TextEncoder('utf-8');
+const cachedTextEncoder = new TextEncoder();
 
 
 const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
@@ -107,36 +108,19 @@ export function createWasmWrapper() {
     return addHeapObject(ret);
   };
 
-  function get_outputs() {
-    if (wasm === undefined || !wasm.get_outputs) {
-      return [];
-    }
-
-    try {
-      const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.get_outputs(retptr);
-      var r0 = getInt32Memory0()[retptr / 4 + 0];
-      var r1 = getInt32Memory0()[retptr / 4 + 1];
-      var v1 = getArrayJsValueFromWasm0(r0, r1).slice();
-      wasm.__wbindgen_free(r0, r1 * 4, 4);
-      return v1;
-    } finally {
-      wasm.__wbindgen_add_to_stack_pointer(16);
-    }
-  }
-
   // Additional methods and their internal helpers can also be refactored in a similar manner.
-  function get_inputs() {
+  function get_definition() {
     let deferred1_0: number;
     let deferred1_1: number;
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.get_input_types(retptr);
+      wasm.get_definition(retptr);
       var r0 = getInt32Memory0()[retptr / 4 + 0];
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       deferred1_0 = r0;
       deferred1_1 = r1;
-      return getStringFromWasm0(r0, r1);
+      const string = getStringFromWasm0(r0, r1);
+      return JSON.parse(string) as Omit<NodeType, "id">;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
       wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
@@ -144,7 +128,7 @@ export function createWasmWrapper() {
   }
 
 
-  function execute(args) {
+  function execute(args: Int32Array) {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
       const ptr0 = passArray32ToWasm0(args, wasm.__wbindgen_malloc);
@@ -159,7 +143,6 @@ export function createWasmWrapper() {
       wasm.__wbindgen_add_to_stack_pointer(16);
     }
   }
-
 
   function passStringToWasm0(arg: string, malloc: (arg0: any, arg1: number) => number, realloc: ((arg0: number, arg1: any, arg2: number, arg3: number) => number) | undefined) {
 
@@ -245,8 +228,7 @@ export function createWasmWrapper() {
 
     // Expose other methods that interact with the wasm instance
     execute,
-    get_outputs,
-    get_inputs,
+    get_definition,
 
     __wbindgen_string_new,
     __wbindgen_object_drop_ref,

@@ -8,7 +8,7 @@ use std::path::Path;
 use syn::{parse_macro_input, LitStr};
 
 #[proc_macro]
-pub fn generate_input_types(input: TokenStream) -> TokenStream {
+pub fn define_node(input: TokenStream) -> TokenStream {
     let input_string = parse_macro_input!(input as LitStr).value();
 
     // Validate JSON format
@@ -23,7 +23,7 @@ pub fn generate_input_types(input: TokenStream) -> TokenStream {
     // Generate the output function
     let expanded = quote! {
         #[wasm_bindgen]
-        pub fn get_input_types() -> String {
+        pub fn get_definition() -> String {
             String::from(#formatted_json)
         }
     };
@@ -33,7 +33,7 @@ pub fn generate_input_types(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro]
-pub fn generate_input_types_file(input: TokenStream) -> TokenStream {
+pub fn include_definition_file(input: TokenStream) -> TokenStream {
     let file_path = syn::parse_macro_input!(input as syn::LitStr).value();
 
     // Retrieve the directory containing the Cargo.toml file
@@ -55,7 +55,7 @@ pub fn generate_input_types_file(input: TokenStream) -> TokenStream {
     // Generate the function that returns the JSON string
     let expanded = quote! {
         #[wasm_bindgen]
-        pub fn get_input_types() -> String {
+        pub fn get_definition() -> String {
             String::from(#json_content)
         }
     };

@@ -1,7 +1,5 @@
 import { createWasmWrapper } from "@nodes/utils"
 
-
-
 export async function getNodeWasm(id: `${string}/${string}/${string}`) {
 
   const wasmResponse = await fetch(`/n/${id}/wasm`);
@@ -23,14 +21,11 @@ export async function getNode(id: `${string}/${string}/${string}`) {
 
   const wrapper = await getNodeWasm(id);
 
-  const outputs = wrapper?.get_outputs?.() || [];
-  const rawInputs = wrapper.get_inputs();
+  const { inputs, outputs } = wrapper?.get_definition?.();
   try {
-    const inputTypes = JSON.parse(rawInputs);
-    return { id, outputs, inputs: inputTypes }
+    return { id, inputs, outputs }
   } catch (e) {
-    console.log(rawInputs);
-    console.log("Failed to parse input types for node", { id, rawInputs });
+    console.log("Failed to parse input types for node", { id });
   }
 
 

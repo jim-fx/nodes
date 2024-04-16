@@ -1,26 +1,16 @@
+use macros::define_node;
 use wasm_bindgen::prelude::*;
 
-// lifted from the `console_log` example
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn get_outputs() -> Vec<String> {
-    vec!["float".to_string()]
-}
-
-#[wasm_bindgen]
-pub fn get_input_types() -> String {
+define_node!(
     r#"{
-        "min": { "type": "float", "value": 2 },
-        "max": { "type": "float", "value": 2 },
-        "seed": { "type": "seed" }
+        "outputs": ["float"],
+        "inputs": {
+            "min": { "type": "float", "value": 2 },
+            "max": { "type": "float", "value": 2 },
+            "seed": { "type": "seed" }
+        }
     }"#
-    .to_string()
-}
+);
 
 #[wasm_bindgen]
 pub fn execute(args: &[i32]) -> Vec<i32> {

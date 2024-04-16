@@ -1,8 +1,8 @@
-use macros::generate_input_types_file;
+use macros::include_definition_file;
 use utils::evaluate_args;
 use wasm_bindgen::prelude::*;
 
-generate_input_types_file!("src/inputs.json");
+include_definition_file!("src/inputs.json");
 
 #[wasm_bindgen]
 pub fn execute(args: &[i32]) -> Vec<i32> {

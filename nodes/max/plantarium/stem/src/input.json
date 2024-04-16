@@ -1,15 +1,20 @@
 {
-  "length": {
-    "type": "float",
-    "value": 2
-  },
-  "thickness": {
-    "type": "float",
-    "value": 2
-  },
-  "resolution": {
-    "type": "integer",
-    "value": 32,
-    "setting": "resolution.stem"
+  "outputs": [
+    "plant"
+  ],
+  "inputs": {
+    "length": {
+      "type": "float",
+      "value": 2
+    },
+    "thickness": {
+      "type": "float",
+      "value": 2
+    },
+    "resolution": {
+      "type": "integer",
+      "value": 32,
+      "setting": "resolution.stem"
+    }
   }
 }

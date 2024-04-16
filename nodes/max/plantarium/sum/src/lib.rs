@@ -1,10 +1,8 @@
-use macros::generate_input_types_file;
-use utils::{decode_float, encode_float, generate_outputs};
+use macros::include_definition_file;
+use utils::{decode_float, encode_float};
 use wasm_bindgen::prelude::*;
 
-generate_outputs!(["float"]);
-
-generate_input_types_file!("src/input.json");
+include_definition_file!("src/input.json");
 
 #[wasm_bindgen]
 pub fn execute(input: &[i32]) -> Vec<i32> {

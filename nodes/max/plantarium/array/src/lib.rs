@@ -1,11 +1,8 @@
-use macros::generate_input_types_file;
-use utils::{evaluate_args, generate_outputs, get_args};
+use macros::include_definition_file;
+use utils::{evaluate_args, get_args};
 use wasm_bindgen::prelude::*;
-// use web_sys::console;
 
-generate_outputs!(["float"]);
-
-generate_input_types_file!("src/input.json");
+include_definition_file!("src/input.json");
 
 #[wasm_bindgen]
 pub fn execute(input: &[i32]) -> Vec<i32> {

@@ -1,7 +1,12 @@
 {
-  "value": {
-    "type": "float",
-    "value": 0.1,
-    "internal": true
+  "outputs": [
+    "float"
+  ],
+  "inputs": {
+    "value": {
+      "type": "float",
+      "value": 0.1,
+      "internal": true
+    }
   }
 }

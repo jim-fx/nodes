@@ -1,7 +1,12 @@
 {
-  "array": {
-    "type": "float",
-    "value": 2,
-    "external": true
+  "outputs": [
+    "float"
+  ],
+  "inputs": {
+    "array": {
+      "type": "float",
+      "value": 2,
+      "external": true
+    }
   }
 }

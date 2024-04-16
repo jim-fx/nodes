@@ -1,6 +1,9 @@
 {
-  "input": {
-    "type": "plant",
-    "external": true
+  "outputs": [],
+  "inputs": {
+    "input": {
+      "type": "plant",
+      "external": true
+    }
   }
 }

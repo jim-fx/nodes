@@ -255,7 +255,11 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
 
-  packages/utils: {}
+  packages/utils:
+    dependencies:
+      '@nodes/types':
+        specifier: link:../types
+        version: link:../types
 
 packages:
 
