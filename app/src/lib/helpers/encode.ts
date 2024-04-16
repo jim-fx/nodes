@@ -1,34 +1,19 @@
+// Create a buffer to hold the float as bytes
+const buffer = new ArrayBuffer(4);
+const view = new DataView(buffer);
 
-export function encodeFloat(f: number): [number, number] {
-  let buffer = new ArrayBuffer(4); // Create a buffer of 4 bytes (32 bits)
-  let floatView = new Float32Array(buffer);
-  let intView = new Uint32Array(buffer);
+export function encodeFloat(value: number): number {
+  // Write the number as a float to the buffer
+  view.setFloat32(0, value, true);  // 'true' for little-endian
 
-  floatView[0] = f; // Store the float into the buffer
-  let bits = intView[0]; // Read the bits as integer
-
-  let mantissa = bits & 0x007FFFFF;
-  let exponent = (bits >> 23) & 0xFF;
-  let sign = (f < 0.0) ? 1 : 0;
-
-  // Include the sign bit in the mantissa
-  mantissa = mantissa | (sign << 23);
-
-  return [mantissa, exponent];
+  // Read the buffer as an integer
+  return view.getInt32(0, true);
 }
 
-export function decodeFloat(mantissa: number, exponent: number): number {
-  let signBit = (mantissa >> 23) & 1;
-  let mantissaBits = mantissa & 0x007FFFFF;
-  let exponentBits = (exponent & 0xFF) << 23;
+export function decodeFloat(value: number): number {
+  // Write the integer back as an int32
+  view.setInt32(0, value, true);
 
-  // Reconstruct all bits including sign
-  let bits = (signBit << 31) | exponentBits | mantissaBits;
-
-  let buffer = new ArrayBuffer(4);
-  let floatView = new Float32Array(buffer);
-  let intView = new Uint32Array(buffer);
-
-  intView[0] = bits; // Set the bits as integer
-  return floatView[0]; // Read the float back from the buffer
+  // Read the buffer as a float
+  return view.getFloat32(0, true);
 }

@@ -57,12 +57,12 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     out_args
 }
 
-pub fn evaluate_node(input_args: &[i32]) -> (i32, i32) {
+pub fn evaluate_node(input_args: &[i32]) -> i32 {
     let node_type = input_args[0];
 
     match node_type {
         0 => crate::nodes::math_node(&input_args[1..]),
-        _ => (0, 0),
+        _ => 0,
     }
 }
 
@@ -92,7 +92,7 @@ pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
 
     if resolved.len() > 1 {
         let res = evaluate_node(&resolved);
-        vec![res.0, res.1]
+        vec![res]
     } else {
         resolved
     }
@@ -112,7 +112,7 @@ mod tests {
         // the numbers are f32 floats encoded as two i32's
 
         let result = evaluate_args(&input);
-        let decoded = decode_float(result[0], result[1]);
+        let decoded = decode_float(result[0]);
 
         assert_eq!(decoded, 6.0);
     }

@@ -4,7 +4,7 @@ import { encodeFloat, decodeFloat } from "./encode"
 test("encode_float", () => {
   const input = 1.23;
   const encoded = encodeFloat(input)
-  const output = decodeFloat(encoded[0], encoded[1])
+  const output = decodeFloat(encoded)
   console.log(input, output)
   expect(output).toBeCloseTo(input);
 });
@@ -12,7 +12,7 @@ test("encode_float", () => {
 test("encode 2.0", () => {
   const input = 2.0;
   const encoded = encodeFloat(input)
-  expect(encoded).toEqual([0, 128])
+  expect(encoded).toEqual(1073741824)
 });
 
 test("floating point imprecision", () => {
@@ -20,7 +20,7 @@ test("floating point imprecision", () => {
   new Array(10_000).fill(null).forEach((_, i) => {
     const input = i < 5_000 ? i : Math.random() * 100;
     const encoded = encodeFloat(input);
-    const output = decodeFloat(encoded[0], encoded[1]);
+    const output = decodeFloat(encoded);
 
     const error = Math.abs(input - output);
     if (error > maxError) {
@@ -36,7 +36,7 @@ test("negative numbers", () => {
   const inputs = [-1, -0.5, -123.456, -0.0001];
   inputs.forEach(input => {
     const encoded = encodeFloat(input);
-    const output = decodeFloat(encoded[0], encoded[1]);
+    const output = decodeFloat(encoded);
     expect(output).toBeCloseTo(input);
   });
 });
@@ -45,7 +45,7 @@ test("negative numbers", () => {
 test("very small numbers", () => {
   const input = 1.2345e-38;
   const encoded = encodeFloat(input)
-  const output = decodeFloat(encoded[0], encoded[1])
+  const output = decodeFloat(encoded)
   expect(output).toBeCloseTo(input);
 });
 
@@ -53,7 +53,7 @@ test("very small numbers", () => {
 test("zero", () => {
   const input = 0;
   const encoded = encodeFloat(input)
-  const output = decodeFloat(encoded[0], encoded[1])
+  const output = decodeFloat(encoded)
   expect(output).toBe(0);
 });
 
@@ -61,7 +61,7 @@ test("zero", () => {
 test("infinity", () => {
   const input = Infinity;
   const encoded = encodeFloat(input)
-  const output = decodeFloat(encoded[0], encoded[1])
+  const output = decodeFloat(encoded)
   expect(output).toBe(Infinity);
 });
 
@@ -70,7 +70,7 @@ test("large numbers", () => {
   const inputs = [1e+5, 1e+10];
   inputs.forEach(input => {
     const encoded = encodeFloat(input);
-    const output = decodeFloat(encoded[0], encoded[1]);
+    const output = decodeFloat(encoded);
     // Note: Large numbers may lose precision, hence using toBeCloseTo with a tolerance
     expect(output).toBeCloseTo(input, 0);
   });

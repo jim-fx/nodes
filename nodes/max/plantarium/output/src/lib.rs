@@ -1,16 +1,48 @@
 use macros::include_definition_file;
-use utils::evaluate_args;
+use utils::{decode_float, encode_float};
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
 include_definition_file!("src/inputs.json");
 
+#[rustfmt::skip]
 #[wasm_bindgen]
-pub fn execute(args: &[i32]) -> Vec<i32> {
+pub fn execute(input: &[i32]) -> Vec<i32> {
     utils::set_panic_hook();
 
-    // console::log_1(&format!("WASM(output_node): input: {:?}", args).into());
+    let size = input[2];
+    let decoded = decode_float(input[2]);
+    let negative_size = encode_float(-decoded);
 
-    evaluate_args(args)
+    console::log_1(&format!("WASM(output_node): input: {:?} -> {}", input, decoded).into());
+
+    // [[1,3, x, y, z, x, y,z,x,y,z]];
+    vec![
+        0, 1,       // opening bracket
+        0, 19,      // opening bracket + distance to next bracket
+        1,          // 1: geometry
+        3,          // 3 vertices
+        1,          // 1 face
+        // thise are the indeces for the face
+        0, 2, 1,
+        // this is the normal for the single face 1065353216 == 1.0f encoded is i32
+        0, 1065353216, 0,
+        //
+        negative_size,  // x -> point 1
+        0,              // y
+        0,              // z
+        //
+        size,       // x -> point 2
+        0,          // y
+        0,          // z
+        //
+        0,          // x -> point 3
+        0,          // y
+        size,       // z
+        //
+        1, 1, 1, 1, // closing brackets
+    ]
+
     // let decoded = decode_float(result[0], result[1]);
 
     // console::log_1(&format!("WASM: output: {:?}", decoded).into());

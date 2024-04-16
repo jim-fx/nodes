@@ -11,7 +11,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let length = evaluate_args(args[0]);
     let thickness = evaluate_args(args[1]);
-    let resolution = evaluate_args(args[2]);
+    let resolution = 32; //evaluate_args(args[2]);
 
     console::log_1(
         &format!(
@@ -21,14 +21,20 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         .into(),
     );
 
-    let mut result: Vec<i32> = Vec::with_capacity(args.len() + 3);
-
-    result.push(0); // encoding the [ bracket
-    result.push(2);
-    result.push(0); // adding the node-type, math: 0
-    result.extend_from_slice(&thickness);
-    result.push(1);
-    result.push(1); // closing bracket
-
-    result
+    vec![
+        0,  // opening bracket
+        11, // opening bracket
+        0,  // type: plant
+        0,  // alpha: 0
+        0,  // x
+        0,  // y
+        0,  // z
+        1,  // thickness
+        0,  // x
+        2,  // y
+        0,  // z
+        1,  // thickness
+        1,  // closing bracket
+        1,  //closing bracket
+    ]
 }

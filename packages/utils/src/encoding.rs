@@ -1,16 +1,12 @@
-pub fn encode_float(f: f32) -> (i32, i32) {
+pub fn encode_float(f: f32) -> i32 {
+    // Convert f32 to u32 using to_bits, then safely cast to i32
     let bits = f.to_bits();
-    let mantissa = (bits & 0x007FFFFF) as i32;
-    let exponent = ((bits >> 23) & 0xFF) as i32;
-    let sign = if f < 0.0 { 1 } else { 0 }; // Determine sign as 1 for negative, 0 for positive
-    (mantissa | (sign << 23), exponent) // Include the sign bit in the mantissa
+    bits as i32
 }
 
-pub fn decode_float(mantissa: i32, exponent: i32) -> f32 {
-    let sign_bit = ((mantissa >> 23) & 1) as u32; // Extract the sign bit
-    let mantissa_bits = (mantissa & 0x007FFFFF) as u32;
-    let exponent_bits = (exponent as u32 & 0xFF) << 23;
-    let bits = (sign_bit << 31) | exponent_bits | mantissa_bits; // Reconstruct all bits including sign
+pub fn decode_float(bits: i32) -> f32 {
+    // Convert i32 to u32 safely, then use from_bits to get f32
+    let bits = bits as u32;
     f32::from_bits(bits)
 }
 
@@ -18,20 +14,24 @@ pub fn decode_float(mantissa: i32, exponent: i32) -> f32 {
 mod tests {
     use super::*;
 
-    #[rustfmt::skip]
     #[test]
-    fn test_encode_decode() {
-        let original_floats = [
-            0.0, 1.0, -1.0, 123.456, -123.456, 1e-10, -1e10, f32::MAX, f32::MIN,
+    fn test_decode_float_simple() {
+        let test_values: [f32; 6] = [
+            0.0,
+            -0.0,
+            123.456,
+            -123.456,
+            std::f32::INFINITY,
+            std::f32::NEG_INFINITY,
         ];
-        for &original in &original_floats {
-            let (mantissa, exponent) = encode_float(original);
-            let decoded = decode_float(mantissa, exponent);
-            assert!(
-                (decoded - original).abs() < 1e-6,
-                "Mismatch: original {} vs decoded {}",
-                original,
-                decoded
+        for &value in &test_values {
+            let encoded = encode_float(value);
+            let decoded = decode_float(encoded);
+            assert_eq!(
+                decoded.to_bits(),
+                value.to_bits(),
+                "Failed for value {}",
+                value
             );
         }
     }

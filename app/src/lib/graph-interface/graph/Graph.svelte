@@ -403,8 +403,6 @@
   function handleMouseDown(event: MouseEvent) {
     if (mouseDown) return;
 
-    console.log(event.target);
-
     if (event.target instanceof HTMLElement) {
       if (
         event.target.nodeName !== "CANVAS" &&

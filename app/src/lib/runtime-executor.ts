@@ -1,7 +1,7 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
 import { encodeFloat } from "./helpers/encode";
-import { concat_encoded, encode } from "./helpers/flat_tree";
-import { fastHash, fastHashString } from "./helpers/fastHash";
+import { concat_encoded } from "./helpers/flat_tree";
+import { fastHash } from "./helpers/fastHash";
 
 
 
@@ -179,7 +179,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
             }
 
             if (input_type.type === "float") {
-              return encode(encodeFloat(value as number));
+              return encodeFloat(value as number);
             }
 
             return value;
@@ -208,9 +208,9 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     }
 
     // return the result of the parent of the output node
-    const res = results[outputNode.id] as string
+    const res = results[outputNode.id];
 
-    return res;
+    return res as unknown as Int32Array;
 
   }
 

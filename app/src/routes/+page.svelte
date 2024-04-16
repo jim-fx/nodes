@@ -6,15 +6,18 @@
   import * as templates from "$lib/graph-templates";
   import type { Graph } from "@nodes/types";
   import { decode, encode } from "$lib/helpers/flat_tree";
-  import { decodeFloat } from "$lib/helpers/encode";
+  import { decodeFloat, encodeFloat } from "$lib/helpers/encode";
+  import Viewer from "$lib/viewer/Viewer.svelte";
 
   globalThis.decode = decode;
   globalThis.encode = encode;
+  globalThis.df = decodeFloat;
+  globalThis.en = encodeFloat;
 
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
-  let res = "2";
+  let res: Int32Array;
   let time = 0;
 
   let graph = localStorage.getItem("graph")
@@ -23,13 +26,7 @@
 
   function handleResult(event: CustomEvent<Graph>) {
     let a = performance.now();
-    let _res: any = runtimeExecutor.execute(event.detail);
-    if (_res instanceof Int32Array) {
-      const f = decodeFloat(_res[0], _res[1]);
-      res = Math.round(f * 100_000) / 100_000;
-    } else {
-      res = _res;
-    }
+    res = runtimeExecutor.execute(event.detail);
     time = performance.now() - a;
     console.log(res);
   }
@@ -50,9 +47,7 @@
   </header>
   <Grid.Row>
     <Grid.Cell>
-      result: {res}
-      <br />
-      time: {time}ms
+      <Viewer result={res} />
     </Grid.Cell>
     <Grid.Cell>
       {#key graph}
