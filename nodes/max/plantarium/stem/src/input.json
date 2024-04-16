@@ -1,27 +1,15 @@
 {
-  "op_type": {
-    "label": "type",
-    "type": "select",
-    "labels": [
-      "add",
-      "subtract",
-      "multiply",
-      "divide"
-    ],
-    "internal": true,
-    "value": 0
-  },
-  "a": {
+  "length": {
     "type": "float",
     "value": 2
   },
-  "b": {
+  "thickness": {
     "type": "float",
     "value": 2
   },
-  "clip": {
-    "type": "boolean",
-    "value": 0,
-    "setting": "math.clipping"
+  "resolution": {
+    "type": "integer",
+    "value": 32,
+    "setting": "resolution.stem"
   }
 }

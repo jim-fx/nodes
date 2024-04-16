@@ -106,6 +106,7 @@ name = "output"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "macros",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
@@ -138,6 +139,7 @@ name = "random"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "macros",
  "serde",
  "serde-wasm-bindgen",
  "utils",

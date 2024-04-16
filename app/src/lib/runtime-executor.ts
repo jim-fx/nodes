@@ -1,15 +1,8 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
 import { encodeFloat } from "./helpers/encode";
 import { concat_encoded, encode } from "./helpers/flat_tree";
-import fastHash from "./helpers/fastHash";
+import { fastHash, fastHashString } from "./helpers/fastHash";
 
-
-async function hashIntArray(arr: Int32Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', arr.buffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
 
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
@@ -162,18 +155,14 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           const a0 = performance.now();
 
           const node_inputs = Object.entries(inputs);
-          const cacheKey = `${node.id}/${fastHash(node_inputs.map(([_, value]: [string, any]) => {
-            if (value instanceof Int32Array) {
-              return hashIntArray(value);
-            }
-            console.log(value);
-            return `${value}`
-          }).join("/"))}`;
+          const cacheKey = "123" || `${node.id}/${fastHash(node_inputs.map(([_, value]: [string, any]) => {
+            return value
+          }))}`;
 
           const a1 = performance.now();
           console.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
 
-          if (this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
+          if (false && this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
             results[node.id] = this.cache[cacheKey].value;
             console.log(`Using cached value`);
             continue;

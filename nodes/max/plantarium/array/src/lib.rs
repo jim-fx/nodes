@@ -17,9 +17,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     // let value = decode_float(value_encoded[0], value_encoded[1]);
     let length = args[1];
 
-    // console::log_1(&format!("WASM(array_node): args {:?} ", args).into());
-    // console::log_1(&format!("WASM(array_node): value: {:?} length: {:?}", value, length).into());
-
     // construct array of length
     let mut res: Vec<i32> = Vec::with_capacity(length[0] as usize * 2 + 2);
     res.push(0);

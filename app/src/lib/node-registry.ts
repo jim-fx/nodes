@@ -1,4 +1,5 @@
 import type { NodeRegistry, NodeType } from "@nodes/types";
+import { createWasmWrapper } from "@nodes/utils";
 
 import { createLogger } from "./helpers";
 
@@ -49,31 +50,20 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   private async loadNode(id: string) {
     const nodeUrl = `${this.url}/n/${id}`;
-    const response = await fetch(nodeUrl);
-    const wasmResponse = await fetch(`${nodeUrl}/wasm`);
-    const wrapperReponse = await fetch(`${nodeUrl}/wrapper`);
-    if (!wrapperReponse.ok) {
+    const [response, wasmResponse] = await Promise.all([fetch(nodeUrl), fetch(`${nodeUrl}/wasm`)]);
+    if (!wasmResponse.ok || !response.ok) {
       this.status = "error";
       throw new Error(`Failed to load node ${id}`);
     }
 
-    let wrapperCode = await wrapperReponse.text();
-    wrapperCode = wrapperCode.replace("wasm = val;", `if(wasm) return;
-wasm = val;`);
-    const wasmWrapper = await import(/*@vite-ignore*/`data:text/javascript;base64,${btoa(wrapperCode)}#${id}`);
-
+    // Setup Wasm wrapper
+    const wrapper = createWasmWrapper();
     const module = new WebAssembly.Module(await wasmResponse.arrayBuffer());
-    const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wasmWrapper });
-    wasmWrapper.__wbg_set_wasm(instance.exports);
+    const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wrapper });
+    wrapper.setInstance(instance);
 
-    if (!response.ok) {
-      this.status = "error";
-      throw new Error(`Failed to load node ${id}`);
-    } else {
-      log.log("loaded node", id);
-    }
     const node = await response.json();
-    node.execute = wasmWrapper.execute;
+    node.execute = wrapper.execute;
     return node;
   }
 
@@ -85,6 +75,7 @@ wasm = val;`);
     nodeIds.push("max/plantarium/output");
     nodeIds.push("max/plantarium/array");
     nodeIds.push("max/plantarium/sum");
+    nodeIds.push("max/plantarium/stem");
 
     const nodes = await Promise.all(nodeIds.map(id => this.loadNode(id)));
 

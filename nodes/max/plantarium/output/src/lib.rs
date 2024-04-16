@@ -1,20 +1,9 @@
-// use utils::decode_float;
+use macros::generate_input_types_file;
 use utils::evaluate_args;
 use wasm_bindgen::prelude::*;
-// use web_sys::console;
 
-#[wasm_bindgen]
-pub fn get_outputs() -> Vec<String> {
-    vec![]
-}
+generate_input_types_file!("src/inputs.json");
 
-#[wasm_bindgen]
-pub fn get_input_types() -> String {
-    r#"{
-      "input": { "type": "float", "value": 0.0, "external": true }
-    }"#
-    .to_string()
-}
 #[wasm_bindgen]
 pub fn execute(args: &[i32]) -> Vec<i32> {
     utils::set_panic_hook();
