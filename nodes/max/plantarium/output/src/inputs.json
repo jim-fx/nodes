@@ -1,7 +1,6 @@
 {
   "input": {
-    "type": "float",
-    "value": 0.0,
+    "type": "plant",
     "external": true
   }
 }

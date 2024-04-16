@@ -3,7 +3,7 @@ use utils::{evaluate_args, generate_outputs, get_args};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
-generate_outputs!(["stem"]);
+generate_outputs!(["plant"]);
 generate_input_types_file!("src/input.json");
 
 #[wasm_bindgen]
