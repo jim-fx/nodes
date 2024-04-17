@@ -34,7 +34,7 @@
     <T.PointsMaterial size={0.25} />
   </T.Points>
   <T.Mesh geometry={geo}>
-    <T.MeshBasicMaterial color="red" />
+    <T.MeshStandardMaterial color="hotpink" />
   </T.Mesh>
 {:else}
   <T.Mesh>

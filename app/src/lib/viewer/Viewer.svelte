@@ -1,12 +1,7 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import {
-    BufferAttribute,
-    BufferGeometry,
-    Float32BufferAttribute,
-  } from "three";
-  import { decodeFloat } from "$lib/helpers/encode";
+  import { BufferGeometry, Float32BufferAttribute } from "three";
 
   export let result: Int32Array;
 
@@ -24,15 +19,9 @@
     const faceCount = encodedData[index++];
 
     // Indices
-    const indices = encodedData.subarray(index, index + faceCount * 3);
-    index = index + faceCount * 3;
-
-    const normals = new Float32Array(
-      encodedData.buffer,
-      index * 4,
-      faceCount * 3,
-    );
-    index = index + faceCount * 3;
+    const indicesEnd = index + faceCount * 3;
+    const indices = encodedData.subarray(index, indicesEnd);
+    index = indicesEnd;
 
     // Vertices
     const vertices = new Float32Array(
@@ -40,12 +29,21 @@
       index * 4,
       vertexCount * 3,
     );
+    index = index + vertexCount * 3;
+
+    const normals = new Float32Array(
+      encodedData.buffer,
+      index * 4,
+      vertexCount * 3,
+    );
+    index = index + vertexCount * 3;
 
     // Add data to geometry
     geometry.setIndex([...indices]);
     geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    // geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-    geometry.computeVertexNormals();
+    geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    // geometry.computeVertexNormals();
+    //geometry.computeVertexNormals();
 
     return geometry;
   }

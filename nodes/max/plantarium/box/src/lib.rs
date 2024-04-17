@@ -1,5 +1,8 @@
+use crate::geometry::calculate_normals::calculate_normals;
 use macros::include_definition_file;
-use utils::{decode_float, encode_float, evaluate_args, get_args, set_panic_hook, wrap_arg};
+use utils::{
+    decode_float, encode_float, evaluate_args, geometry, get_args, set_panic_hook, wrap_arg,
+};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -24,7 +27,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
 
     // [[1,3, x, y, z, x, y,z,x,y,z]];
-    wrap_arg(&[
+    let mut cube_geometry = [
 
         1,          // 1: geometry
         8,          // 8 vertices
@@ -51,20 +54,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         3, 7, 4, 
         7, 6, 4, 
         4, 6, 5,
-
-        // this is the normal for every single face 1065353216 == 1.0f encoded is i32
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
-        0, 1065353216, 0,
         
         // Bottom plate
         p, n, n,
@@ -78,6 +67,21 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         p, p, p,
         n, p, p,
 
-    ])
+        // this is the normal for every single vert 1065353216 == 1.0f encoded is i32
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+        0, 0, 0,
+
+    ];
+
+    
+    calculate_normals(&mut cube_geometry);
+
+    wrap_arg(&cube_geometry)
 
 }
