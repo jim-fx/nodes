@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { decode, encode, concat_encoded } from './flat_tree'
+import { decode, encode, concat_encoded } from './flatTree'
 
 test("it correctly concats nested arrays", () => {
 

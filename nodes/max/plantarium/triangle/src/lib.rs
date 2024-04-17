@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{concat_args, decode_float, encode_float, wrap_arg};
+use utils::{decode_float, encode_float, wrap_arg};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 

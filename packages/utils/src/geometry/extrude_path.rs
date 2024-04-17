@@ -1,5 +1,3 @@
-use crate::log;
-
 use super::create_empty_geometry;
 use glam::{Mat4, Quat, Vec3};
 

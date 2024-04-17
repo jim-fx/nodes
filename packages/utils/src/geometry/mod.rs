@@ -20,7 +20,6 @@ pub fn create_empty_geometry(vertex_amount: usize, face_amount: usize) -> Vec<i3
       + vertex_amount * 3  // positions
       + vertex_amount * 3  // normals
       + face_amount * 3;    // faces 
-    
 
     let mut vec: Vec<i32> = vec![0; amount];
     vec[0] = 0; // opening bracket

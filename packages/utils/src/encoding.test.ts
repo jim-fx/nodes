@@ -1,5 +1,5 @@
 import { test, expect } from "vitest"
-import { encodeFloat, decodeFloat } from "./encode"
+import { encodeFloat, decodeFloat } from "./encoding"
 
 test("encode_float", () => {
   const input = 1.23;

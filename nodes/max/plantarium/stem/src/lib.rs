@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{decode_float, evaluate_args, get_args, log, set_panic_hook, wrap_arg};
+use utils::{decode_float, evaluate_args, get_args, set_panic_hook, wrap_arg};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/input.json");

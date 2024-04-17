@@ -82,7 +82,7 @@ pub fn concat_args(mut data: Vec<Vec<i32>>) -> Vec<i32> {
 
     // Add [1, 1] at the end
     // result.push(1);
-    // result.push(1);
+    result.push(1);
 
     result
 }
@@ -144,8 +144,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_resursive_evaluation() {
-        let input = vec![0, 3, 0, 0, 0, 7, 0, 2, 0, 128, 0, 128, 1, 6, 0, 128];
+    fn test_recursive_evaluation() {
+        let input = vec![
+            0, 3, 0, 0, 0, 5, 0, 2, 1073741824, 1073741824, 1, 5, 1073741824,
+        ];
         // this is an encoded version of a math node that multiplies 2 * 2
         // and another math node that adds 2 to that result
         // the numbers are f32 floats encoded as two i32's
