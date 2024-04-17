@@ -57,6 +57,31 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     out_args
 }
 
+pub fn concat_args(args: Vec<&[i32]>) -> Vec<i32> {
+    let total_length: usize = args.iter().map(|arg| arg.len()).sum();
+
+    let mut out_args = Vec::with_capacity(total_length + 4);
+
+    out_args.extend_from_slice(&[0, 1]);
+
+    for arg in args {
+        out_args.extend_from_slice(arg);
+    }
+
+    out_args.extend_from_slice(&[1, 1]);
+
+    out_args
+}
+
+pub fn wrap_arg(arg: &[i32]) -> Vec<i32> {
+    let mut out_args = Vec::with_capacity(arg.len() + 8);
+    out_args.extend_from_slice(&[0, 1, 0, arg.len() as i32 + 1]);
+    out_args.extend_from_slice(arg);
+    out_args.extend_from_slice(&[1, 1]);
+    out_args.extend_from_slice(&[1, 1]);
+    out_args
+}
+
 pub fn evaluate_node(input_args: &[i32]) -> i32 {
     let node_type = input_args[0];
 
@@ -67,6 +92,10 @@ pub fn evaluate_node(input_args: &[i32]) -> i32 {
 }
 
 pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
+    if input_args.len() == 1 {
+        return input_args.to_vec();
+    }
+
     if input_args.len() == 4 && input_args[0] == 0 && input_args[1] == 3 {
         return vec![input_args[2], input_args[3]];
     }
@@ -82,13 +111,9 @@ pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
             resolved.push(arg[2]);
             resolved.push(arg[3]);
         } else {
-            let res = evaluate_args(arg);
-            resolved.push(res[0]);
-            resolved.push(res[1]);
+            resolved.push(evaluate_args(arg)[0]);
         }
     }
-
-    println!("resolved: {:?}", resolved);
 
     if resolved.len() > 1 {
         let res = evaluate_node(&resolved);

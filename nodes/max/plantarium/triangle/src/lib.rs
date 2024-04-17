@@ -1,24 +1,44 @@
+use macros::include_definition_file;
+use utils::{concat_args, decode_float, encode_float};
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
+include_definition_file!("src/input.json");
+
+#[rustfmt::skip]
 #[wasm_bindgen]
-pub fn get_outputs() -> Vec<String> {
-    vec!["float".to_string()]
-}
+pub fn execute(input: &[i32]) -> Vec<i32> {
 
-#[wasm_bindgen]
-pub fn get_input_types() -> String {
-    r#"{
-        "min": { "type": "float", "value": 2 },
-        "max": { "type": "float", "value": 2 },
-        "seed": { "type": "seed" }
-    }"#
-    .to_string()
-}
+    let size = input[2];
+    let decoded = decode_float(input[2]);
+    let negative_size = encode_float(-decoded);
 
-#[wasm_bindgen]
-pub fn execute(args: &[i32]) -> Vec<i32> {
-    // construct vertices of a triangle
-    // let min = evaluate_parameters(var_min);
+    console::log_1(&format!("WASM(triangle): input: {:?} -> {}", input, decoded).into());
 
-    vec![1, 2, 3, 4, args[0]]
+    // [[1,3, x, y, z, x, y,z,x,y,z]];
+    concat_args(vec![&[
+        0, 19,      // opening bracket + distance to next bracket
+        1,          // 1: geometry
+        3,          // 3 vertices
+        1,          // 1 face
+        // this are the indeces for the face
+        0, 2, 1,
+        // this is the normal for the single face 1065353216 == 1.0f encoded is i32
+        0, 1065353216, 0,
+        //
+        negative_size,  // x -> point 1
+        0,              // y
+        0,              // z
+        //
+        size,       // x -> point 2
+        0,          // y
+        0,          // z
+        //
+        0,          // x -> point 3
+        0,          // y
+        size,       // z
+        //
+        1, 1  // closing brackets
+    ]])
+
 }

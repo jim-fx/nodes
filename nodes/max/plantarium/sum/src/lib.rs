@@ -15,15 +15,13 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     let length = (input.len() - 2) / 2;
 
     (0..length).for_each(|i| {
-        let mantissa = input[2 + i * 2];
-        let exponent = input[2 + i * 2 + 1];
         // console::log_1(&format!("WASM(sum_node): i: {} sum: {:?}", i, sum).into());
-        sum += decode_float(mantissa, exponent);
+        sum += decode_float(input[2 + i * 2]);
     });
 
     let encoded_sum = encode_float(sum);
 
     // console::log_1(&format!("WASM(sum_node): result: {:?}", sum).into());
 
-    vec![0, 3, encoded_sum.0, encoded_sum.1]
+    vec![0, 2, encoded_sum]
 }

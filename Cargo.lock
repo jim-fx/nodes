@@ -17,6 +17,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "box"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "macros",
+ "serde",
+ "serde-wasm-bindgen",
+ "utils",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -329,11 +343,13 @@ name = "triangle"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "macros",
  "serde",
  "serde-wasm-bindgen",
  "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "web-sys",
 ]
 
 [[package]]

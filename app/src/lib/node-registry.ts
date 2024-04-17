@@ -72,10 +72,13 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
     nodeIds.push("max/plantarium/random");
     nodeIds.push("max/plantarium/float");
+    nodeIds.push("max/plantarium/triangle");
     nodeIds.push("max/plantarium/output");
     nodeIds.push("max/plantarium/array");
     nodeIds.push("max/plantarium/sum");
     nodeIds.push("max/plantarium/stem");
+    nodeIds.push("max/plantarium/box");
+    nodeIds.push("max/plantarium/math");
 
     const nodes = await Promise.all(nodeIds.map(id => this.loadNode(id)));
 

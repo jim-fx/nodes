@@ -1,0 +1,11 @@
+{
+  "outputs": [
+    "model"
+  ],
+  "inputs": {
+    "size": {
+      "type": "float",
+      "value": 2
+    }
+  }
+}

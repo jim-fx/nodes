@@ -36,7 +36,11 @@ type DefaultOptions = {
   label?: string;
 }
 
-export type NodeInput = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect) & DefaultOptions;
+type InputTypes = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect);
+
+export type NodeInput = InputTypes & {
+  type: InputTypes["type"] | InputTypes["type"][];
+} & DefaultOptions;
 
 
 export type NodeInputType<T extends Record<string, NodeInput>> = {

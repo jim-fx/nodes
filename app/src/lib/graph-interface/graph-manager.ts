@@ -8,6 +8,13 @@ import type { NodeInput } from "@nodes/types";
 
 const logger = createLogger("graph-manager");
 
+function areSocketsCompatible(output: string | undefined, inputs: string | string[] | undefined) {
+  if (Array.isArray(inputs) && output) {
+    return inputs.includes(output);
+  }
+  return inputs === output;
+}
+
 export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }> {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
@@ -177,7 +184,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
         }
       }
     }
-    console.log(settings);
 
     this.history.reset();
     this._init(this.graph);
@@ -353,7 +359,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     const fromSocketType = from.tmp?.type?.outputs?.[fromSocket];
     const toSocketType = to.tmp?.type?.inputs?.[toSocket]?.type;
 
-    if (fromSocketType !== toSocketType) {
+    if (!areSocketsCompatible(fromSocketType, toSocketType)) {
       logger.error(`Socket types do not match: ${fromSocketType} !== ${toSocketType}`);
       return;
     }
@@ -441,8 +447,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     const nodeType = node?.tmp?.type;
     if (!nodeType) return [];
 
-
     const sockets: [Node, string | number][] = []
+
     // if index is a string, we are an input looking for outputs
     if (typeof index === "string") {
 
@@ -479,7 +485,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
         const inputs = node?.tmp?.type?.inputs;
         if (!inputs) continue;
         for (const key in inputs) {
-          if (inputs[key].type === ownType && edges.get(node.id) !== key) {
+          if (areSocketsCompatible(ownType, inputs[key].type) && edges.get(node.id) !== key) {
             sockets.push([node, key]);
           }
         }

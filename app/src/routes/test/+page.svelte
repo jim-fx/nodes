@@ -5,6 +5,24 @@
   console.clear();
 
   {
+    const encodedPositions = new Int32Array([
+      encodeFloat(1.1),
+      encodeFloat(2.0),
+      encodeFloat(3.0),
+      encodeFloat(4.0),
+      encodeFloat(5.0),
+      encodeFloat(6.0),
+      encodeFloat(7.0),
+      encodeFloat(8.0),
+      encodeFloat(9.0),
+    ]);
+
+    // Create a Float32Array using the same buffer that backs the Int32Array
+    const floatView = new Float32Array(encodedPositions.buffer);
+    console.log({ encodedPositions, floatView });
+  }
+
+  if (false) {
     const input_a = encode([1, 2, 3]);
     const input_b = 2;
     const input_c = 89;

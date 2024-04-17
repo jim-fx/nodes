@@ -1,7 +1,11 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { BufferGeometry, Float32BufferAttribute } from "three";
+  import {
+    BufferAttribute,
+    BufferGeometry,
+    Float32BufferAttribute,
+  } from "three";
   import { decodeFloat } from "$lib/helpers/encode";
 
   export let result: Int32Array;
@@ -20,33 +24,28 @@
     const faceCount = encodedData[index++];
 
     // Indices
-    const indices: number[] = [];
-    for (let i = 0; i < faceCount * 3; i++) {
-      indices.push(encodedData[index++]);
-    }
+    const indices = encodedData.subarray(index, index + faceCount * 3);
+    index = index + faceCount * 3;
 
-    // Face normals (although typically there would be one normal per vertex)
-    const normals: number[] = [];
-    for (let i = 0; i < faceCount; i++) {
-      const x = decodeFloat(encodedData[index++]);
-      const y = decodeFloat(encodedData[index++]);
-      const z = decodeFloat(encodedData[index++]);
-      normals.push(x, y, z);
-    }
+    const normals = new Float32Array(
+      encodedData.buffer,
+      index * 4,
+      faceCount * 3,
+    );
+    index = index + faceCount * 3;
 
     // Vertices
-    const vertices: number[] = [];
-    for (let i = 0; i < vertexCount; i++) {
-      const x = decodeFloat(encodedData[index++]);
-      const y = decodeFloat(encodedData[index++]);
-      const z = decodeFloat(encodedData[index++]);
-      vertices.push(x, y, z);
-    }
+    const vertices = new Float32Array(
+      encodedData.buffer,
+      index * 4,
+      vertexCount * 3,
+    );
 
     // Add data to geometry
-    geometry.setIndex(indices);
+    geometry.setIndex([...indices]);
     geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    // geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    geometry.computeVertexNormals();
 
     return geometry;
   }
@@ -96,8 +95,6 @@
 
   $: if (result) {
     const inputs = parse_args(result);
-
-    console.log({ inputs });
 
     for (let input of inputs) {
       if (input[0] === 1) {

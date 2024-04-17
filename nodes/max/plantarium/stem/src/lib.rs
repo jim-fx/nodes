@@ -22,7 +22,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     );
 
     vec![
-        0,  // opening bracket
+        0, 1, 0,  // opening bracket
         11, // opening bracket
         0,  // type: plant
         0,  // alpha: 0
@@ -34,6 +34,8 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         2,  // y
         0,  // z
         1,  // thickness
+        1,  // closing bracket
+        1,  //closing bracket
         1,  // closing bracket
         1,  //closing bracket
     ]

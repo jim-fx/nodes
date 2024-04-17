@@ -2,7 +2,10 @@
   "outputs": [],
   "inputs": {
     "input": {
-      "type": "float",
+      "type": [
+        "plant",
+        "model"
+      ],
       "external": true
     }
   }

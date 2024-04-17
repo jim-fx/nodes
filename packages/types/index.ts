@@ -77,7 +77,7 @@ export interface RuntimeExecutor {
   * @param graph - The graph to execute
   * @returns The result of the execution
   */
-  execute: (graph: Graph) => void;
+  execute: (graph: Graph) => unknown;
 }
 
 
