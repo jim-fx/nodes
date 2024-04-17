@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{concat_args, decode_float, encode_float};
+use utils::{concat_args, decode_float, encode_float, wrap_arg};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -16,8 +16,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     console::log_1(&format!("WASM(triangle): input: {:?} -> {}", input, decoded).into());
 
     // [[1,3, x, y, z, x, y,z,x,y,z]];
-    concat_args(vec![&[
-        0, 19,      // opening bracket + distance to next bracket
+    wrap_arg(&[
         1,          // 1: geometry
         3,          // 3 vertices
         1,          // 1 face
@@ -37,8 +36,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         0,          // x -> point 3
         0,          // y
         size,       // z
-        //
-        1, 1  // closing brackets
-    ]])
+    ])
 
 }

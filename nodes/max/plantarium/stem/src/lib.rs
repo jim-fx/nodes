@@ -1,42 +1,42 @@
 use macros::include_definition_file;
-use utils::{evaluate_args, get_args};
+use utils::{decode_float, evaluate_args, get_args, log, set_panic_hook, wrap_arg};
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 include_definition_file!("src/input.json");
 
 #[wasm_bindgen]
 pub fn execute(input: &[i32]) -> Vec<i32> {
+    set_panic_hook();
+
     let args = get_args(input);
 
-    let length = evaluate_args(args[0]);
-    let thickness = evaluate_args(args[1]);
-    let resolution = 32; //evaluate_args(args[2]);
+    let length = decode_float(evaluate_args(args[0])[0]);
+    let thickness = decode_float(evaluate_args(args[1])[0]);
+    let resolution = 64; //evaluate_args(args[2]);
 
-    console::log_1(
-        &format!(
-            "length: {:?}, thickness: {:?}, resolution: {:?}",
-            length, thickness, resolution
-        )
-        .into(),
-    );
+    let mut path: Vec<i32> = vec![0; resolution * 4 + 1];
+    path.resize(resolution * 4 + 1, 0);
 
-    vec![
-        0, 1, 0,  // opening bracket
-        11, // opening bracket
-        0,  // type: plant
-        0,  // alpha: 0
-        0,  // x
-        0,  // y
-        0,  // z
-        1,  // thickness
-        0,  // x
-        2,  // y
-        0,  // z
-        1,  // thickness
-        1,  // closing bracket
-        1,  //closing bracket
-        1,  // closing bracket
-        1,  //closing bracket
-    ]
+    path[0] = 0;
+
+    let slice = &mut path[1..];
+
+    // Unsafe code to transmute the i32 slice to an f32 slice
+    let path_p: &mut [f32] = unsafe {
+        // Ensure that the length of the slice is a multiple of 4
+        assert_eq!(slice.len() % 4, 0);
+
+        // Transmute the i32 slice to an f32 slice
+        std::slice::from_raw_parts_mut(slice.as_ptr() as *mut f32, slice.len())
+    };
+
+    for i in 0..resolution {
+        let a = i as f32 / resolution as f32;
+        path_p[i * 4] = (a * 8.0).sin() * 0.2;
+        path_p[i * 4 + 1] = a * length;
+        path_p[i * 4 + 2] = 0.0;
+        path_p[i * 4 + 3] = thickness * (1.0 - a);
+    }
+
+    wrap_arg(&path)
 }

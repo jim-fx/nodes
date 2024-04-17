@@ -7,6 +7,14 @@ pub use helpers::*;
 pub use tree::*;
 pub mod geometry;
 
+#[macro_export]
+macro_rules! log {
+    ($($arg:tt)*) => {{
+        use web_sys::console;
+        console::log_1(&format!($($arg)*).into());
+    }}
+}
+
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
     // `set_panic_hook` function at least once during initialization, and then

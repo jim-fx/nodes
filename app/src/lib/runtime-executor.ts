@@ -1,9 +1,5 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
-import { encodeFloat } from "./helpers/encode";
-import { concat_encoded } from "./helpers/flat_tree";
-import { fastHash } from "./helpers/fastHash";
-
-
+import { fastHash, concat_encoded, encodeFloat } from "@nodes/utils"
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 

@@ -38,12 +38,13 @@
     );
     index = index + vertexCount * 3;
 
+    console.log({ vertices, normals, indices });
+
     // Add data to geometry
     geometry.setIndex([...indices]);
     geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
     geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-    // geometry.computeVertexNormals();
-    //geometry.computeVertexNormals();
+    geometry.computeVertexNormals();
 
     return geometry;
   }
@@ -94,19 +95,19 @@
   $: if (result) {
     const inputs = parse_args(result);
 
-    for (let input of inputs) {
-      if (input[0] === 1) {
-        const geo = createGeometryFromEncodedData(input);
-        geometries = [geo];
-        console.log(geo);
-      }
-    }
+    console.log({ inputs });
+
+    geometries = inputs
+      .map((input) => {
+        if (input[0] === 1) {
+          const geo = createGeometryFromEncodedData(input);
+          return geo;
+        }
+      })
+      .filter(Boolean) as BufferGeometry[];
   }
 </script>
 
 <Canvas>
   <Scene geometry={geometries} />
 </Canvas>
-
-<style>
-</style>

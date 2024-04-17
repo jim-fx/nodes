@@ -1,4 +1,4 @@
-use crate::geometry::calculate_normals::calculate_normals;
+use crate::geometry::calculate_normals;
 use macros::include_definition_file;
 use utils::{
     decode_float, encode_float, evaluate_args, geometry, get_args, set_panic_hook, wrap_arg,

@@ -57,20 +57,34 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     out_args
 }
 
-pub fn concat_args(args: Vec<&[i32]>) -> Vec<i32> {
-    let total_length: usize = args.iter().map(|arg| arg.len()).sum();
+pub fn concat_args(mut data: Vec<Vec<i32>>) -> Vec<i32> {
+    let mut total_length = 4; // Start with 4 to account for [0, 1] at the start and [1, 1] at the end
 
-    let mut out_args = Vec::with_capacity(total_length + 4);
-
-    out_args.extend_from_slice(&[0, 1]);
-
-    for arg in args {
-        out_args.extend_from_slice(arg);
+    // Calculate the total length first to avoid reallocations
+    for vec in &data {
+        total_length += vec.len(); // +4 for [0, 1] and [1, 1] per inner vec
     }
 
-    out_args.extend_from_slice(&[1, 1]);
+    let mut result = Vec::with_capacity(total_length);
 
-    out_args
+    // Add [0, 1] initially
+    // result.push(0);
+    // result.push(1);
+
+    // Process each vector
+    for vec in data.iter_mut() {
+        result.push(0);
+        result.push(1);
+        result.append(vec);
+        result.push(1);
+        result.push(1);
+    }
+
+    // Add [1, 1] at the end
+    // result.push(1);
+    // result.push(1);
+
+    result
 }
 
 pub fn wrap_arg(arg: &[i32]) -> Vec<i32> {

@@ -16,29 +16,29 @@
   }
 </script>
 
+<T.GridHelper args={[20, 20]} />
+
 <T.PerspectiveCamera position={[-10, 10, 10]} makeDefault fov={50}>
   <OrbitControls />
 </T.PerspectiveCamera>
 
 <T.DirectionalLight position={[0, 10, 10]} />
+<T.AmbientLight intensity={0.5} />
 
 {#each geometry as geo}
-  {#each geo.attributes.position.array as attr, i}
-    {#if i % 3 === 0}
-      <Text text={i / 3} fontSize={1} position={getPosition(geo, i)} />
-    {/if}
-  {/each}
+  {#if false}
+    {#each geo.attributes.position.array as _, i}
+      {#if i % 3 === 0}
+        <Text text={i / 3} fontSize={0.25} position={getPosition(geo, i)} />
+      {/if}
+    {/each}
 
-  <T.Points visible={true}>
-    <T is={geo} />
-    <T.PointsMaterial size={0.25} />
-  </T.Points>
+    <T.Points visible={true}>
+      <T is={geo} />
+      <T.PointsMaterial size={0.25} />
+    </T.Points>
+  {/if}
   <T.Mesh geometry={geo}>
-    <T.MeshStandardMaterial color="hotpink" />
-  </T.Mesh>
-{:else}
-  <T.Mesh>
-    <T.BoxGeometry args={[1, 1, 1]} />
-    <T.MeshStandardMaterial color="hotpink" />
+    <T.MeshStandardMaterial color="green" />
   </T.Mesh>
 {/each}
