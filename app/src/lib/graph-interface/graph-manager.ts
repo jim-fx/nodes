@@ -119,6 +119,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
       const nodeType = this.nodeRegistry.getNode(node.type);
       if (nodeType) {
         node.tmp = {
+          random: (Math.random() - 0.5) * 2,
           type: nodeType
         };
       }
@@ -173,6 +174,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
         return;
       }
       node.tmp = node.tmp || {};
+      node.tmp.random = (Math.random() - 0.5) * 2;
       node.tmp.type = nodeType;
     }
 

@@ -75,7 +75,7 @@
     header
     <button
       on:click={() => {
-        graph = templates.grid(10, 10);
+        graph = templates.grid(15, 15);
       }}>grid stress-test</button
     >
   </header>

@@ -156,10 +156,6 @@
     box-sizing: border-box;
   }
 
-  :global(.zoom-small) .content {
-    display: none;
-  }
-
   svg {
     position: absolute;
     box-sizing: border-box;
