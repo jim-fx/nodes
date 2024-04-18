@@ -57,9 +57,20 @@
     overflow: hidden;
   }
   .seperator {
-    background: white;
+    position: relative;
     cursor: ew-resize;
     height: 100%;
-    width: 5px;
+    width: 1px;
+    background: var(--outline);
+  }
+  .seperator::before {
+    content: "";
+    cursor: ew-resize;
+    position: absolute;
+    pointer-events: all;
+    height: 100%;
+    width: 14px;
+    z-index: 2;
+    left: -7px;
   }
 </style>

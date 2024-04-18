@@ -120,12 +120,11 @@
 <style>
   .component-wrapper {
     position: relative;
-    background-color: var(--background-color-lighter, #4b4b4b);
+    background-color: var(--layer-2, #4b4b4b);
     border-radius: 2px;
     user-select: none;
     transition: box-shadow 0.3s ease;
-    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.2);
-    outline: none !important;
+    outline: solid 1px var(--outline);
     overflow: hidden;
     border-radius: var(--border-radius, 2px);
   }

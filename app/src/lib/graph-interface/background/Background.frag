@@ -8,6 +8,7 @@ uniform vec2 dimensions;
 uniform vec3 camPos;
 uniform vec2 zoomLimits;
 uniform vec3 backgroundColor;
+uniform vec3 lineColor;
 
 float grid(float x, float y, float divisions, float thickness) {
     x = fract(x * divisions);
@@ -92,7 +93,7 @@ void main(void) {
     float c = mix(large, small, min(nz*2.0+0.05, 1.0));
     c = mix(c, xsmall, max(min((nz-0.3)/0.7, 1.0), 0.0));
 
-    vec3 color = mix(backgroundColor, vec3(1.0), c*0.5); 
+    vec3 color = mix(backgroundColor, lineColor, c); 
 
     gl_FragColor = vec4(color, 1.0);
 }

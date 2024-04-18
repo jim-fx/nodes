@@ -1,12 +1,9 @@
 <script context="module" lang="ts">
-  const color = new Color(0x202020);
-  color.convertLinearToSRGB();
-
-  const color2 = color.clone();
-  color2.convertSRGBToLinear();
+  import { colors } from "../graph/stores";
+  import { get } from "svelte/store";
 
   const circleMaterial = new MeshBasicMaterial({
-    color,
+    color: get(colors).outline,
     toneMapped: false,
   });
 
@@ -24,7 +21,6 @@
   import { T } from "@threlte/core";
   import { MeshLineMaterial } from "@threlte/extras";
   import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
-  import { Color } from "three/src/math/Color.js";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
@@ -59,7 +55,7 @@
     const length = Math.floor(
       Math.sqrt(Math.pow(new_x, 2) + Math.pow(new_y, 2)) / 4,
     );
-    samples = Math.min(Math.max(10, length), 60);
+    samples = Math.min(Math.max(10, length), 60) * 2;
 
     curve.v0.set(0, 0);
     curve.v1.set(mid.x, 0);
@@ -102,11 +98,6 @@
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial
-      width={4}
-      attenuate={false}
-      color={color2}
-      toneMapped={false}
-    />
+    <MeshLineMaterial width={3} attenuate={false} color={$colors.outline} />
   </T.Mesh>
 {/if}

@@ -14,17 +14,13 @@
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
   let res: Int32Array;
-  let time = 0;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.grid(3, 3);
 
   function handleResult(event: CustomEvent<Graph>) {
-    let a = performance.now();
     res = runtimeExecutor.execute(event.detail, get(settings?.graph?.settings));
-    time = performance.now() - a;
-    console.log({ res, time });
   }
 
   function handleSave(event: CustomEvent<Graph>) {
@@ -89,7 +85,8 @@
 
 <style>
   header {
-    border-bottom: solid thin white;
+    border-bottom: solid thin var(--outline);
+    background-color: var(--layer-1);
   }
 
   .wrapper {

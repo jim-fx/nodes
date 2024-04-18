@@ -435,7 +435,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
   save() {
     if (this.currentUndoGroup) return;
     const state = this.serialize();
-    console.log(state);
     this.history.save(state);
     this.emit("save", state);
     logger.log("saving graphs", state);

@@ -175,7 +175,7 @@
     transition:
       d 0.3s ease,
       fill 0.3s ease;
-    fill: var(--background-color);
+    fill: var(--layer-1);
     stroke: var(--stroke);
     stroke-width: var(--stroke-width);
     d: var(--path);

@@ -41,24 +41,92 @@
 body {
   overflow: hidden;
 
+  --neutral-100: #E7E7E7;
+  --neutral-200: #A6A6A6;
+  --neutral-300: #7C7C7C;
+  --neutral-400: #2D2D2D;
+  --neutral-500: #171717;
+  --neutral-800: #111111;
+  --neutral-900: #060606;
+
   /* Secondary color */
   --secondary-color: #6c757d;
-  /* Background color */
-  --background-color-lighter: #202020;
-  --background-color: #151515;
-  --background-color-darker: #101010;
-  --text-color: #aeaeae;
+
+  --layer-0: var(--neutral-900);
+  --layer-1: var(--neutral-500);
+  --layer-2: var(--neutral-400);
+  --layer-3: var(--neutral-200);
+
+  --outline: var(--neutral-400);
+
+  --text-color: var(--neutral-200);
 
   color: var(--text-color);
+  background-color: var(--layer-0);
+}
 
-  background-color: var(--background-color-darker);
+body * {
+  color: var(--text-color);
+}
+
+body.theme-light {
+  --text-color: var(--neutral-800);
+  --outline: var(--neutral-300);
+  --layer-0: var(--neutral-100);
+  --layer-1: var(--neutral-100);
+  --layer-2: var(--neutral-100);
+  --layer-3: var(--neutral-500);
+}
+
+body.theme-solarized {
+  --text-color: #425055;
+  --outline: #93a1a1;
+  --layer-0: #fdf6e3;
+  --layer-1: #eee8d5;
+  --layer-2: #93a1a1;
+  --layer-3: #586e75;
 }
 
 body.theme-catppuccin {
   --text-color: #CDD6F4;
-  --background-color-lighter: #313244;
-  --background-color: #1E1E2E;
-  --background-color-darker: #11111b;
+  --outline: #3e3e4f;
+  --layer-3: #a8aac8;
+  --layer-2: #313244;
+  --layer-1: #1E1E2E;
+  --layer-0: #11111b;
+}
+
+body.theme-high-contrast {
+  --text-color: #FFFFFF;
+  --outline: white;
+  --layer-0: #000000;
+  --layer-1: black;
+  --layer-2: #222222;
+  --layer-3: #FFFFFF;
+}
+
+body.theme-nord {
+  --text-color: #D8DEE9;
+  /* Nord snow */
+  --outline: #4C566A;
+  /* Nord frost */
+  --layer-0: #2E3440;
+  /* Nord polar night */
+  --layer-1: #3B4252;
+  /* Nord polar night */
+  --layer-2: #434C5E;
+  /* Nord polar night */
+  --layer-3: #5E81AC;
+  /* Nord frost */
+}
+
+body.theme-dracula {
+  --text-color: #F8F8F2;
+  --outline: #6272A4;
+  --layer-0: #282A36;
+  --layer-1: #44475A;
+  --layer-2: #32374D;
+  --layer-3: #BD93F9;
 }
 
 body {

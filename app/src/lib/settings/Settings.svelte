@@ -3,12 +3,14 @@
   import type { Writable } from "svelte/store";
   import SettingsComponent from "./Panel.svelte";
   import localStore from "$lib/helpers/localStore";
+  import type { SvelteComponent } from "svelte";
 
   export let settings: Record<
     string,
     {
       icon: string;
       id: string;
+      component?: typeof SvelteComponent<{}, {}, {}>;
       definition: Record<string, NodeInput>;
       settings: Writable<Record<string, unknown>>;
     }
@@ -50,10 +52,17 @@
       </button>
     {/each}
   </div>
-  <div class="content p-2">
+  <div class="content">
     {#if $activePanel && settings[$activePanel]}
       {#key $activePanel}
-        <SettingsComponent setting={settings[$activePanel]} />
+        {#if settings[$activePanel].component}
+          <svelte:component
+            this={settings[$activePanel].component}
+            {...settings[$activePanel]}
+          />
+        {:else}
+          <SettingsComponent setting={settings[$activePanel]} />
+        {/if}
       {/key}
     {/if}
   </div>
@@ -66,7 +75,6 @@
     display: grid;
     grid-template-columns: 30px 1fr;
     height: 100%;
-    background: transparent;
     right: 0px;
     transform: translateX(calc(100% - 30px));
     transition:
@@ -76,27 +84,31 @@
     min-width: 300px;
   }
 
+  .content {
+    background: var(--layer-1);
+  }
+
   .tabs {
     display: flex;
     flex-direction: column;
-    border-right: solid thin white;
+    border-right: solid thin var(--outline);
   }
 
   .tabs > button {
     height: 30px;
+    padding: 5px;
     background: none;
-    background: blue;
-    color: white;
+    color: var(--outline);
     border: none;
     display: flex;
     align-items: center;
-    border-bottom: solid thin white;
-    border-left: solid thin white;
+    border-bottom: solid thin var(--outline);
+    border-left: solid thin var(--outline);
   }
 
   .tabs > button.active {
-    color: black;
-    background: white;
+    color: var(--layer-3);
+    background: var(--layer-1);
   }
 
   .visible .tabs > button {
@@ -105,7 +117,7 @@
 
   .visible .tabs {
     margin-left: -1px;
-    border-left: solid thin white;
+    border-left: solid thin var(--outline);
   }
 
   .visible > .tabs button:first-child {
@@ -114,7 +126,7 @@
 
   .visible {
     transform: translateX(0);
-    border-left: solid thin white;
-    background: black;
+    border-left: solid thin var(--outline);
+    background: var(--layer-0);
   }
 </style>

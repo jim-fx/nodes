@@ -1,6 +1,11 @@
 <script lang="ts">
   import { animate, lerp, snapToGrid } from "../helpers/index.js";
-  import { LinearSRGBColorSpace } from "three";
+  import {
+    LinearSRGBColorSpace,
+    LinearToneMapping,
+    NoToneMapping,
+    SRGBColorSpace,
+  } from "three";
   import { Canvas } from "@threlte/core";
   import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
@@ -750,12 +755,7 @@
   on:keydown={handleKeyDown}
   on:mousedown={handleMouseDown}
 >
-  <Canvas
-    shadows={false}
-    renderMode="on-demand"
-    colorManagementEnabled={false}
-    colorSpace={LinearSRGBColorSpace}
-  >
+  <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
 
     <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Checkbox from "$lib/elements/Checkbox.svelte";
-  import Float from "$lib/elements/Float.svelte";
-  import Integer from "$lib/elements/Integer.svelte";
-  import Select from "$lib/elements/Select.svelte";
+  import Checkbox from "./elements/Checkbox.svelte";
+  import Float from "./elements/Float.svelte";
+  import Integer from "./elements/Integer.svelte";
+  import Select from "./elements/Select.svelte";
 
   import type { NodeInput } from "@nodes/types";
 

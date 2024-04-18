@@ -4,6 +4,7 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "../graph/stores.js";
+  import { colors } from "../graph/stores";
   import { T } from "@threlte/core";
   import { Color, type Mesh } from "three";
   import NodeFrag from "./Node.frag";
@@ -25,7 +26,6 @@
 
   const zOffset = (node.tmp?.random || 0) * 0.5;
   const zLimit = 2 - zOffset;
-  $: visible = inView && z > zLimit;
 
   const parameters = Object.entries(type?.inputs || {})
     .filter((p) => p[1].type !== "seed")
@@ -49,13 +49,6 @@
     node.tmp.mesh = meshRef;
     updateNodePosition(node);
   });
-
-  const colorDark = new Color();
-  colorDark.setStyle("#151515");
-  //colorDark.();
-
-  const colorBright = new Color("#202020");
-  //colorBright.convertLinearToSRGB();
 </script>
 
 <T.Mesh
@@ -72,8 +65,8 @@
     fragmentShader={NodeFrag}
     transparent
     uniforms={{
-      uColorBright: { value: colorBright },
-      uColorDark: { value: colorDark },
+      uColorBright: { value: new Color("#171717") },
+      uColorDark: { value: new Color("#151515") },
       uSelectedColor: { value: new Color("#9d5f28") },
       uActiveColor: { value: new Color("white") },
       uSelected: { value: false },
@@ -84,6 +77,8 @@
     }}
     uniforms.uSelected.value={isSelected}
     uniforms.uActive.value={isActive}
+    uniforms.uColorBright.value={$colors.layer2}
+    uniforms.uColorDark.value={$colors.layer1}
     uniforms.uStrokeWidth.value={(7 - z) / 3}
   />
 </T.Mesh>
@@ -122,7 +117,7 @@
     z-index: 1;
     opacity: calc((var(--cz) - 2.5) / 3.5);
     font-weight: 300;
-    --stroke: var(--background-color-lighter);
+    --stroke: var(--outline);
     --stroke-width: 2px;
   }
 

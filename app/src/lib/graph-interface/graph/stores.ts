@@ -11,9 +11,11 @@ export const possibleSockets: Writable<Socket[]> = writable([]);
 export const possibleSocketIds: Writable<Set<string> | null> = writable(null);
 
 export const colors = writable({
-  backgroundColorDarker: new Color().setStyle("#101010"),
-  backgroundColor: new Color().setStyle("#151515"),
-  backgroundColorLighter: new Color().setStyle("#202020")
+  layer0: new Color().setStyle("#060606"),
+  layer1: new Color().setStyle("#171717"),
+  layer2: new Color().setStyle("#2D2D2D"),
+  layer3: new Color().setStyle("#A6A6A6"),
+  outline: new Color().setStyle("#000000"),
 });
 
 if ("getComputedStyle" in globalThis) {
@@ -23,18 +25,31 @@ if ("getComputedStyle" in globalThis) {
   function updateColors() {
 
     const style = getComputedStyle(body);
-    const backgroundColorDarker = style.getPropertyValue("--background-color-darker");
-    const backgroundColor = style.getPropertyValue("--background-color");
-    const backgroundColorLighter = style.getPropertyValue("--background-color-lighter");
+    const layer0 = style.getPropertyValue("--layer-0");
+    const layer1 = style.getPropertyValue("--layer-1");
+    const layer2 = style.getPropertyValue("--layer-2");
+    const layer3 = style.getPropertyValue("--layer-3");
+    const outline = style.getPropertyValue("--outline");
 
     colors.update(col => {
-      col.backgroundColorDarker.setStyle(backgroundColorDarker);
-      col.backgroundColor.setStyle(backgroundColor);
-      col.backgroundColorLighter.setStyle(backgroundColorLighter);
+      col.layer0.setStyle(layer0);
+      col.layer0.convertLinearToSRGB();
+      col.layer1.setStyle(layer1);
+      col.layer1.convertLinearToSRGB();
+      col.layer2.setStyle(layer2);
+      col.layer2.convertLinearToSRGB();
+      col.layer3.setStyle(layer3);
+      col.layer3.convertLinearToSRGB();
+      col.outline.setStyle(outline);
+      col.outline.convertLinearToSRGB();
       return col;
     });
 
   }
+
+  updateColors();
+
+  window.onload = updateColors;
 
   body.addEventListener("transitionstart", () => {
     updateColors();

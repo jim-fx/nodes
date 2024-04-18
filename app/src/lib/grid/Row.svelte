@@ -17,7 +17,7 @@
 
   setContext("sizes", sizes);
 
-  $: cols = $sizes.map((size, i) => `${i > 0 ? "5px " : ""}` + size).join(" ");
+  $: cols = $sizes.map((size, i) => `${i > 0 ? "1px " : ""}` + size).join(" ");
 </script>
 
 <div class="wrapper" style={`grid-template-columns: ${cols};`}>

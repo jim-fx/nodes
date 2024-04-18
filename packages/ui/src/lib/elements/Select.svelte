@@ -12,9 +12,10 @@
 
 <style>
   select {
-    background: var(--background-color-lighter);
+    background: var(--layer-2);
     color: var(--text-color);
     font-family: var(--font-family);
+    outline: solid 1px var(--outline);
     padding: 0.8em 1em;
     border-radius: 5px;
     border: none;
