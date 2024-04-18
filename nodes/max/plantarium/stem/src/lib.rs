@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{decode_float, evaluate_args, get_args, set_panic_hook, wrap_arg};
+use utils::{evaluate_float, evaluate_vec3, get_args, log, set_panic_hook, wrap_arg};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/input.json");
@@ -10,9 +10,13 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let args = get_args(input);
 
-    let length = decode_float(evaluate_args(args[0])[0]);
-    let thickness = decode_float(evaluate_args(args[1])[0]);
-    let resolution = 512; //evaluate_args(args[2]);
+    log!("Args: {:?}", args);
+
+    let origin = evaluate_vec3(args[0]);
+    log!("Origin: {:?}", origin);
+    let length = evaluate_float(args[1]);
+    let thickness = evaluate_float(args[2]);
+    let resolution = 16;
 
     let mut path: Vec<i32> = vec![0; resolution * 4 + 1];
     path.resize(resolution * 4 + 1, 0);
@@ -32,9 +36,9 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     for i in 0..resolution {
         let a = i as f32 / resolution as f32;
-        path_p[i * 4] = (a * 8.0).sin() * 0.2;
-        path_p[i * 4 + 1] = a * length;
-        path_p[i * 4 + 2] = 0.0;
+        path_p[i * 4] = origin[0] + (a * 8.0).sin() * 0.2;
+        path_p[i * 4 + 1] = origin[1] + a * length;
+        path_p[i * 4 + 2] = origin[2] + 0.0;
         path_p[i * 4 + 3] = thickness * (1.0 - a);
     }
 

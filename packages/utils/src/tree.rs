@@ -1,3 +1,5 @@
+use crate::decode_float;
+
 pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     let mut idx: usize = 0;
     let mut depth = -1;
@@ -105,13 +107,29 @@ pub fn evaluate_node(input_args: &[i32]) -> i32 {
     }
 }
 
-pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
-    if input_args.len() == 1 {
-        return input_args.to_vec();
-    }
+pub fn evaluate_vec3(input_args: &[i32]) -> Vec<f32> {
+    let args = get_args(input_args);
 
-    if input_args.len() == 4 && input_args[0] == 0 && input_args[1] == 3 {
-        return vec![input_args[2], input_args[3]];
+    assert!(
+        args.len() == 3,
+        "Failed to evaluate Vec3 - Expected 3 arguments, got {}",
+        args.len()
+    );
+
+    let x = evaluate_float(args[0]);
+    let y = evaluate_float(args[1]);
+    let z = evaluate_float(args[2]);
+
+    vec![x, y, z]
+}
+
+pub fn evaluate_float(arg: &[i32]) -> f32 {
+    decode_float(evaluate_arg(arg))
+}
+
+pub fn evaluate_arg(input_args: &[i32]) -> i32 {
+    if input_args.len() == 1 {
+        return input_args.to_vec()[0];
     }
 
     let args = get_args(input_args);
@@ -125,21 +143,19 @@ pub fn evaluate_args(input_args: &[i32]) -> Vec<i32> {
             resolved.push(arg[2]);
             resolved.push(arg[3]);
         } else {
-            resolved.push(evaluate_args(arg)[0]);
+            resolved.push(evaluate_arg(arg));
         }
     }
 
     if resolved.len() > 1 {
-        let res = evaluate_node(&resolved);
-        vec![res]
+        evaluate_node(&resolved)
     } else {
-        resolved
+        resolved[0]
     }
 }
+
 #[cfg(test)]
 mod tests {
-
-    use crate::encoding::decode_float;
 
     use super::*;
 
@@ -152,10 +168,9 @@ mod tests {
         // and another math node that adds 2 to that result
         // the numbers are f32 floats encoded as two i32's
 
-        let result = evaluate_args(&input);
-        let decoded = decode_float(result[0]);
+        let result = evaluate_float(&input);
 
-        assert_eq!(decoded, 6.0);
+        assert_eq!(result, 6.0);
     }
 
     #[test]

@@ -73,6 +73,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
     nodeIds.push("max/plantarium/random");
     nodeIds.push("max/plantarium/float");
     nodeIds.push("max/plantarium/triangle");
+    nodeIds.push("max/plantarium/vec3");
     nodeIds.push("max/plantarium/output");
     nodeIds.push("max/plantarium/array");
     nodeIds.push("max/plantarium/sum");

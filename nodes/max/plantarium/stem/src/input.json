@@ -3,6 +3,15 @@
     "plant"
   ],
   "inputs": {
+    "origin": {
+      "type": "vec3",
+      "value": [
+        0,
+        0,
+        0
+      ],
+      "external": true
+    },
     "length": {
       "type": "float",
       "value": 2

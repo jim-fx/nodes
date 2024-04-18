@@ -1,7 +1,6 @@
-use crate::geometry::calculate_normals;
 use macros::include_definition_file;
 use utils::{
-    decode_float, encode_float, evaluate_args, geometry, get_args, set_panic_hook, wrap_arg,
+    encode_float, evaluate_float, geometry::calculate_normals, get_args, set_panic_hook, wrap_arg,
 };
 use wasm_bindgen::prelude::*;
 use web_sys::console;
@@ -18,12 +17,10 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     console::log_1(&format!("WASM(cube): input: {:?} -> {:?}", input, args ).into());
 
-    let arg1 = evaluate_args(args[0]);
+    let size = evaluate_float(args[0]);
 
-    let decoded = decode_float(arg1[0]);
-
-    let p = encode_float(decoded);
-    let n = encode_float(-decoded);
+    let p = encode_float(size);
+    let n = encode_float(-size);
 
 
     // [[1,3, x, y, z, x, y,z,x,y,z]];

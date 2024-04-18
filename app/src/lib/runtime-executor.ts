@@ -1,5 +1,5 @@
 import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
-import { fastHash, concat_encoded, encodeFloat } from "@nodes/utils"
+import { fastHash, concat_encoded, encodeFloat, encode } from "@nodes/utils"
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
@@ -176,8 +176,14 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
               return encodeFloat(value as number);
             }
 
+            if (Array.isArray(value)) {
+              return encode(value);
+            }
+
             return value;
           });
+
+          console.log(transformed_inputs);
 
           const a2 = performance.now();
 
@@ -185,6 +191,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           const _inputs = concat_encoded(transformed_inputs);
           const a3 = performance.now();
+          console.log(`executing ${node_type.id || node.id}`, _inputs);
           results[node.id] = node_type.execute(_inputs) as number;
           const duration = performance.now() - a3;
           if (duration > 5) {

@@ -1,4 +1,4 @@
-use super::create_empty_geometry;
+use super::{create_geometry_data, wrap_geometry_data};
 use glam::{Mat4, Quat, Vec3};
 
 fn create_circle(res: usize) -> Vec<f32> {
@@ -19,21 +19,18 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
 
     let circle = create_circle(res_x);
 
-    let mut geometry = create_empty_geometry(vertices_amount, face_amount);
+    let mut geometry_data = create_geometry_data(vertices_amount, face_amount);
 
-    let (_header,rest) = geometry.split_at_mut(5);
-    let (indices, rest) = rest.split_at_mut(face_amount*3);
-    let (_positions, _normals) =  rest.split_at_mut(vertices_amount*3);
-    let positions: &mut [f32];
-    let normals: &mut [f32];
+    let geometry = wrap_geometry_data(&mut geometry_data);
+
+    let normals = geometry.normals;
+    let positions = geometry.positions;
+    let indices = geometry.faces;
+
     let path: &[f32];
     unsafe {
         path = std::slice::from_raw_parts(input_path.as_ptr() as *const f32, input_path.len());
-        positions = std::slice::from_raw_parts_mut(_positions.as_mut_ptr() as *mut f32, _positions.len());
-        normals = std::slice::from_raw_parts_mut(_normals.as_mut_ptr() as *mut f32, _normals.len());
     }
-
-    normals[0] = 0.0;
 
     for i in 0..point_amount {
 
@@ -109,5 +106,5 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
         }
     }
 
-    geometry
+    geometry_data
 }
