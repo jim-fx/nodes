@@ -5,7 +5,6 @@
   import Select from "$lib/elements/Select.svelte";
 
   import type { NodeInput } from "@nodes/types";
-  import Slider from "./elements/Slider.svelte";
 
   export let input: NodeInput;
   export let value: any;
@@ -13,11 +12,7 @@
 </script>
 
 {#if input.type === "float"}
-  {#if input?.element === "slider"}
-    <Slider {id} bind:value />
-  {:else}
-    <Float {id} bind:value />
-  {/if}
+  <Float {id} bind:value />
 {:else if input.type === "integer"}
   <Integer {id} bind:value />
 {:else if input.type === "boolean"}

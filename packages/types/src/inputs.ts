@@ -35,7 +35,7 @@ type DefaultOptions = {
   internal?: boolean;
   external?: boolean;
   setting?: string;
-  label?: string;
+  label?: string | false;
 }
 
 type InputTypes = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect);

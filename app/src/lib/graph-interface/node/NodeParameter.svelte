@@ -15,6 +15,8 @@
   export let id: string;
   export let isLast = false;
 
+  const inputType = node?.tmp?.type?.inputs?.[id]!;
+
   const socketId = `${node.id}-${id}`;
 
   const graph = getGraphManager();
@@ -75,8 +77,10 @@
 >
   {#key id && graphId}
     <div class="content" class:disabled={$inputSockets.has(socketId)}>
-      <label for={elementId}>{input.label || id}</label>
-      {#if node?.tmp?.type?.inputs?.[id]?.external !== true}
+      {#if inputType.label !== false}
+        <label for={elementId}>{input.label || id}</label>
+      {/if}
+      {#if inputType.external !== true}
         <NodeInput {elementId} {node} {input} {id} />
       {/if}
     </div>

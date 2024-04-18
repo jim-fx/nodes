@@ -514,9 +514,7 @@
   }
 
   function handleKeyDown(event: KeyboardEvent) {
-    const bodyIsFocused =
-      document.activeElement === document.body ||
-      document?.activeElement?.id === "graph";
+    const bodyIsFocused = document?.activeElement?.nodeName !== "INPUT";
 
     if (event.key === "l") {
       const activeNode = graph.getNode($activeNodeId);
@@ -538,7 +536,7 @@
       addMenuPosition = [mousePosition[0], mousePosition[1]];
     }
 
-    if (event.key === ".") {
+    if (event.key === "." && bodyIsFocused) {
       const average = [0, 0];
       for (const node of $nodes.values()) {
         average[0] += node.position[0];

@@ -1,18 +1,18 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
-use serde_json::Value;
 use std::env;
 use std::fs;
 use std::path::Path;
 use syn::{parse_macro_input, LitStr};
+use types::NodeType;
 
 #[proc_macro]
 pub fn define_node(input: TokenStream) -> TokenStream {
     let input_string = parse_macro_input!(input as LitStr).value();
 
     // Validate JSON format
-    let json: Value = match serde_json::from_str(&input_string) {
+    let json: NodeType = match serde_json::from_str(&input_string) {
         Ok(json) => json,
         Err(e) => panic!("Invalid JSON input: {}", e),
     };
@@ -49,8 +49,8 @@ pub fn include_definition_file(input: TokenStream) -> TokenStream {
     });
 
     // Optionally, validate that the content is valid JSON
-    let _: Value = serde_json::from_str(&json_content)
-        .unwrap_or_else(|_| panic!("JSON file contains invalid JSON"));
+    let _: NodeType = serde_json::from_str(&json_content)
+        .unwrap_or_else(|err| panic!("JSON file contains invalid JSON: {}", err));
 
     // Generate the function that returns the JSON string
     let expanded = quote! {
