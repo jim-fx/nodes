@@ -18,7 +18,7 @@ pub fn execute(input: Vec<i32>) -> Vec<i32> {
 
         if arg[2] == 0 {
             let _arg = &arg[3..];
-            let geometry = extrude_path(_arg, 8);
+            let geometry = extrude_path(_arg, 16);
             output.push(geometry);
         }else if arg[2] == 1 {
             output.push(arg.to_vec());

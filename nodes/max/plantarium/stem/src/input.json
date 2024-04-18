@@ -9,6 +9,7 @@
     },
     "thickness": {
       "type": "float",
+      "element": "slider",
       "value": 2
     },
     "resolution": {

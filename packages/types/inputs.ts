@@ -1,5 +1,6 @@
 type NodeInputFloat = {
   type: "float";
+  element?: "slider";
   value?: number;
   min?: number;
   max?: number;
@@ -8,6 +9,7 @@ type NodeInputFloat = {
 
 type NodeInputInteger = {
   type: "integer";
+  element?: "slider";
   value?: number;
   min?: number;
   max?: number;

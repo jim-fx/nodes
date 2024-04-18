@@ -111,8 +111,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // here we store the intermediate results of the nodes
     const results: Record<string, string | boolean | number> = {};
 
-    console.log(this.cache);
-
     for (const node of sortedNodes) {
 
       const node_type = this.typeMap.get(node.type)!;
@@ -142,8 +140,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         }
 
 
-        console.log(" ");
-        console.log("--> EXECUTING NODE " + node_type.id, node.id);
+        // console.log(" ");
+        // console.log("--> EXECUTING NODE " + node_type.id, node.id);
 
 
         // execute the node and store the result
@@ -156,7 +154,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           }))}`;
 
           const a1 = performance.now();
-          console.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
+          // console.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
 
           if (false && this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
             results[node.id] = this.cache[cacheKey].value;
@@ -183,7 +181,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           const a2 = performance.now();
 
-          console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
+          // console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
 
           const _inputs = concat_encoded(transformed_inputs);
           const a3 = performance.now();
@@ -191,11 +189,11 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           const duration = performance.now() - a3;
           if (duration > 5) {
             this.cache[cacheKey] = { eol: Date.now() + 10_000, value: results[node.id] };
-            console.log(`Caching for 10 seconds`);
+            // console.log(`Caching for 10 seconds`);
           }
-          console.log(`${duration}ms Executed`);
+          // console.log(`${duration}ms Executed`);
           const a4 = performance.now();
-          console.log(`${a4 - a0}ms e2e duration`);
+          // console.log(`${a4 - a0}ms e2e duration`);
         } catch (e) {
           console.error(`Error executing node ${node_type.id || node.id}`, e);
         }

@@ -12,7 +12,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let length = decode_float(evaluate_args(args[0])[0]);
     let thickness = decode_float(evaluate_args(args[1])[0]);
-    let resolution = 64; //evaluate_args(args[2]);
+    let resolution = 512; //evaluate_args(args[2]);
 
     let mut path: Vec<i32> = vec![0; resolution * 4 + 1];
     path.resize(resolution * 4 + 1, 0);
