@@ -80,6 +80,8 @@ export const createLogger = (() => {
     let muted = false;
     return {
       log: (...args: any[]) => !muted && console.log(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
+      group: (...args: any[]) => !muted && console.groupCollapsed(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
+      groupEnd: () => !muted && console.groupEnd(),
       info: (...args: any[]) => !muted && console.info(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
       warn: (...args: any[]) => !muted && console.warn(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
       error: (...args: any[]) => console.error(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #f88", ...args),

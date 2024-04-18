@@ -53,7 +53,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
   }
 
   serialize(): Graph {
-    logger.log("serializing graph")
+    logger.group("serializing graph")
     const nodes = Array.from(this._nodes.values()).map(node => ({
       id: node.id,
       position: [...node.position],
@@ -62,7 +62,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     })) as Node[];
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     const settings = get(this.settings);
-    return { id: this.graph.id, settings, nodes, edges };
+    const serialized = { id: this.graph.id, settings, nodes, edges };
+    console.log(serialized);
+    logger.groupEnd();
+
+    return serialized;
   }
 
   execute() { }
@@ -366,13 +370,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
 
     const edgeToBeReplaced = this._edges.find(e => e[2].id === to.id && e[3] === toSocket);
     if (edgeToBeReplaced) {
-      this.removeEdge(edgeToBeReplaced, { applyDeletion: applyUpdate });
+      this.removeEdge(edgeToBeReplaced, { applyDeletion: false });
     }
 
     if (applyUpdate) {
-      this.edges.update((edges) => {
-        return [...edges, [from, fromSocket, to, toSocket]];
-      });
+      this._edges.push([from, fromSocket, to, toSocket]);
     } else {
       this._edges.push([from, fromSocket, to, toSocket]);
     }
@@ -385,10 +387,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     to.tmp.parents = to.tmp.parents || [];
     to.tmp.parents.push(from);
 
-    this.execute();
     if (applyUpdate) {
+      this.edges.set(this._edges);
       this.save();
     }
+    this.execute();
   }
 
   undo() {
