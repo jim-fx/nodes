@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { getBoundingValue } from '../helpers/getBoundingValue';
+  import { createEventDispatcher } from "svelte";
+  import { getBoundingValue } from "../helpers/getBoundingValue";
 
   export let value = 0.5;
   export let step = 0.01;
@@ -9,7 +9,7 @@
   export let id = "";
 
   function strip(input: number) {
-    return +parseFloat(input + '').toPrecision(2);
+    return +parseFloat(input + "").toPrecision(2);
   }
 
   const dispatch = createEventDispatcher();
@@ -24,12 +24,12 @@
   function handleChange() {
     if (value === oldValue) return;
     oldValue = value;
-    dispatch('change', parseFloat(value + ''));
+    dispatch("change", parseFloat(value + ""));
   }
 
   $: width = Number.isFinite(value)
-    ? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px'
-    : '20px';
+    ? Math.max((value?.toString().length ?? 1) * 8, 50) + "px"
+    : "20px";
 
   let isMouseDown = false;
   /* let downX = 0; */
@@ -49,10 +49,10 @@
     /* downY = ev.clientY; */
     rect = inputEl.getBoundingClientRect();
 
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    document.body.style.cursor = 'ew-resize';
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    document.body.style.cursor = "ew-resize";
   }
 
   function handleMouseUp() {
@@ -72,13 +72,13 @@
       }
     }, 500);
 
-    document.body.style.cursor = 'unset';
-    window.removeEventListener('mouseup', handleMouseUp);
-    window.removeEventListener('mousemove', handleMouseMove);
+    document.body.style.cursor = "unset";
+    window.removeEventListener("mouseup", handleMouseUp);
+    window.removeEventListener("mousemove", handleMouseMove);
   }
 
   function handleKeyDown(ev: KeyboardEvent) {
-    if (ev.key === 'Escape' || ev.key === 'Enter') {
+    if (ev.key === "Escape" || ev.key === "Enter") {
       handleMouseUp();
       inputEl.blur();
     }
@@ -98,10 +98,14 @@
 </script>
 
 <div class="component-wrapper" class:is-down={isMouseDown}>
-  <span class="overlay" style={`width: ${((value - min) / (max - min)) * 100}%`} />
+  <span
+    class="overlay"
+    style={`width: ${((value - min) / (max - min)) * 100}%`}
+  />
   <input
     bind:value
     bind:this={inputEl}
+    {id}
     {step}
     {max}
     {min}
@@ -126,12 +130,12 @@
     border-radius: var(--border-radius, 2px);
   }
 
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
   }
 
-  input[type='number'] {
+  input[type="number"] {
     box-sizing: border-box;
     -webkit-appearance: textfield;
     -moz-appearance: textfield;

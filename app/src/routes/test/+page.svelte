@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { decodeFloat, encodeFloat } from "$lib/helpers/encode";
-  import { decode, encode, concat_encoded } from "$lib/helpers/flat_tree";
+  import {
+    decodeFloat,
+    encodeFloat,
+    decode,
+    encode,
+    concat_encoded,
+  } from "@nodes/utils";
 
   console.clear();
 
