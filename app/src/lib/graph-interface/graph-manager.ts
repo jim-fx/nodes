@@ -1,4 +1,4 @@
-import { get, writable, type Writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import type { Graph, Node, Edge, Socket, NodeRegistry, } from "@nodes/types";
 import { HistoryManager } from "./history-manager.js"
 import EventEmitter from "./helpers/EventEmitter.js";
@@ -15,7 +15,7 @@ function areSocketsCompatible(output: string | undefined, inputs: string | strin
   return inputs === output;
 }
 
-export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }> {
+export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "settings": { types: Record<string, NodeInput>, values: Record<string, unknown> } }> {
 
   status: Writable<"loading" | "idle" | "error"> = writable("loading");
   loaded = false;
@@ -25,8 +25,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
 
   private _nodes: Map<number, Node> = new Map();
   nodes: Writable<Map<number, Node>> = writable(new Map());
-  settingTypes: NodeInput[] = [];
-  settings: Writable<Record<string, any>> = writable({});
+  settingTypes: Record<string, NodeInput> = {};
+  settings: Record<string, unknown> = {};
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
 
@@ -61,13 +61,19 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
       props: node.props,
     })) as Node[];
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
-    const settings = get(this.settings);
-    const serialized = { id: this.graph.id, settings, nodes, edges };
-    console.log(serialized);
+    const serialized = { id: this.graph.id, settings: this.settings, nodes, edges };
     logger.groupEnd();
 
     return serialized;
   }
+
+
+  setSettings(settings: Record<string, unknown>) {
+    this.settings = settings;
+    this.save();
+    this.execute();
+  }
+
 
   execute() { }
   _execute() {
@@ -157,12 +163,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
     this.status.set("loading");
     this.id.set(graph.id);
 
-    if (graph.settings) {
-      this.settings.set(graph.settings);
-    } else {
-      this.settings.set({});
-    }
-
     const nodeIds = Array.from(new Set([...graph.nodes.map(n => n.type)]));
     await this.nodeRegistry.load(nodeIds);
 
@@ -178,18 +178,27 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
       node.tmp.type = nodeType;
     }
 
-    let settings: Record<string, NodeInput> = {};
+
+    // load settings
+    const settingTypes: Record<string, NodeInput> = {};
+    const settingValues = graph.settings || {};
     const types = this.getNodeTypes();
     for (const type of types) {
       if (type.inputs) {
         for (const key in type.inputs) {
           let settingId = type.inputs[key].setting;
           if (settingId) {
-            settings[settingId] = type.inputs[key];
+            settingTypes[settingId] = type.inputs[key];
+            if (settingValues[settingId] === undefined && "value" in type.inputs[key]) {
+              settingValues[settingId] = type.inputs[key].value;
+            }
           }
         }
       }
     }
+
+    this.settings = settingValues;
+    this.emit("settings", { types: settingTypes, values: settingValues });
 
     this.history.reset();
     this._init(this.graph);
@@ -426,6 +435,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any }>
   save() {
     if (this.currentUndoGroup) return;
     const state = this.serialize();
+    console.log(state);
     this.history.save(state);
     this.emit("save", state);
     logger.log("saving graphs", state);

@@ -5,48 +5,10 @@
   import { RemoteNodeRegistry } from "$lib/node-registry";
   import * as templates from "$lib/graph-templates";
   import type { Graph } from "@nodes/types";
-  import { decode, encode, decodeFloat, encodeFloat } from "@nodes/utils";
   import Viewer from "$lib/viewer/Viewer.svelte";
-
-  globalThis.decode = decode;
-  globalThis.encode = encode;
-  globalThis.df = decodeFloat;
-  globalThis.en = encodeFloat;
-
-  globalThis.ci = function createIndeces(resX: number, stemLength = 1) {
-    const index = new Uint16Array(resX * (Math.max(stemLength, 1) - 1) * 6);
-
-    for (let i = 0; i < stemLength; i++) {
-      const indexOffset = i * resX * 6;
-      const positionOffset = i * resX;
-      for (let j = 0; j < resX; j++) {
-        const _indexOffset = indexOffset + j * 6;
-        const _positionOffset = positionOffset + j;
-
-        console.log(`iio: ${_indexOffset} pio: ${_positionOffset} j: ${j}`);
-
-        if (j === resX - 1) {
-          index[_indexOffset + 0] = _positionOffset + 1;
-          index[_indexOffset + 1] = _positionOffset - resX + 1;
-          index[_indexOffset + 2] = _positionOffset;
-
-          index[_indexOffset + 3] = _positionOffset;
-          index[_indexOffset + 4] = _positionOffset + resX;
-          index[_indexOffset + 5] = _positionOffset + 1;
-        } else {
-          index[_indexOffset + 0] = _positionOffset + resX + 1;
-          index[_indexOffset + 1] = _positionOffset + 1;
-          index[_indexOffset + 2] = _positionOffset;
-
-          index[_indexOffset + 3] = _positionOffset;
-          index[_indexOffset + 4] = _positionOffset + resX;
-          index[_indexOffset + 5] = _positionOffset + resX + 1;
-        }
-      }
-    }
-
-    return index;
-  };
+  import Settings from "$lib/settings/Settings.svelte";
+  import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
+  import { get, writable } from "svelte/store";
 
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -60,13 +22,39 @@
 
   function handleResult(event: CustomEvent<Graph>) {
     let a = performance.now();
-    res = runtimeExecutor.execute(event.detail);
+    res = runtimeExecutor.execute(event.detail, get(settings?.graph?.settings));
     time = performance.now() - a;
     console.log({ res, time });
   }
 
   function handleSave(event: CustomEvent<Graph>) {
     localStorage.setItem("graph", JSON.stringify(event.detail));
+  }
+
+  let settings: Record<string, any> = {
+    general: {
+      id: "general",
+      icon: "i-tabler-settings",
+      settings: AppSettings,
+      definition: AppSettingTypes,
+    },
+  };
+
+  function handleSettings(
+    ev: CustomEvent<{
+      values: Record<string, unknown>;
+      types: Record<string, unknown>;
+    }>,
+  ) {
+    settings = {
+      ...settings,
+      graph: {
+        icon: "i-tabler-chart-bar",
+        id: "graph",
+        settings: writable(ev.detail.values),
+        definition: ev.detail.types,
+      },
+    };
   }
 </script>
 
@@ -88,9 +76,12 @@
         <GraphInterface
           registry={nodeRegistry}
           {graph}
+          settings={settings?.graph?.settings}
+          on:settings={handleSettings}
           on:result={handleResult}
           on:save={handleSave}
         />
+        <Settings {settings}></Settings>
       {/key}
     </Grid.Cell>
   </Grid.Row>

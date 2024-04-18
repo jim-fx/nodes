@@ -7,12 +7,21 @@ pub use helpers::*;
 pub use tree::*;
 pub mod geometry;
 
+#[cfg(debug_assertions)]
 #[macro_export]
 macro_rules! log {
     ($($arg:tt)*) => {{
         use web_sys::console;
         console::log_1(&format!($($arg)*).into());
     }}
+}
+
+#[cfg(not(debug_assertions))]
+#[macro_export]
+macro_rules! log {
+    ($($arg:tt)*) => {{
+        // This will expand to nothing in release builds
+    }};
 }
 
 pub fn set_panic_hook() {

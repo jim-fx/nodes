@@ -38,8 +38,6 @@
     );
     index = index + vertexCount * 3;
 
-    console.log({ vertices, normals, indices });
-
     // Add data to geometry
     geometry.setIndex([...indices]);
     geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
@@ -94,8 +92,6 @@
 
   $: if (result) {
     const inputs = parse_args(result);
-
-    console.log({ inputs });
 
     geometries = inputs
       .map((input) => {

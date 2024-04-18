@@ -21,10 +21,12 @@
       "element": "slider",
       "value": 2
     },
-    "resolution": {
+    "resolution_curve": {
       "type": "integer",
       "value": 32,
-      "setting": "resolution.stem"
+      "min": 3,
+      "max": 64,
+      "setting": "resolution.curve"
     }
   }
 }

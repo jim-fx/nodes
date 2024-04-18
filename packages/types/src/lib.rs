@@ -54,7 +54,7 @@ pub struct NodeInputBoolean {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NodeInputSelect {
-    pub labels: Vec<String>,
+    pub options: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<usize>,
 }
@@ -130,4 +130,3 @@ pub struct NodeType {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outputs: Option<Vec<String>>,
 }
-

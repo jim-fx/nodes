@@ -6,7 +6,7 @@
     "op_type": {
       "label": "type",
       "type": "select",
-      "labels": [
+      "options": [
         "add",
         "subtract",
         "multiply",
@@ -22,11 +22,6 @@
     "b": {
       "type": "float",
       "value": 2
-    },
-    "clip": {
-      "type": "boolean",
-      "value": 0,
-      "setting": "math.clipping"
     }
   }
 }

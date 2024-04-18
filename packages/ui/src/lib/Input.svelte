@@ -12,11 +12,11 @@
 </script>
 
 {#if input.type === "float"}
-  <Float {id} bind:value />
+  <Float {id} bind:value min={input?.min} max={input?.max} />
 {:else if input.type === "integer"}
-  <Integer {id} bind:value />
+  <Integer {id} bind:value min={input?.min} max={input?.max} />
 {:else if input.type === "boolean"}
   <Checkbox {id} bind:value />
 {:else if input.type === "select"}
-  <Select {id} bind:value labels={input.labels} />
+  <Select {id} bind:value options={input.options} />
 {/if}

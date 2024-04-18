@@ -22,7 +22,7 @@ type NodeInputBoolean = {
 
 type NodeInputSelect = {
   type: "select";
-  labels: string[];
+  options: string[];
   value?: number;
 }
 

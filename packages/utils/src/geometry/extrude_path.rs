@@ -1,3 +1,5 @@
+use crate::log;
+
 use super::{create_geometry_data, wrap_geometry_data};
 use glam::{Mat4, Quat, Vec3};
 
@@ -65,9 +67,11 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
                 let i_index_offset = index_offset + j * 6;
                 let i_position_offset = position_offset + j;
 
+                log!("i: {}, j: {}, i_index_offset: {}, i_position_offset: {} res_x: {}", i, j, i_index_offset, i_position_offset,res_x);
+
                 if j == res_x - 1 {
                     indices[i_index_offset    ] = (i_position_offset + 1) as i32;
-                    indices[i_index_offset + 1] = (i_position_offset - res_x + 1) as i32;
+                    indices[i_index_offset + 1] = (i_position_offset + 1 - res_x) as i32;
                     indices[i_index_offset + 2] = (i_position_offset) as i32;
                     indices[i_index_offset + 3] = (i_position_offset) as i32;
                     indices[i_index_offset + 4] = (i_position_offset + res_x) as i32;

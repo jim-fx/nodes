@@ -7,6 +7,13 @@
         "model"
       ],
       "external": true
+    },
+    "resolution_circle": {
+      "type": "integer",
+      "value": 32,
+      "min": 3,
+      "max": 64,
+      "setting": "resolution.circle"
     }
   }
 }

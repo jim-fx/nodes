@@ -49,6 +49,8 @@ body {
   --background-color-darker: #101010;
   --text-color: #aeaeae;
 
+  color: var(--text-color);
+
   background-color: var(--background-color-darker);
 }
 

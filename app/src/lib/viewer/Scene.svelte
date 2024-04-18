@@ -3,6 +3,7 @@
   import { Text } from "@threlte/extras";
   import type { BufferGeometry } from "three";
   import { OrbitControls } from "@threlte/extras";
+  import { AppSettings } from "../settings/app-settings";
 
   export let geometry: BufferGeometry[];
 
@@ -16,7 +17,9 @@
   }
 </script>
 
-<T.GridHelper args={[20, 20]} />
+{#if $AppSettings.showGrid}
+  <T.GridHelper args={[20, 20]} />
+{/if}
 
 <T.PerspectiveCamera position={[-10, 10, 10]} makeDefault fov={50}>
   <OrbitControls />
@@ -26,7 +29,7 @@
 <T.AmbientLight intensity={0.5} />
 
 {#each geometry as geo}
-  {#if false}
+  {#if $AppSettings.showIndices}
     {#each geo.attributes.position.array as _, i}
       {#if i % 3 === 0}
         <Text text={i / 3} fontSize={0.25} position={getPosition(geo, i)} />
@@ -39,6 +42,6 @@
     </T.Points>
   {/if}
   <T.Mesh geometry={geo}>
-    <T.MeshStandardMaterial color="green" />
+    <T.MeshStandardMaterial color="green" wireframe={$AppSettings.wireframe} />
   </T.Mesh>
 {/each}

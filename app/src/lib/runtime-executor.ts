@@ -89,7 +89,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     return [outputNode, nodes] as const;
   }
 
-  execute(graph: Graph) {
+  execute(graph: Graph, settings: Record<string, unknown>) {
 
     // Then we add some metadata to the graph
     const [outputNode, nodes] = this.addMetaData(graph);
@@ -121,6 +121,19 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           if (input.type === "seed") {
             inputs[key] = Math.floor(Math.random() * 100000000);
+            continue;
+          }
+
+          if (input.setting) {
+            if (settings[input.setting] === undefined) {
+              if (input.value !== undefined) {
+                inputs[key] = input.value;
+              } else {
+                console.warn(`Setting ${input.setting} is not defined`);
+              }
+            } else {
+              inputs[key] = settings[input.setting] as number;
+            }
             continue;
           }
 
