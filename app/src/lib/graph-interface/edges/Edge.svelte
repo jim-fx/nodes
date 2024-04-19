@@ -79,7 +79,6 @@
 
   $: if ($colors.outline) {
     lineColor.copyLinearToSRGB($colors.outline);
-    console.log("lineColor", lineColor);
   }
 </script>
 

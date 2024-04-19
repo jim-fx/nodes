@@ -2,9 +2,10 @@
   import type { Graph, NodeRegistry } from "@nodes/types";
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.js";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, setContext } from "svelte";
   import type { Writable } from "svelte/store";
   import { debounce } from "$lib/helpers";
+  import { createKeyMap } from "$lib/helpers/createKeyMap";
 
   export let registry: NodeRegistry;
   export let graph: Graph;
@@ -13,6 +14,9 @@
   const manager = new GraphManager(registry);
 
   export const status = manager.status;
+
+  export const keymap = createKeyMap([]);
+  setContext("keymap", keymap);
 
   const updateSettings = debounce((s) => {
     manager.setSettings(s);

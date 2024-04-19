@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { getContext } from "svelte";
 
-  const { keys } = getContext<ReturnType<typeof createKeyMap>>("keymap");
+  export let keymap: ReturnType<typeof createKeyMap>;
+  const keys = keymap.keys;
 </script>
 
 <div class="wrapper">

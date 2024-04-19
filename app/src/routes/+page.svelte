@@ -10,8 +10,7 @@
   import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
   import { get, writable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/Keymap.svelte";
-  import { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { setContext } from "svelte";
+  import type { createKeyMap } from "$lib/helpers/createKeyMap";
 
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -24,6 +23,8 @@
 
   let managerStatus: Writable<"loading" | "error" | "idle">;
 
+  let keymap: ReturnType<typeof createKeyMap>;
+
   function handleResult(event: CustomEvent<Graph>) {
     res = runtimeExecutor.execute(event.detail, get(settings?.graph?.settings));
   }
@@ -32,10 +33,6 @@
     localStorage.setItem("graph", JSON.stringify(event.detail));
   }
 
-  const keyMap = createKeyMap([]);
-
-  setContext("keymap", keyMap);
-
   let settings: Record<string, any> = {
     general: {
       id: "general",
@@ -43,13 +40,21 @@
       settings: AppSettings,
       definition: AppSettingTypes,
     },
+    shortcuts: {},
     graph: {},
-    shortcuts: {
+  };
+
+  $: if (keymap) {
+    settings.shortcuts = {
       id: "shortcuts",
       icon: "i-tabler-keyboard",
+      props: { keymap },
       component: Keymap,
-    },
-  };
+    };
+
+    settings = settings;
+    console.log({ settings });
+  }
 
   function handleSettings(
     ev: CustomEvent<{
@@ -88,6 +93,7 @@
         <GraphInterface
           registry={nodeRegistry}
           {graph}
+          bind:keymap
           bind:status={managerStatus}
           settings={settings?.graph?.settings}
           on:settings={handleSettings}

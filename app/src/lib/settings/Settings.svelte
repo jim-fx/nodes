@@ -21,7 +21,9 @@
     false,
   );
   $: keys = panels
-    ? (Object.keys(panels) as unknown as (keyof typeof panels)[])
+    ? (Object.keys(panels) as unknown as (keyof typeof panels)[]).filter(
+        (key) => !!panels[key]?.id,
+      )
     : [];
 
   function setActivePanel(panel: keyof typeof panels | false) {
@@ -83,7 +85,7 @@
         {#if panels[$activePanel]?.component}
           <svelte:component
             this={panels[$activePanel].component}
-            {...panels[$activePanel]}
+            {...panels[$activePanel]?.props}
           />
         {:else}
           <div class="flex flex-col">
