@@ -11,7 +11,6 @@
   export let store: Writable<Record<string, any>>;
   export let depth = 0;
 
-  console.log(settings);
   const keys = Object.keys(settings);
   function isNodeInput(v: NodeInput | Nested): v is NodeInput {
     return "type" in v;
@@ -23,12 +22,18 @@
   <div class="wrapper" class:first-level={depth === 0}>
     {#if isNodeInput(value)}
       <div class="input input-{settings[key].type}">
-        <label for={key}>{settings[key].label || key}</label>
-        <Input
-          id={key}
-          input={value}
-          bind:value={$store[value?.setting || key]}
-        />
+        {#if settings[key].type === "button"}
+          <button on:click={() => settings[key]?.callback?.()}
+            >{key || settings[key].label}</button
+          >
+        {:else}
+          <label for={key}>{settings[key].label || key}</label>
+          <Input
+            id={key}
+            input={value}
+            bind:value={$store[value?.setting || key]}
+          />
+        {/if}
       </div>
     {:else}
       <details>

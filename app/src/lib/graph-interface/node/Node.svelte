@@ -67,18 +67,18 @@
     uniforms={{
       uColorBright: { value: new Color("#171717") },
       uColorDark: { value: new Color("#151515") },
-      uSelectedColor: { value: new Color("#9d5f28") },
-      uActiveColor: { value: new Color("white") },
-      uSelected: { value: false },
-      uActive: { value: false },
+      uStrokeColor: { value: new Color("#9d5f28") },
       uStrokeWidth: { value: 1.0 },
       uWidth: { value: 20 },
       uHeight: { value: height },
     }}
-    uniforms.uSelected.value={isSelected}
-    uniforms.uActive.value={isActive}
     uniforms.uColorBright.value={$colors.layer2}
     uniforms.uColorDark.value={$colors.layer1}
+    uniforms.uStrokeColor.value={isSelected
+      ? $colors.selected
+      : isActive
+        ? $colors.active
+        : $colors.outline}
     uniforms.uStrokeWidth.value={(7 - z) / 3}
   />
 </T.Mesh>
@@ -122,12 +122,12 @@
   }
 
   .node.active {
-    --stroke: white;
-    --stroke-width: 1px;
+    --stroke: var(--active);
+    --stroke-width: 2px;
   }
 
   .node.selected {
-    --stroke: #9d5f28;
-    --stroke-width: 1px;
+    --stroke: var(--selected);
+    --stroke-width: 2px;
   }
 </style>

@@ -16,6 +16,8 @@ export const colors = writable({
   layer2: new Color().setStyle("#2D2D2D"),
   layer3: new Color().setStyle("#A6A6A6"),
   outline: new Color().setStyle("#000000"),
+  active: new Color().setStyle("#c65a19"),
+  selected: new Color().setStyle("#ffffff"),
 });
 
 if ("getComputedStyle" in globalThis) {
@@ -30,6 +32,8 @@ if ("getComputedStyle" in globalThis) {
     const layer2 = style.getPropertyValue("--layer-2");
     const layer3 = style.getPropertyValue("--layer-3");
     const outline = style.getPropertyValue("--outline");
+    const active = style.getPropertyValue("--active");
+    const selected = style.getPropertyValue("--selected");
 
     colors.update(col => {
       col.layer0.setStyle(layer0);
@@ -42,6 +46,10 @@ if ("getComputedStyle" in globalThis) {
       col.layer3.convertLinearToSRGB();
       col.outline.setStyle(outline);
       col.outline.convertLinearToSRGB();
+      col.active.setStyle(active);
+      col.active.convertLinearToSRGB();
+      col.selected.setStyle(selected);
+      col.selected.convertLinearToSRGB();
       return col;
     });
 

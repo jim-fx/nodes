@@ -746,7 +746,7 @@
 <div
   on:wheel={handleMouseScroll}
   bind:this={wrapper}
-  class="wrapper"
+  class="graph-wrapper"
   aria-label="Graph"
   role="button"
   tabindex="0"
@@ -794,8 +794,9 @@
 </div>
 
 <style>
-  .wrapper {
+  .graph-wrapper {
     position: relative;
+    transition: opacity 0.3s ease;
     height: 100%;
   }
 </style>

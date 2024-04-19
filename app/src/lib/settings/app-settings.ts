@@ -33,6 +33,19 @@ export const AppSettingTypes = {
     label: "Show Grid",
     value: true,
   },
+  stressTest: {
+    amount: {
+      type: "integer",
+      min: 2,
+      max: 15
+    },
+    loadGrid: {
+      type: "button"
+    },
+    loadTree: {
+      type: "button"
+    },
+  },
   debug: {
     wireframe: {
       type: "boolean",

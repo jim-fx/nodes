@@ -1,11 +1,11 @@
 <script lang="ts">
   import type { NodeInput } from "@nodes/types";
   import type { Writable } from "svelte/store";
-  import SettingsComponent from "./Panel.svelte";
   import localStore from "$lib/helpers/localStore";
   import type { SvelteComponent } from "svelte";
+  import NestedSettings from "./NestedSettings.svelte";
 
-  export let settings: Record<
+  export let panels: Record<
     string,
     {
       icon: string;
@@ -16,13 +16,15 @@
     }
   >;
 
-  const activePanel = localStore<keyof typeof settings | false>(
+  const activePanel = localStore<keyof typeof panels | false>(
     "nodes.settings.activePanel",
     false,
   );
-  $: keys = Object.keys(settings) as unknown as (keyof typeof settings)[];
+  $: keys = panels
+    ? (Object.keys(panels) as unknown as (keyof typeof panels)[])
+    : [];
 
-  function setActivePanel(panel: keyof typeof settings | false) {
+  function setActivePanel(panel: keyof typeof panels | false) {
     if (panel === $activePanel) {
       $activePanel = false;
     } else if (panel) {
@@ -30,6 +32,28 @@
     } else {
       $activePanel = false;
     }
+  }
+
+  interface Nested {
+    [key: string]: NodeInput | Nested;
+  }
+
+  function constructNested(panel: (typeof panels)[keyof typeof panels]) {
+    const nested: Nested = {};
+
+    for (const key in panel.definition) {
+      const parts = key.split(".");
+      let current = nested;
+      for (let i = 0; i < parts.length; i++) {
+        if (i === parts.length - 1) {
+          current[parts[i]] = panel.definition[key];
+        } else {
+          current[parts[i]] = current[parts[i]] || {};
+          current = current[parts[i]] as Nested;
+        }
+      }
+    }
+    return nested;
   }
 </script>
 
@@ -42,26 +66,32 @@
     >
       <span class="absolute i-tabler-chevron-left w-6 h-6 block"></span>
     </button>
-    {#each keys as panel (settings[panel].id)}
+    {#each keys as panel (panels[panel].id)}
       <button
         class="tab"
         class:active={panel === $activePanel}
         on:click={() => setActivePanel(panel)}
       >
-        <i class={`block w-6 h-6 ${settings[panel].icon}`} />
+        <i class={`block w-6 h-6 ${panels[panel].icon}`} />
       </button>
     {/each}
   </div>
   <div class="content">
-    {#if $activePanel && settings[$activePanel]}
+    {#if $activePanel && panels[$activePanel]}
+      <h1 class="m-0 p-4">{panels[$activePanel].id}</h1>
       {#key $activePanel}
-        {#if settings[$activePanel].component}
+        {#if panels[$activePanel]?.component}
           <svelte:component
-            this={settings[$activePanel].component}
-            {...settings[$activePanel]}
+            this={panels[$activePanel].component}
+            {...panels[$activePanel]}
           />
         {:else}
-          <SettingsComponent setting={settings[$activePanel]} />
+          <div class="flex flex-col">
+            <NestedSettings
+              settings={constructNested(panels[$activePanel])}
+              store={panels[$activePanel].settings}
+            />
+          </div>
         {/if}
       {/key}
     {/if}
@@ -84,6 +114,10 @@
     min-width: 300px;
   }
 
+  h1 {
+    border-bottom: solid thin var(--outline);
+  }
+
   .content {
     background: var(--layer-1);
   }
@@ -97,6 +131,7 @@
   .tabs > button {
     height: 30px;
     padding: 5px;
+    border-radius: 0px;
     background: none;
     color: var(--outline);
     border: none;

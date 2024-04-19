@@ -12,6 +12,8 @@
 
   const manager = new GraphManager(registry);
 
+  export const status = manager.status;
+
   const updateSettings = debounce((s) => {
     manager.setSettings(s);
   }, 200);

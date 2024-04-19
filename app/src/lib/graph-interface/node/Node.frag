@@ -6,12 +6,8 @@ uniform float uHeight;
 
 uniform vec3 uColorDark;
 uniform vec3 uColorBright;
-uniform vec3 uSelectedColor;
-uniform vec3 uActiveColor;
 
-uniform bool uSelected;
-uniform bool uActive;
-
+uniform vec3 uStrokeColor;
 uniform float uStrokeWidth;
 
 float msign(in float x) { return (x < 0.0) ? -1.0 : 1.0; }
@@ -47,16 +43,9 @@ void main(){
     // outside
     gl_FragColor = vec4(0.0,0.0,0.0, 0.0);
   }else{
-
     if (distance.w > -uStrokeWidth || mod(y+5.0, 10.0) < uStrokeWidth/2.0) {
       // draw the outer stroke
-      if (uSelected) {
-        gl_FragColor = vec4(uSelectedColor, 1.0);
-      } else if (uActive) {
-        gl_FragColor = vec4(uActiveColor, 1.0);
-      } else {
-        gl_FragColor = vec4(uColorBright, 1.0);
-      }
+      gl_FragColor = vec4(uStrokeColor, 1.0);
     }else if (y<5.0){
       // draw the header
       gl_FragColor = vec4(uColorBright, 1.0);

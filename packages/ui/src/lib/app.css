@@ -57,6 +57,9 @@ body {
   --layer-2: var(--neutral-400);
   --layer-3: var(--neutral-200);
 
+  --active: #ffffff;
+  --selected: #c65a19;
+
   --outline: var(--neutral-400);
 
   --text-color: var(--neutral-200);
@@ -76,6 +79,8 @@ body.theme-light {
   --layer-1: var(--neutral-100);
   --layer-2: var(--neutral-100);
   --layer-3: var(--neutral-500);
+  --active: #000000;
+  --selected: #c65a19;
 }
 
 body.theme-solarized {
@@ -83,8 +88,10 @@ body.theme-solarized {
   --outline: #93a1a1;
   --layer-0: #fdf6e3;
   --layer-1: #eee8d5;
-  --layer-2: #93a1a1;
+  --layer-2: #c4c0b4;
   --layer-3: #586e75;
+  --active: #000000;
+  --selected: #268bd2;
 }
 
 body.theme-catppuccin {
@@ -107,17 +114,13 @@ body.theme-high-contrast {
 
 body.theme-nord {
   --text-color: #D8DEE9;
-  /* Nord snow */
   --outline: #4C566A;
-  /* Nord frost */
   --layer-0: #2E3440;
-  /* Nord polar night */
   --layer-1: #3B4252;
-  /* Nord polar night */
   --layer-2: #434C5E;
-  /* Nord polar night */
   --layer-3: #5E81AC;
-  /* Nord frost */
+  --active: #8999bd;
+  --selected: #b76c3f
 }
 
 body.theme-dracula {
@@ -133,6 +136,9 @@ body {
   margin: 0;
 }
 
-/* canvas { */
-/*   display: none !important; */
-/* } */
+button {
+  background-color: var(--layer-2);
+  border: 1px solid var(--outline);
+  padding: 8px 9px;
+  border-radius: 4px;
+}
