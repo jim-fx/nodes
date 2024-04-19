@@ -24,6 +24,8 @@ if ("getComputedStyle" in globalThis) {
 
   const body = document.body;
 
+  let lastStyle = "";
+
   function updateColors() {
 
     const style = getComputedStyle(body);
@@ -34,6 +36,11 @@ if ("getComputedStyle" in globalThis) {
     const outline = style.getPropertyValue("--outline");
     const active = style.getPropertyValue("--active");
     const selected = style.getPropertyValue("--selected");
+
+    const newStyle = `${layer0}${layer1}${layer2}${layer3}${outline}${active}${selected}`;
+
+    if (newStyle === lastStyle) return;
+    lastStyle = newStyle;
 
     colors.update(col => {
       col.layer0.setStyle(layer0);

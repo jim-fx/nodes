@@ -26,8 +26,8 @@
   const aspectRatio = 0.25;
 
   const path = createNodePath({
-    depth: 4,
-    height: 24,
+    depth: 7,
+    height: 40,
     y: 50,
     cornerTop,
     rightBump,
@@ -42,8 +42,8 @@
     aspectRatio,
   });
   const pathHover = createNodePath({
-    depth: 5,
-    height: 30,
+    depth: 9,
+    height: 50,
     y: 50,
     cornerTop,
     rightBump,

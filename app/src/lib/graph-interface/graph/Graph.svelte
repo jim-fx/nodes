@@ -1,16 +1,10 @@
 <script lang="ts">
   import { animate, lerp, snapToGrid } from "../helpers/index.js";
-  import {
-    LinearSRGBColorSpace,
-    LinearToneMapping,
-    NoToneMapping,
-    SRGBColorSpace,
-  } from "three";
   import { Canvas } from "@threlte/core";
   import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
   import type { GraphManager } from "../graph-manager.js";
-  import { onMount, setContext } from "svelte";
+  import { getContext, onMount, setContext } from "svelte";
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
   import type { Node, Node as NodeType, Socket } from "@nodes/types";
@@ -23,10 +17,15 @@
     possibleSocketIds,
     selectedNodes,
   } from "./stores.js";
+  import { createKeyMap } from "../../helpers/createKeyMap";
   import BoxSelection from "../BoxSelection.svelte";
   import AddMenu from "../AddMenu.svelte";
 
   export let graph: GraphManager;
+
+  let keymap =
+    getContext<ReturnType<typeof createKeyMap>>("keymap") || createKeyMap([]);
+
   setContext("graphManager", graph);
   const status = graph.status;
   const nodes = graph.nodes;
@@ -77,19 +76,6 @@
     cameraPosition = [x, y, z];
     localStorage.setItem("cameraPosition", JSON.stringify(cameraPosition));
   }
-
-  export let debug = {};
-  $: debug = {
-    activeNodeId: $activeNodeId,
-    activeSocket: $activeSocket
-      ? `${$activeSocket?.node.id}-${$activeSocket?.index}`
-      : null,
-    hoveredSocket: $hoveredSocket
-      ? `${$hoveredSocket?.node.id}-${$hoveredSocket?.index}`
-      : null,
-    selectedNodes: [...($selectedNodes?.values() || [])],
-    cameraPosition,
-  };
 
   function updateNodePosition(node: NodeType) {
     if (node?.tmp?.ref) {
@@ -518,30 +504,61 @@
     $selectedNodes = new Set(newNodes.map((n) => n.id));
   }
 
-  function handleKeyDown(event: KeyboardEvent) {
-    const bodyIsFocused = document?.activeElement?.nodeName !== "INPUT";
+  const isBodyFocused = () => document?.activeElement?.nodeName !== "INPUT";
 
-    if (event.key === "l") {
+  keymap.addShortcut({
+    key: "l",
+    description: "Select linked nodes",
+    callback: () => {
       const activeNode = graph.getNode($activeNodeId);
       if (activeNode) {
         const nodes = graph.getLinkedNodes(activeNode);
         $selectedNodes = new Set(nodes.map((n) => n.id));
       }
       console.log(activeNode);
-    }
+    },
+  });
 
-    if (event.key === "Escape") {
+  keymap.addShortcut({
+    key: "c",
+    ctrl: true,
+    description: "Copy active nodes",
+    callback: copyNodes,
+  });
+
+  keymap.addShortcut({
+    key: "v",
+    ctrl: true,
+    description: "Paste nodes",
+    callback: pasteNodes,
+  });
+
+  keymap.addShortcut({
+    key: "Escape",
+    description: "Deselect nodes",
+    callback: () => {
       $activeNodeId = -1;
       $selectedNodes?.clear();
       $selectedNodes = $selectedNodes;
       (document.activeElement as HTMLElement)?.blur();
-    }
+    },
+  });
 
-    if (event.key === "A" && event.shiftKey) {
+  keymap.addShortcut({
+    key: "A",
+    shift: true,
+    description: "Add new Node",
+    callback: () => {
       addMenuPosition = [mousePosition[0], mousePosition[1]];
-    }
+    },
+  });
 
-    if (event.key === "." && bodyIsFocused) {
+  keymap.addShortcut({
+    key: ".",
+    description: "Center camera",
+    callback: () => {
+      if (!isBodyFocused()) return;
+
       const average = [0, 0];
       for (const node of $nodes.values()) {
         average[0] += node.position[0];
@@ -564,40 +581,50 @@
         );
         if (mouseDown) return false;
       });
-    }
+    },
+  });
 
-    if (event.key === "a" && event.ctrlKey && bodyIsFocused) {
+  keymap.addShortcut({
+    key: "a",
+    ctrl: true,
+    description: "Select all nodes",
+    callback: () => {
+      if (!isBodyFocused()) return;
       $selectedNodes = new Set($nodes.keys());
-    }
+    },
+  });
 
-    if (event.key === "c" && event.ctrlKey) {
-      copyNodes();
-    }
-
-    if (event.key === "v" && event.ctrlKey) {
-      pasteNodes();
-    }
-
-    if (event.key === "z" && event.ctrlKey) {
+  keymap.addShortcut({
+    key: "z",
+    ctrl: true,
+    description: "Undo",
+    callback: () => {
+      if (!isBodyFocused()) return;
       graph.undo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
-    }
+    },
+  });
 
-    if (event.key === "y" && event.ctrlKey) {
+  keymap.addShortcut({
+    key: "y",
+    ctrl: true,
+    description: "Redo",
+    callback: () => {
+      if (!isBodyFocused()) return;
       graph.redo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
-    }
+    },
+  });
 
-    if (
-      (event.key === "Delete" ||
-        event.key === "Backspace" ||
-        event.key === "x") &&
-      bodyIsFocused
-    ) {
+  keymap.addShortcut({
+    key: ["Delete", "Backspace", "x"],
+    description: "Delete selected nodes",
+    callback: (event) => {
+      if (!isBodyFocused()) return;
       graph.startUndoGroup();
       if ($activeNodeId !== -1) {
         const node = graph.getNode($activeNodeId);
@@ -617,8 +644,8 @@
         $selectedNodes = $selectedNodes;
       }
       graph.saveUndoGroup();
-    }
-  }
+    },
+  });
 
   function handleMouseUp(event: MouseEvent) {
     const activeNode = graph.getNode($activeNodeId);
@@ -752,7 +779,7 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
-  on:keydown={handleKeyDown}
+  on:keydown={keymap.handleKeyboardEvent}
   on:mousedown={handleMouseDown}
 >
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>

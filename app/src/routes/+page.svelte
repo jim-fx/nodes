@@ -10,6 +10,8 @@
   import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
   import { get, writable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/Keymap.svelte";
+  import { createKeyMap } from "$lib/helpers/createKeyMap";
+  import { setContext } from "svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -29,6 +31,10 @@
   function handleSave(event: CustomEvent<Graph>) {
     localStorage.setItem("graph", JSON.stringify(event.detail));
   }
+
+  const keyMap = createKeyMap([]);
+
+  setContext("keymap", keyMap);
 
   let settings: Record<string, any> = {
     general: {

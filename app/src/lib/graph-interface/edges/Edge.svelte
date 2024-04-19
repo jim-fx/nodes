@@ -20,7 +20,7 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { MeshLineMaterial } from "@threlte/extras";
-  import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
+  import { BufferGeometry, Color, MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
@@ -74,6 +74,13 @@
   $: if (from || to) {
     update();
   }
+
+  const lineColor = new Color($colors.outline);
+
+  $: if ($colors.outline) {
+    lineColor.copyLinearToSRGB($colors.outline);
+    console.log("lineColor", lineColor);
+  }
 </script>
 
 <T.Mesh
@@ -83,7 +90,7 @@
   rotation.x={-Math.PI / 2}
   material={circleMaterial}
 >
-  <T.CircleGeometry args={[0.3, 16]} />
+  <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
 
 <T.Mesh
@@ -93,11 +100,16 @@
   rotation.x={-Math.PI / 2}
   material={circleMaterial}
 >
-  <T.CircleGeometry args={[0.3, 16]} />
+  <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial width={3} attenuate={false} color={$colors.outline} />
+    <MeshLineMaterial
+      width={3}
+      attenuate={false}
+      color={lineColor}
+      toneMapped={false}
+    />
   </T.Mesh>
 {/if}
