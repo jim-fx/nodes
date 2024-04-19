@@ -31,6 +31,23 @@ type NodeInputSeed = {
   value?: number;
 }
 
+type NodeInputVec3 = {
+  type: "vec3";
+  value?: number[];
+}
+
+type NodeInputModel = {
+  type: "model";
+}
+
+type NodeInputPlant = {
+  type: "plant"
+}
+
+type InputTypes = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect | NodeInputSeed | NodeInputVec3 | NodeInputModel | NodeInputPlant);
+
+type InputId = InputTypes["type"];
+
 type DefaultOptions = {
   internal?: boolean;
   external?: boolean;
@@ -38,10 +55,8 @@ type DefaultOptions = {
   label?: string | false;
 }
 
-type InputTypes = (NodeInputSeed | NodeInputBoolean | NodeInputFloat | NodeInputInteger | NodeInputSelect);
-
 export type NodeInput = InputTypes & {
-  type: InputTypes["type"] | InputTypes["type"][];
+  type: InputId | InputId[];
 } & DefaultOptions;
 
 

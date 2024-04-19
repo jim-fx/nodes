@@ -218,7 +218,11 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0
 
-  packages/types: {}
+  packages/types:
+    dependencies:
+      zod:
+        specifier: ^3.22.5
+        version: 3.22.5
 
   packages/ui:
     dependencies:
@@ -5097,4 +5101,8 @@ packages:
 
   /yoga-layout@2.0.1:
     resolution: {integrity: sha512-tT/oChyDXelLo2A+UVnlW9GU7CsvFMaEnd9kVFsaiCQonFAXd3xrHhkLYu+suwwosrAEQ746xBU+HvYtm1Zs2Q==}
+    dev: false
+
+  /zod@3.22.5:
+    resolution: {integrity: sha512-HqnGsCdVZ2xc0qWPLdO25WnseXThh0kEYKIdV5F/hTHO75hNZFp8thxSeHhiPrHZKrFTo1SOgkAj9po5bexZlw==}
     dev: false

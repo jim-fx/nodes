@@ -116,6 +116,8 @@
 
   h1 {
     border-bottom: solid thin var(--outline);
+    box-sizing: border-box;
+    height: 70px;
   }
 
   .content {
@@ -129,7 +131,7 @@
   }
 
   .tabs > button {
-    height: 30px;
+    height: 35px;
     padding: 5px;
     border-radius: 0px;
     background: none;

@@ -53,6 +53,8 @@
   }
   details {
     padding: 1rem;
+    min-height: 69px;
+    box-sizing: border-box;
     border-bottom: solid thin var(--outline);
   }
 
