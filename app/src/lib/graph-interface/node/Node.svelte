@@ -9,6 +9,7 @@
   import { Color, type Mesh } from "three";
   import NodeFrag from "./Node.frag";
   import NodeVert from "./Node.vert";
+  import NodeHtml from "./NodeHTML.svelte";
 
   export let node: Node;
   export let inView = true;
@@ -22,32 +23,20 @@
 
   const getNodeHeight = getContext<(n: string) => number>("getNodeHeight");
 
-  const type = node?.tmp?.type;
-
-  const zOffset = (node.tmp?.random || 0) * 0.5;
-  const zLimit = 2 - zOffset;
-
-  const parameters = Object.entries(type?.inputs || {})
-    .filter((p) => p[1].type !== "seed")
-    .filter((p) => !("setting" in p[1]));
-
-  let ref: HTMLDivElement;
   let meshRef: Mesh;
 
-  const height = getNodeHeight(node.type);
+  const height = getNodeHeight?.(node.type);
 
-  $: if (node && ref && meshRef) {
+  $: if (node && meshRef) {
     node.tmp = node.tmp || {};
-    node.tmp.ref = ref;
     node.tmp.mesh = meshRef;
-    updateNodePosition(node);
+    updateNodePosition?.(node);
   }
 
   onMount(() => {
     node.tmp = node.tmp || {};
-    node.tmp.ref = ref;
     node.tmp.mesh = meshRef;
-    updateNodePosition(node);
+    updateNodePosition?.(node);
   });
 </script>
 
@@ -83,51 +72,4 @@
   />
 </T.Mesh>
 
-<div
-  class="node"
-  class:active={isActive}
-  style:--cz={z + zOffset}
-  style:display={inView && z > zLimit ? "block" : "none"}
-  class:selected={isSelected}
-  class:out-of-view={!inView}
-  data-node-id={node.id}
-  bind:this={ref}
->
-  <NodeHeader {node} />
-
-  {#each parameters as [key, value], i}
-    <NodeParameter
-      bind:node
-      id={key}
-      input={value}
-      isLast={i == parameters.length - 1}
-    />
-  {/each}
-</div>
-
-<style>
-  .node {
-    position: absolute;
-    box-sizing: border-box;
-    user-select: none !important;
-    cursor: pointer;
-    width: 200px;
-    color: var(--text-color);
-    transform: translate3d(var(--nx), var(--ny), 0);
-    z-index: 1;
-    opacity: calc((var(--cz) - 2.5) / 3.5);
-    font-weight: 300;
-    --stroke: var(--outline);
-    --stroke-width: 2px;
-  }
-
-  .node.active {
-    --stroke: var(--active);
-    --stroke-width: 2px;
-  }
-
-  .node.selected {
-    --stroke: var(--selected);
-    --stroke-width: 2px;
-  }
-</style>
+<NodeHtml {node} {inView} {isActive} {isSelected} {z} />

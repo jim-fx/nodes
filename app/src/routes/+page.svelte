@@ -2,17 +2,20 @@
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
-  import { RemoteNodeRegistry } from "$lib/node-registry";
+  import { RemoteNodeRegistry } from "$lib/node-registry-client";
   import * as templates from "$lib/graph-templates";
   import type { Graph } from "@nodes/types";
-  import Viewer from "$lib/viewer/Viewer.svelte";
+  import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
   import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
   import { get, writable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/Keymap.svelte";
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
+  import NodeStore from "$lib/node-store/NodeStore.svelte";
+  import type { GraphManager } from "$lib/graph-interface/graph-manager";
+  import { setContext } from "svelte";
 
-  const nodeRegistry = new RemoteNodeRegistry("http://localhost:3001");
+  const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
   let res: Int32Array;
@@ -21,7 +24,11 @@
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.grid(3, 3);
 
+  let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
+  $: if (manager) {
+    setContext("graphManager", manager);
+  }
 
   let keymap: ReturnType<typeof createKeyMap>;
 
@@ -41,6 +48,7 @@
       definition: AppSettingTypes,
     },
     shortcuts: {},
+    nodeStore: {},
     graph: {},
   };
 
@@ -53,7 +61,16 @@
     };
 
     settings = settings;
-    console.log({ settings });
+  }
+
+  $: if (manager) {
+    settings.nodeStore = {
+      id: "Node Store",
+      icon: "i-tabler-database",
+      props: { nodeRegistry, manager },
+      component: NodeStore,
+    };
+    settings = settings;
   }
 
   function handleSettings(
@@ -91,10 +108,10 @@
     <Grid.Cell>
       {#key graph}
         <GraphInterface
+          bind:manager
           registry={nodeRegistry}
           {graph}
           bind:keymap
-          bind:status={managerStatus}
           settings={settings?.graph?.settings}
           on:settings={handleSettings}
           on:result={handleResult}

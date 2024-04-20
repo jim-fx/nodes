@@ -36,7 +36,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
   history: HistoryManager = new HistoryManager();
 
-  constructor(private nodeRegistry: NodeRegistry) {
+  constructor(public registry: NodeRegistry) {
     super();
     this.nodes.subscribe((nodes) => {
       this._nodes = nodes;
@@ -82,7 +82,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
   }
 
   getNodeTypes() {
-    return this.nodeRegistry.getAllNodes();
+    return this.registry.getAllNodes();
   }
 
   getLinkedNodes(node: Node) {
@@ -122,7 +122,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
   private _init(graph: Graph) {
     const nodes = new Map(graph.nodes.map(node => {
-      const nodeType = this.nodeRegistry.getNode(node.type);
+      const nodeType = this.registry.getNode(node.type);
       if (nodeType) {
         node.tmp = {
           random: (Math.random() - 0.5) * 2,
@@ -164,10 +164,10 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     this.id.set(graph.id);
 
     const nodeIds = Array.from(new Set([...graph.nodes.map(n => n.type)]));
-    await this.nodeRegistry.load(nodeIds);
+    await this.registry.load(nodeIds);
 
     for (const node of this.graph.nodes) {
-      const nodeType = this.nodeRegistry.getNode(node.type);
+      const nodeType = this.registry.getNode(node.type);
       if (!nodeType) {
         logger.error(`Node type not found: ${node.type}`);
         this.status.set("error");
@@ -222,7 +222,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
   }
 
   getNodeType(id: string) {
-    return this.nodeRegistry.getNode(id);
+    return this.registry.getNode(id);
   }
 
   getChildrenOfNode(node: Node) {
@@ -303,7 +303,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     nodes = nodes.map((node, i) => {
       const id = startId + i;
       idMap.set(node.id, id);
-      const type = this.nodeRegistry.getNode(node.type);
+      const type = this.registry.getNode(node.type);
       if (!type) {
         throw new Error(`Node type not found: ${node.type}`);
       }
@@ -343,7 +343,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
   createNode({ type, position, props = {} }: { type: Node["type"], position: Node["position"], props: Node["props"] }) {
 
-    const nodeType = this.nodeRegistry.getNode(type);
+    const nodeType = this.registry.getNode(type);
     if (!nodeType) {
       logger.error(`Node type not found: ${type}`);
       return;

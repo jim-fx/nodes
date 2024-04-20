@@ -35,7 +35,7 @@ export type NodeType = {
   meta?: {
     title?: string;
   },
-  execute?: (args: number[]) => unknown;
+  execute?: (args: Int32Array) => Int32Array;
 }
 
 export type Socket = {
@@ -43,7 +43,6 @@ export type Socket = {
   index: number | string;
   position: [number, number];
 };
-
 
 export interface NodeRegistry {
   /**

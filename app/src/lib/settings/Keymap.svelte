@@ -14,15 +14,15 @@
         <div class="command-wrapper">
           <div class="command">
             {#if key.ctrl}
-              <b>Ctrl</b>
+              <span>Ctrl + </span>
             {/if}
             {#if key.shift}
-              <b>Shift</b>
+              <span>Shift</span>
             {/if}
             {#if key.alt}
-              <b>Alt</b>
+              <span>Alt</span>
             {/if}
-            <b>{key.key}</b>
+            <span>{key.key}</span>
           </div>
         </div>
         <p>{key.description}</p>
@@ -51,19 +51,16 @@
 
   .command-wrapper {
     display: flex;
-    justify-content: left;
+    justify-content: right;
     align-items: center;
   }
 
   .command {
-    background: var(--layer-3);
+    background: var(--outline);
     padding: 0.4em;
+    font-size: 0.8em;
     border-radius: 0.3em;
     white-space: nowrap;
-  }
-
-  .command > * {
-    color: var(--layer-0);
   }
 
   p {

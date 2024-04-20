@@ -14,10 +14,10 @@
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    setDownSocket({
+    setDownSocket?.({
       node,
       index: 0,
-      position: getSocketPosition(node, 0),
+      position: getSocketPosition?.(node, 0),
     });
   }
 

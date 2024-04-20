@@ -113,7 +113,7 @@
       transform 0.2s,
       background 0.2s ease;
     width: 30%;
-    min-width: 300px;
+    min-width: 350px;
   }
 
   h1 {

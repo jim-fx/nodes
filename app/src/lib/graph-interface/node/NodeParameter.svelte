@@ -20,8 +20,8 @@
   const socketId = `${node.id}-${id}`;
 
   const graph = getGraphManager();
-  const graphId = graph.id;
-  const inputSockets = graph.inputSockets;
+  const graphId = graph?.id;
+  const inputSockets = graph?.inputSockets;
 
   const elementId = `input-${Math.random().toString(36).substring(7)}`;
 
@@ -34,10 +34,10 @@
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
-    setDownSocket({
+    setDownSocket?.({
       node,
       index: id,
-      position: getSocketPosition(node, id),
+      position: getSocketPosition?.(node, id),
     });
   }
 
@@ -76,7 +76,7 @@
   class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
-    <div class="content" class:disabled={$inputSockets.has(socketId)}>
+    <div class="content" class:disabled={$inputSockets?.has(socketId)}>
       {#if inputType.label !== false}
         <label for={elementId}>{input.label || id}</label>
       {/if}

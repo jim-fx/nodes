@@ -5,7 +5,3 @@
 </script>
 
 <slot />
-
-{#if false}
-  <span class="absolute i-tabler-settings w-6 h-6 block"></span>
-{/if}

@@ -20,6 +20,7 @@
   import { createKeyMap } from "../../helpers/createKeyMap";
   import BoxSelection from "../BoxSelection.svelte";
   import AddMenu from "../AddMenu.svelte";
+  import { get } from "svelte/store";
 
   export let graph: GraphManager;
 
@@ -78,7 +79,7 @@
   }
 
   function updateNodePosition(node: NodeType) {
-    if (node?.tmp?.ref) {
+    if (node?.tmp?.ref && node?.tmp?.mesh) {
       if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
         node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
         node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
@@ -758,6 +759,34 @@
     addMenuPosition = null;
   }
 
+  function handleDrop(event: DragEvent) {
+    if (!event.dataTransfer) return;
+    const nodeId = event.dataTransfer.getData("data/node-id");
+    let mx = event.clientX - rect.x;
+    let my = event.clientY - rect.y;
+
+    let nodeOffsetX = event.dataTransfer.getData("data/node-offset-x");
+    let nodeOffsetY = event.dataTransfer.getData("data/node-offset-y");
+    if (nodeOffsetX && nodeOffsetY) {
+      mx += parseInt(nodeOffsetX);
+      my += parseInt(nodeOffsetY);
+    }
+
+    const pos = projectScreenToWorld(mx, my);
+    graph.registry.load([nodeId]).then(() => {
+      graph.createNode({
+        type: nodeId,
+        props: {},
+        position: pos,
+      });
+    });
+    console.log({ nodeId });
+  }
+
+  function handlerDragOver(e: DragEvent) {
+    e.preventDefault();
+  }
+
   onMount(() => {
     if (localStorage.getItem("cameraPosition")) {
       const cPosition = JSON.parse(localStorage.getItem("cameraPosition")!);
@@ -779,6 +808,8 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
+  on:dragover={handlerDragOver}
+  on:drop={handleDrop}
   on:keydown={keymap.handleKeyboardEvent}
   on:mousedown={handleMouseDown}
 >

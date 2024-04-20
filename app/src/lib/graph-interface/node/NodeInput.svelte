@@ -15,8 +15,10 @@
 
   $: if (node?.props?.[id] !== value) {
     node.props = { ...node.props, [id]: value };
-    graph.save();
-    graph.execute();
+    if (graph) {
+      graph.save();
+      graph.execute();
+    }
   }
 </script>
 

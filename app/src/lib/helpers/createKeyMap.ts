@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 
 type Shortcut = {
   key: string | string[],
@@ -9,35 +9,45 @@ type Shortcut = {
   callback: (event: KeyboardEvent) => void
 }
 
+function getShortcutId(shortcut: Shortcut) {
+  return `${shortcut.key}${shortcut.shift ? "+shift" : ""}${shortcut.ctrl ? "+ctrl" : ""}${shortcut.alt ? "+alt" : ""}`;
+}
+
 export function createKeyMap(keys: Shortcut[]) {
 
-  const store = writable(keys);
+  const store = writable(new Map(keys.map(k => [getShortcutId(k), k])));
 
   return {
     handleKeyboardEvent: (event: KeyboardEvent) => {
-      const key = get(store).find(k => {
+      const key = [...get(store).values()].find(k => {
         if (Array.isArray(k.key) ? !k.key.includes(event.key) : k.key !== event.key) return false;
         if ("shift" in k && k.shift !== event.shiftKey) return false;
         if ("ctrl" in k && k.ctrl !== event.ctrlKey) return false;
         if ("alt" in k && k.alt !== event.altKey) return false;
         return true;
       });
-      console.log({ keys: get(store), out: key, key: event.key });
       key?.callback(event);
     },
     addShortcut: (shortcut: Shortcut) => {
       if (Array.isArray(shortcut.key)) {
         for (const k of shortcut.key) {
-          store.update(keys => {
-            if (keys.find(kk => kk.key === k)) return keys;
-            return [...keys, { ...shortcut, key: k }];
+          store.update(shortcuts => {
+            const id = getShortcutId({ ...shortcut, key: k });
+            shortcuts.delete(id);
+            shortcuts.set(id, { ...shortcut, key: k });
+            return shortcuts;
           });
         }
       } else {
-        store.update(keys => [...keys, shortcut]);
+        store.update(shortcuts => {
+          const id = getShortcutId(shortcut);
+          shortcuts.delete(id);
+          shortcuts.set(id, shortcut);
+          return shortcuts;
+        });
       }
     },
-    keys: store
+    keys: derived(store, $store => Array.from($store.values()))
   }
 
 }

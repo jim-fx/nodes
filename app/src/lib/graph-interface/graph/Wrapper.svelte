@@ -11,7 +11,7 @@
   export let graph: Graph;
   export let settings: Writable<Record<string, any>> | undefined;
 
-  const manager = new GraphManager(registry);
+  export const manager = new GraphManager(registry);
 
   export const status = manager.status;
 
