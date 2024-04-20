@@ -93,8 +93,16 @@
       icon: "i-tabler-chart-bar",
       id: "graph",
       settings: writable(ev.detail.values),
-      definition: ev.detail.types,
+      definition: {
+        randomSeed: {
+          type: "boolean",
+          label: "Random Seed",
+          value: true,
+        },
+        ...ev.detail.types,
+      },
     };
+
     settings = settings;
   }
 </script>

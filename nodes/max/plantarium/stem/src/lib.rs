@@ -33,7 +33,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         let a = i as f32 / (res_curve - 1) as f32;
         path_p[i * 4] = origin[0] + (a * 8.0).sin() * 0.2;
         path_p[i * 4 + 1] = origin[1] + a * length;
-        path_p[i * 4 + 2] = origin[2] + 0.0;
+        path_p[i * 4 + 2] = origin[2] + ((a + 2.0) * 8.0).sin() * 0.2;
         path_p[i * 4 + 3] = thickness * (1.0 - a);
     }
 

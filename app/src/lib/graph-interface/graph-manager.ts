@@ -8,6 +8,8 @@ import type { NodeInput } from "@nodes/types";
 
 const logger = createLogger("graph-manager");
 
+logger.mute();
+
 function areSocketsCompatible(output: string | undefined, inputs: string | string[] | undefined) {
   if (Array.isArray(inputs) && output) {
     return inputs.includes(output);
@@ -225,6 +227,32 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     return this.registry.getNode(id);
   }
 
+  async loadNode(id: string) {
+
+    await this.registry.load([id]);
+    const nodeType = this.registry.getNode(id);
+
+    if (!nodeType) return;
+
+    const settingTypes = this.settingTypes;
+    const settingValues = this.settings;
+    if (nodeType.inputs) {
+      for (const key in nodeType.inputs) {
+        let settingId = nodeType.inputs[key].setting;
+        if (settingId) {
+          settingTypes[settingId] = nodeType.inputs[key];
+          if (settingValues[settingId] === undefined && "value" in type.inputs[key]) {
+            settingValues[settingId] = nodeType.inputs[key].value;
+          }
+        }
+      }
+    }
+
+    this.settings = settingValues;
+    this.settingTypes = settingTypes;
+    this.emit("settings", { types: settingTypes, values: settingValues });
+  }
+
   getChildrenOfNode(node: Node) {
     const children = [];
     const stack = node.tmp?.children?.slice(0);
@@ -348,6 +376,8 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
       logger.error(`Node type not found: ${type}`);
       return;
     }
+
+
 
     const node: Node = { id: this.createNodeId(), type, position, tmp: { type: nodeType }, props };
 

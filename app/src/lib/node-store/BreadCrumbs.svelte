@@ -1,19 +1,15 @@
 <script lang="ts">
+  import { Select } from "@nodes/ui";
   import type { Writable } from "svelte/store";
 
+  let activeStore = 0;
   export let activeId: Writable<string>;
   $: [activeUser, activeCollection, activeNode] = $activeId.split(`/`);
 </script>
 
 <div class="breadcrumbs">
   {#if activeUser}
-    <button
-      on:click={() => {
-        $activeId = "";
-      }}
-    >
-      root
-    </button>
+    <Select id="root" options={["root"]} bind:value={activeStore}></Select>
     {#if activeCollection}
       <button
         on:click={() => {
@@ -38,7 +34,7 @@
       <span>{activeUser}</span>
     {/if}
   {:else}
-    <span>root</span>
+    <Select id="root" options={["root"]} bind:value={activeStore}></Select>
   {/if}
 </div>
 
@@ -61,7 +57,8 @@
     cursor: pointer;
   }
 
-  .breadcrumbs > button::after {
+  .breadcrumbs > button::after,
+  .breadcrumbs :global(select)::after {
     content: "/";
     position: absolute;
     right: -11px;
@@ -77,5 +74,10 @@
   .breadcrumbs > span {
     font-size: 1em;
     opacity: 0.5;
+  }
+
+  .breadcrumbs :global(select) {
+    padding: 3px 5px;
+    outline: none;
   }
 </style>

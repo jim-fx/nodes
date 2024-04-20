@@ -111,6 +111,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // here we store the intermediate results of the nodes
     const results: Record<string, string | boolean | number> = {};
 
+    const runSeed = settings["randomSeed"] === true ? Math.floor(Math.random() * 100000000) : 5120983;
+
     for (const node of sortedNodes) {
 
       const node_type = this.typeMap.get(node.type)!;
@@ -120,7 +122,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         for (const [key, input] of Object.entries(node_type.inputs || {})) {
 
           if (input.type === "seed") {
-            inputs[key] = Math.floor(Math.random() * 100000000);
+            inputs[key] = runSeed;
             continue;
           }
 

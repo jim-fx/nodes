@@ -773,14 +773,13 @@
     }
 
     const pos = projectScreenToWorld(mx, my);
-    graph.registry.load([nodeId]).then(() => {
+    graph.loadNode(nodeId).then(() => {
       graph.createNode({
         type: nodeId,
         props: {},
         position: pos,
       });
     });
-    console.log({ nodeId });
   }
 
   function handlerDragOver(e: DragEvent) {

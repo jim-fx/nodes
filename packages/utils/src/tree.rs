@@ -1,4 +1,4 @@
-use crate::decode_float;
+use crate::{decode_float, log};
 
 pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     let mut idx: usize = 0;
@@ -103,6 +103,7 @@ pub fn evaluate_node(input_args: &[i32]) -> i32 {
 
     match node_type {
         0 => crate::nodes::math_node(&input_args[1..]),
+        1 => crate::nodes::random_node(&input_args[1..]),
         _ => 0,
     }
 }

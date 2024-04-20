@@ -1,4 +1,4 @@
-use crate::encoding;
+use crate::{encoding, log};
 
 pub fn math_node(args: &[i32]) -> i32 {
     let math_type = args[0];
@@ -13,6 +13,23 @@ pub fn math_node(args: &[i32]) -> i32 {
         3 => a / b,
         _ => 0.0,
     };
+
+    encoding::encode_float(result)
+}
+
+static mut CALL_COUNT: i32 = 0;
+
+pub fn random_node(args: &[i32]) -> i32 {
+    let min = encoding::decode_float(args[0]);
+    let max = encoding::decode_float(args[1]);
+    let seed = (args[2] + unsafe { CALL_COUNT } * 2312312) % 100_000;
+    let v = seed as f32 / 100_000.0;
+    log!("Random node: min: {}, max: {}, seed: {}", min, max, seed);
+    let result = min + v * (max - min);
+
+    unsafe {
+        CALL_COUNT += 1;
+    }
 
     encoding::encode_float(result)
 }

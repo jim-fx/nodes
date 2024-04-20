@@ -53,11 +53,11 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
         };
         v = v.normalize();
 
-        let n = Vec3::new(0.0, 1.0, 0.0); // Assuming 'n' is the up vector or similar
+        let n = Vec3::new(0.0, -1.0, 0.0); // Assuming 'n' is the up vector or similar
         let axis = n.cross(v);
         let angle = n.dot(v).acos();
 
-        let quat = Quat::from_axis_angle(axis, angle);
+        let quat = Quat::from_axis_angle(axis, angle).normalize();
         let mat = Mat4::IDENTITY * Mat4::from_quat(quat);
 
         for j in 0..res_x {
@@ -98,7 +98,7 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
                 point[2] + circle_y,
             );
 
-            let pt = Mat4::transform_point3(&mat, _pt) + point;
+            let pt = Mat4::transform_vector3(&mat, _pt) + point;
 
             normals[idx    ] = circle_x;
             normals[idx + 1] = 0.0;

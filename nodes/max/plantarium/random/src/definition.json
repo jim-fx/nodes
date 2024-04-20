@@ -1,0 +1,18 @@
+{
+  "outputs": [
+    "float"
+  ],
+  "inputs": {
+    "min": {
+      "type": "float",
+      "value": 2
+    },
+    "max": {
+      "type": "float",
+      "value": 2
+    },
+    "seed": {
+      "type": "seed"
+    }
+  }
+}

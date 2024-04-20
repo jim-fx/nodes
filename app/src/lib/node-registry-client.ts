@@ -10,7 +10,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   constructor(private url: string) { }
 
-  private async loadNode(id: `${string}/${string}/${string}`) {
+  async loadNode(id: `${string}/${string}/${string}`) {
     const wasmResponse = await this.fetchNode(id);
 
     // Setup Wasm wrapper
@@ -81,6 +81,8 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
     log.log("loaded nodes in", duration, "ms");
     this.status = "ready";
+
+    return nodes
   }
 
   getNode(id: string) {

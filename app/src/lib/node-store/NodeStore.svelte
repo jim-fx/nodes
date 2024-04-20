@@ -26,7 +26,9 @@
 
 <div class="wrapper">
   {#if !activeUser}
-    <h3>Users</h3>
+    <div class="header">
+      <h3>Users</h3>
+    </div>
     {#await nodeRegistry.fetchUsers()}
       <div>Loading...</div>
     {:then users}
@@ -44,7 +46,15 @@
     {#await nodeRegistry.fetchUser(activeUser)}
       <div>Loading...</div>
     {:then user}
-      <h3>Collections</h3>
+      <div class="header">
+        <button
+          on:click={() => {
+            $activeId = "";
+          }}
+          class="i-tabler-arrow-back"
+        ></button>
+        <h3>Collections</h3>
+      </div>
       {#each user.collections as collection}
         <button
           on:click={() => {
@@ -58,27 +68,27 @@
       <div>{error.message}</div>
     {/await}
   {:else if !activeNode}
-    <h3>Nodes</h3>
+    <div class="header">
+      <button
+        on:click={() => {
+          $activeId = activeUser;
+        }}
+        class="i-tabler-arrow-back"
+      ></button>
+      <h3>Nodes</h3>
+    </div>
     {#await nodeRegistry.fetchCollection(`${activeUser}/${activeCollection}`)}
       <div>Loading...</div>
     {:then collection}
       {#each collection.nodes as node}
-        <button
-          on:click={() => {
-            $activeId = node.id;
-          }}
-        >
-          {node.id.split(`/`)[2]}
-        </button>
+        {#await nodeRegistry.fetchNodeDefinition(node.id)}
+          <div>Loading...</div>
+        {:then node}
+          <DraggableNode {node} />
+        {:catch error}
+          <div>{error.message}</div>
+        {/await}
       {/each}
-    {:catch error}
-      <div>{error.message}</div>
-    {/await}
-  {:else}
-    {#await nodeRegistry.fetchNodeDefinition(`${activeUser}/${activeCollection}/${activeNode}`)}
-      <div>Loading...</div>
-    {:then node}
-      <DraggableNode {node} />
     {:catch error}
       <div>{error.message}</div>
     {/await}
@@ -87,6 +97,18 @@
 
 <style>
   .wrapper {
-    padding: 1em;
+    padding: 0.8em;
+    max-height: calc(100vh - 170px);
+    overflow-y: auto;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  h3 {
+    margin: 0;
   }
 </style>
