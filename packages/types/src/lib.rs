@@ -90,7 +90,7 @@ pub struct DefaultOptions {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum NodeTypeOrArray {
+pub enum NodeDefinitionOrArray {
     Single(InputTypes),
     Multiple(Vec<String>),
 }
@@ -124,10 +124,10 @@ impl<'de> Deserialize<'de> for NodeInput {
 }
 
 #[derive(Deserialize, Debug, Serialize)]
-pub struct NodeType {
+pub struct NodeDefinition {
+    pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inputs: Option<HashMap<String, NodeInput>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outputs: Option<Vec<String>>,
 }
-

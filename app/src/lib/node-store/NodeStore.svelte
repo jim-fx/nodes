@@ -1,19 +1,10 @@
 <script lang="ts">
-  import type { GraphManager } from "$lib/graph-interface/graph-manager";
-  import Node from "$lib/graph-interface/node/Node.svelte";
   import localStore from "$lib/helpers/localStore";
   import type { RemoteNodeRegistry } from "$lib/node-registry-client";
-  import { Canvas } from "@threlte/core";
   import BreadCrumbs from "./BreadCrumbs.svelte";
-  import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
   import DraggableNode from "./DraggableNode.svelte";
 
   export let nodeRegistry: RemoteNodeRegistry;
-  export let manager: GraphManager;
-
-  function handleImport() {
-    nodeRegistry.load([$activeId]);
-  }
 
   const activeId = localStore<
     `${string}` | `${string}/${string}` | `${string}/${string}/${string}`

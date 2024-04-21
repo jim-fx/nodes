@@ -1,8 +1,8 @@
 <script lang="ts">
   import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
-  import type { NodeType } from "@nodes/types";
+  import type { NodeDefinitions } from "@nodes/types";
 
-  export let node: NodeType;
+  export let node: NodeDefinitions;
 
   let dragging = false;
 

@@ -1,4 +1,4 @@
-use crate::{decode_float, log};
+use crate::decode_float;
 
 pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
     let mut idx: usize = 0;

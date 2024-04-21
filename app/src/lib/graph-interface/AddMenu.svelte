@@ -11,7 +11,7 @@
   let value: string = "";
   let activeNodeId: string = "";
 
-  const allNodes = graph.getNodeTypes();
+  const allNodes = graph.getNodeDefinitions();
 
   function filterNodes() {
     return allNodes.filter((node) => node.id.includes(value));

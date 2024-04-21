@@ -1,4 +1,4 @@
-import type { NodeRegistry, NodeType } from "@nodes/types";
+import type { NodeRegistry, NodeDefinition } from "@nodes/types";
 import { createWasmWrapper } from "@nodes/utils";
 import { createLogger } from "./helpers";
 
@@ -6,18 +6,14 @@ const log = createLogger("node-registry");
 export class RemoteNodeRegistry implements NodeRegistry {
 
   status: "loading" | "ready" | "error" = "loading";
-  private nodes: Map<string, NodeType> = new Map();
+  private nodes: Map<string, NodeDefinition> = new Map();
 
   constructor(private url: string) { }
 
   async loadNode(id: `${string}/${string}/${string}`) {
     const wasmResponse = await this.fetchNode(id);
 
-    // Setup Wasm wrapper
-    const wrapper = createWasmWrapper();
-    const module = new WebAssembly.Module(wasmResponse);
-    const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wrapper });
-    wrapper.setInstance(instance);
+    const wrapper = createWasmWrapper(wasmResponse);
 
     const definition = wrapper.get_definition();
 

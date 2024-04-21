@@ -51,7 +51,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
       }
       this.inputSockets.set(s);
     });
-    this.execute = throttle(() => this._execute(), 50);
+    this.execute = throttle(() => this._execute(), 10);
   }
 
   serialize(): Graph {
@@ -83,7 +83,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     this.emit("result", this.serialize());
   }
 
-  getNodeTypes() {
+  getNodeDefinitions() {
     return this.registry.getAllNodes();
   }
 
@@ -184,7 +184,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     // load settings
     const settingTypes: Record<string, NodeInput> = {};
     const settingValues = graph.settings || {};
-    const types = this.getNodeTypes();
+    const types = this.getNodeDefinitions();
     for (const type of types) {
       if (type.inputs) {
         for (const key in type.inputs) {

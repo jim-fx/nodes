@@ -8,6 +8,7 @@
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
   import type { Node, Node as NodeType, Socket } from "@nodes/types";
+  import { NodeDefinitionSchema } from "@nodes/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
   import {
     activeNodeId,
@@ -20,7 +21,7 @@
   import { createKeyMap } from "../../helpers/createKeyMap";
   import BoxSelection from "../BoxSelection.svelte";
   import AddMenu from "../AddMenu.svelte";
-  import { get } from "svelte/store";
+  import { createWasmWrapper } from "@nodes/utils";
 
   export let graph: GraphManager;
 
@@ -759,30 +760,63 @@
     addMenuPosition = null;
   }
 
+  let isDragging = false;
+
   function handleDrop(event: DragEvent) {
+    event.preventDefault();
+    isDragging = false;
     if (!event.dataTransfer) return;
     const nodeId = event.dataTransfer.getData("data/node-id");
-    let mx = event.clientX - rect.x;
-    let my = event.clientY - rect.y;
 
-    let nodeOffsetX = event.dataTransfer.getData("data/node-offset-x");
-    let nodeOffsetY = event.dataTransfer.getData("data/node-offset-y");
-    if (nodeOffsetX && nodeOffsetY) {
-      mx += parseInt(nodeOffsetX);
-      my += parseInt(nodeOffsetY);
-    }
+    if (nodeId) {
+      let mx = event.clientX - rect.x;
+      let my = event.clientY - rect.y;
 
-    const pos = projectScreenToWorld(mx, my);
-    graph.loadNode(nodeId).then(() => {
-      graph.createNode({
-        type: nodeId,
-        props: {},
-        position: pos,
+      let nodeOffsetX = event.dataTransfer.getData("data/node-offset-x");
+      let nodeOffsetY = event.dataTransfer.getData("data/node-offset-y");
+      if (nodeOffsetX && nodeOffsetY) {
+        mx += parseInt(nodeOffsetX);
+        my += parseInt(nodeOffsetY);
+      }
+
+      const pos = projectScreenToWorld(mx, my);
+      graph.loadNode(nodeId).then(() => {
+        graph.createNode({
+          type: nodeId,
+          props: {},
+          position: pos,
+        });
       });
-    });
+    } else if (event.dataTransfer.files.length) {
+      const files = event.dataTransfer.files;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const buffer = e.target?.result;
+        if (buffer) {
+          const wrapper = createWasmWrapper(buffer);
+          const definition = wrapper.get_definition();
+          const res = NodeDefinitionSchema.parse(definition);
+          console.log(wrapper, res);
+        }
+      };
+      reader.readAsArrayBuffer(files[0]);
+      console.log({ files });
+    }
+  }
+
+  function handleDragEnter(e: DragEvent) {
+    e.preventDefault();
+    isDragging = true;
+    console.log(e);
   }
 
   function handlerDragOver(e: DragEvent) {
+    isDragging = true;
+    e.preventDefault();
+  }
+
+  function handleDragEnd(e: DragEvent) {
+    isDragging = false;
     e.preventDefault();
   }
 
@@ -807,11 +841,20 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
+  on:dragenter={handleDragEnter}
   on:dragover={handlerDragOver}
   on:drop={handleDrop}
   on:keydown={keymap.handleKeyboardEvent}
   on:mousedown={handleMouseDown}
 >
+  <input
+    type="file"
+    accept="application/wasm"
+    disabled={!isDragging}
+    on:dragend={handleDragEnd}
+    on:dragleave={handleDragEnd}
+  />
+
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
 
@@ -855,5 +898,16 @@
     position: relative;
     transition: opacity 0.3s ease;
     height: 100%;
+  }
+  input {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background: red;
+    opacity: 0.5;
+  }
+  input:disabled {
+    display: none;
   }
 </style>

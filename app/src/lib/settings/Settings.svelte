@@ -105,6 +105,7 @@
     top: 0px;
     position: absolute;
     display: grid;
+    z-index: 2;
     grid-template-columns: 30px 1fr;
     height: 100%;
     right: 0px;

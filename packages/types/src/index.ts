@@ -1,4 +1,5 @@
-import type { NodeInput } from "./inputs";
+import { z } from "zod";
+import { NodeInputSchema } from "./inputs";
 export type { NodeInput } from "./inputs";
 
 export type Node = {
@@ -12,7 +13,7 @@ export type Node = {
     parents?: Node[],
     children?: Node[],
     inputNodes?: Record<string, Node>
-    type?: NodeType;
+    type?: NodeDefinition;
     downX?: number;
     downY?: number;
     x?: number;
@@ -28,15 +29,19 @@ export type Node = {
   position: [x: number, y: number]
 }
 
-export type NodeType = {
-  id: string;
-  inputs?: Record<string, NodeInput>
-  outputs?: string[];
-  meta?: {
-    title?: string;
-  },
-  execute?: (args: Int32Array) => Int32Array;
-}
+export const NodeDefinitionSchema = z.object({
+  id: z.string(),
+  inputs: z.record(NodeInputSchema).optional(),
+  outputs: z.array(z.string()).optional(),
+  meta: z.object({
+    description: z.string().optional(),
+    title: z.string().optional(),
+  }).optional(),
+});
+
+export type NodeDefinition = z.infer<typeof NodeDefinitionSchema> & {
+  execute(input: Int32Array): Int32Array;
+};
 
 export type Socket = {
   node: Node;
@@ -63,12 +68,12 @@ export interface NodeRegistry {
    * @param id - The id of the node to get
    * @returns The node with the given id, or undefined if no such node exists
    */
-  getNode: (id: string) => NodeType | undefined;
+  getNode: (id: string) => NodeDefinition | undefined;
   /**
    * Get all nodes
    * @returns An array of all nodes
    */
-  getAllNodes: () => NodeType[];
+  getAllNodes: () => NodeDefinition[];
 }
 
 export interface RuntimeExecutor {

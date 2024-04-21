@@ -1,21 +1,21 @@
-import type { Graph, NodeRegistry, NodeType, RuntimeExecutor } from "@nodes/types";
+import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor } from "@nodes/types";
 import { fastHash, concat_encoded, encodeFloat, encode } from "@nodes/utils"
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
-  private typeMap: Map<string, NodeType> = new Map();
+  private definitionMap: Map<string, NodeDefinition> = new Map();
 
   private cache: Record<string, { eol: number, value: any }> = {};
 
   constructor(private registry: NodeRegistry) { }
 
-  private getNodeTypes(graph: Graph) {
+  private getNodeDefinitions(graph: Graph) {
 
     if (this.registry.status !== "ready") {
       throw new Error("Node registry is not ready");
     }
 
-    const typeMap = new Map<string, NodeType>();
+    const typeMap = new Map<string, NodeDefinition>();
     for (const node of graph.nodes) {
       if (!typeMap.has(node.type)) {
         const type = this.registry.getNode(node.type);
@@ -29,8 +29,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   private addMetaData(graph: Graph) {
 
-    // First, lets check if all nodes have a type
-    this.typeMap = this.getNodeTypes(graph);
+    // First, lets check if all nodes have a definition
+    this.definitionMap = this.getNodeDefinitions(graph);
 
     const outputNode = graph.nodes.find(node => node.type.endsWith("/output"));
     if (!outputNode) {
@@ -115,7 +115,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     for (const node of sortedNodes) {
 
-      const node_type = this.typeMap.get(node.type)!;
+      const node_type = this.definitionMap.get(node.type)!;
 
       if (node?.tmp && node_type?.execute) {
         const inputs: Record<string, string | number | boolean> = {};

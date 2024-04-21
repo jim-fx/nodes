@@ -1,4 +1,4 @@
-import { NodeType } from "@nodes/types";
+import { NodeDefinition } from "@nodes/types";
 
 const cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 const cachedTextEncoder = new TextEncoder();
@@ -17,11 +17,8 @@ const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
     };
   });
 
-export function createWasmWrapper() {
+function createWrapper() {
   let wasm: any;
-
-
-
 
   let cachedUint8Memory0: Uint8Array | null = null;
   let cachedInt32Memory0: Int32Array | null = null;
@@ -120,7 +117,7 @@ export function createWasmWrapper() {
       deferred1_0 = r0;
       deferred1_1 = r1;
       const string = getStringFromWasm0(r0, r1);
-      return JSON.parse(string) as Omit<NodeType, "id">;
+      return JSON.parse(string) as NodeDefinition;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
       wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
@@ -226,9 +223,12 @@ export function createWasmWrapper() {
       wasm = instance.exports;
     },
 
-    // Expose other methods that interact with the wasm instance
-    execute,
-    get_definition,
+
+    exports: {
+      // Expose other methods that interact with the wasm instance
+      execute,
+      get_definition,
+    },
 
     __wbindgen_string_new,
     __wbindgen_object_drop_ref,
@@ -240,3 +240,11 @@ export function createWasmWrapper() {
   };
 }
 
+
+export function createWasmWrapper(wasmBuffer: ArrayBuffer) {
+  const wrapper = createWrapper();
+  const module = new WebAssembly.Module(wasmBuffer);
+  const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wrapper });
+  wrapper.setInstance(instance);
+  return wrapper.exports;
+}

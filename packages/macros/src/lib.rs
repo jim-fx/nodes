@@ -5,14 +5,14 @@ use std::env;
 use std::fs;
 use std::path::Path;
 use syn::{parse_macro_input, LitStr};
-use types::NodeType;
+use types::NodeDefinition;
 
 #[proc_macro]
-pub fn define_node(input: TokenStream) -> TokenStream {
+pub fn node_definition(input: TokenStream) -> TokenStream {
     let input_string = parse_macro_input!(input as LitStr).value();
 
     // Validate JSON format
-    let json: NodeType = match serde_json::from_str(&input_string) {
+    let json: NodeDefinition = match serde_json::from_str(&input_string) {
         Ok(json) => json,
         Err(e) => panic!("Invalid JSON input: {}", e),
     };
@@ -49,7 +49,7 @@ pub fn include_definition_file(input: TokenStream) -> TokenStream {
     });
 
     // Optionally, validate that the content is valid JSON
-    let _: NodeType = serde_json::from_str(&json_content)
+    let _: NodeDefinition = serde_json::from_str(&json_content)
         .unwrap_or_else(|err| panic!("JSON file contains invalid JSON: {}", err));
 
     // Generate the function that returns the JSON string

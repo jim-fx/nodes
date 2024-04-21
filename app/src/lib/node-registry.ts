@@ -13,9 +13,7 @@ export async function getWasm(id: `${string}/${string}/${string}`) {
 
   const file = await fs.readFile(filePath);
 
-  const bytes = new Uint8Array(file);
-
-  return bytes;
+  return new Uint8Array(file);
 
 }
 
@@ -24,10 +22,7 @@ export async function getNodeWasm(id: `${string}/${string}/${string}`) {
   const wasmBytes = await getWasm(id);
   if (!wasmBytes) return null;
 
-  const wrapper = createWasmWrapper();
-  const module = new WebAssembly.Module(wasmBytes);
-  const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wrapper });
-  wrapper.setInstance(instance)
+  const wrapper = createWasmWrapper(wasmBytes);
 
   return wrapper;
 }
