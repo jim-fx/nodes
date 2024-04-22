@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{evaluate_arg, get_args};
+use utils::{evaluate_int, get_args};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -11,8 +11,8 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let args = get_args(input);
 
-    let value_encoded = evaluate_arg(args[0]);
-    let length = evaluate_arg(args[1]) as usize;
+    let value_encoded = evaluate_int(args[0]);
+    let length = evaluate_int(args[1]) as usize;
 
     console::log_1(&format!("WASM(array): input: {:?} -> {:?}", args, value_encoded).into());
 

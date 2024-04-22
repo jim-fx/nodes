@@ -1,7 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["nodes/max/plantarium/*", "packages/macros", "packages/types", "packages/utils"]
-
+members = [
+  "nodes/max/plantarium/*",
+  "packages/macros",
+  "packages/types",
+  "packages/utils",
+]
+exclude = ["nodes/max/plantarium/.template"]
 
 [profile.release]
 lto = true

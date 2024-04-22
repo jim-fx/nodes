@@ -1,9 +1,10 @@
 import localStore from "$lib/helpers/localStore";
-import { label } from "three/examples/jsm/nodes/Nodes.js";
 
 export const AppSettings = localStore("node-settings", {
   theme: 0,
   showGrid: true,
+  showNodeGrid: true,
+  snapToGrid: true,
   wireframes: false,
   showIndices: false,
 });
@@ -32,6 +33,16 @@ export const AppSettingTypes = {
     type: "boolean",
     label: "Show Grid",
     value: true,
+  },
+  nodeInterface: {
+    showNodeGrid: {
+      type: "boolean",
+      value: true
+    },
+    snapToGrid: {
+      type: "boolean",
+      value: true
+    }
   },
   stressTest: {
     amount: {

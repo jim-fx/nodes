@@ -14,9 +14,12 @@
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
+  import { decodeNestedArray } from "@nodes/utils";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
+
+  globalThis.decode = decodeNestedArray;
 
   let res: Int32Array;
 
@@ -120,6 +123,8 @@
           registry={nodeRegistry}
           {graph}
           bind:keymap
+          showGrid={$AppSettings?.showNodeGrid}
+          snapToGrid={$AppSettings?.snapToGrid}
           settings={settings?.graph?.settings}
           on:settings={handleSettings}
           on:result={handleResult}

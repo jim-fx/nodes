@@ -53,7 +53,7 @@
       }}
       uniforms.camPos.value={cameraPosition}
       uniforms.backgroundColor.value={$colors.layer0}
-      uniforms.lineColor.value={$colors.layer2}
+      uniforms.lineColor.value={$colors.outline}
       uniforms.zoomLimits.value={[minZoom, maxZoom]}
       uniforms.dimensions.value={[width, height]}
     />

@@ -39,9 +39,13 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
                 // skip over the bracket encoding
                 idx += 2;
             } else {
+                if depth == 1 {
+                    arg_start_index = idx + 2;
+                }
                 // skip to the next bracket if we are at depth > 0
                 idx = next_bracket_index;
             }
+
             continue;
         }
 
@@ -54,6 +58,12 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
         }
 
         idx += 1;
+    }
+
+    println!("idx: {}, length: {}, asi: {}", idx, length, arg_start_index);
+
+    if arg_start_index < length {
+        out_args.push(&args[arg_start_index..]);
     }
 
     out_args
@@ -101,6 +111,8 @@ pub fn wrap_arg(arg: &[i32]) -> Vec<i32> {
 pub fn evaluate_node(input_args: &[i32]) -> i32 {
     let node_type = input_args[0];
 
+    println!("node_type: {} -> {:?}", node_type, input_args);
+
     match node_type {
         0 => crate::nodes::math_node(&input_args[1..]),
         1 => crate::nodes::random_node(&input_args[1..]),
@@ -109,12 +121,21 @@ pub fn evaluate_node(input_args: &[i32]) -> i32 {
 }
 
 pub fn evaluate_vec3(input_args: &[i32]) -> Vec<f32> {
+    if input_args.len() == 3 {
+        return vec![
+            decode_float(input_args[0]),
+            decode_float(input_args[1]),
+            decode_float(input_args[2]),
+        ];
+    }
+
     let args = get_args(input_args);
 
     assert!(
         args.len() == 3,
-        "Failed to evaluate Vec3 - Expected 3 arguments, got {}",
-        args.len()
+        "Failed to evaluate Vec3 - Expected 3 arguments, got {} \n {:?}",
+        args.len(),
+        args
     );
 
     let x = evaluate_float(args[0]);
@@ -125,15 +146,17 @@ pub fn evaluate_vec3(input_args: &[i32]) -> Vec<f32> {
 }
 
 pub fn evaluate_float(arg: &[i32]) -> f32 {
-    decode_float(evaluate_arg(arg))
+    decode_float(evaluate_int(arg))
 }
 
-pub fn evaluate_arg(input_args: &[i32]) -> i32 {
+pub fn evaluate_int(input_args: &[i32]) -> i32 {
     if input_args.len() == 1 {
-        return input_args.to_vec()[0];
+        return input_args[0];
     }
 
     let args = get_args(input_args);
+
+    println!("args: {:?}", args);
 
     let mut resolved: Vec<i32> = Vec::new();
 
@@ -144,7 +167,7 @@ pub fn evaluate_arg(input_args: &[i32]) -> i32 {
             resolved.push(arg[2]);
             resolved.push(arg[3]);
         } else {
-            resolved.push(evaluate_arg(arg));
+            resolved.push(evaluate_int(arg));
         }
     }
 
@@ -159,6 +182,32 @@ pub fn evaluate_arg(input_args: &[i32]) -> i32 {
 mod tests {
 
     use super::*;
+
+    #[rustfmt::skip]
+    #[test]
+    fn test_split_args() {
+        let input = [
+            0, 1, 0, 28, 0, 2, 1048576000, 0, 20, 0, 4, 0, 0, 1073741824, 0, 9, 0, 5, 0, 0,
+            1073741824, 1073741824, 1, 1, 1, 0, 1, 1, 1, 4, 1041865114, 1, 5, 1086324736,
+            1053609165, 54,
+        ];
+
+        // this should be the output
+        /* [
+            [ 0, 2, 1048576000, 0, 20, 0, 4, 0, 0, 1073741824, 0, 9, 0, 5, 0, 0, 1073741824, 1073741824, 1, 1, 1, 0, 1, 1, 1, 4, 1041865114 ],
+            1086324736,
+            1053609165,
+            54
+        ] */
+
+
+        let args = get_args(&input);
+        println!("{:?}", args[0]);
+
+        assert_eq!(args[0].len(), 27);
+        assert_eq!(args[1][0], 1086324736);
+        assert_eq!(args[2][0], 1053609165);
+    }
 
     #[test]
     fn test_recursive_evaluation() {

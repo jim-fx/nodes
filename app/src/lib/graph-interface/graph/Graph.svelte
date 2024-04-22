@@ -25,6 +25,11 @@
 
   export let graph: GraphManager;
 
+  export let settings = {
+    snapToGrid: true,
+    showGrid: true,
+  };
+
   let keymap =
     getContext<ReturnType<typeof createKeyMap>>("keymap") || createKeyMap([]);
 
@@ -320,8 +325,10 @@
 
       if (event.ctrlKey) {
         const snapLevel = getSnapLevel();
-        newX = snapToGrid(newX, 5 / snapLevel);
-        newY = snapToGrid(newY, 5 / snapLevel);
+        if (settings.snapToGrid) {
+          newX = snapToGrid(newX, 5 / snapLevel);
+          newY = snapToGrid(newY, 5 / snapLevel);
+        }
       }
 
       if (!node.tmp.isMoving) {
@@ -667,15 +674,20 @@
     if (activeNode?.tmp?.isMoving) {
       activeNode.tmp = activeNode.tmp || {};
       activeNode.tmp.isMoving = false;
-      const snapLevel = getSnapLevel();
-      activeNode.position[0] = snapToGrid(
-        activeNode?.tmp?.x ?? activeNode.position[0],
-        5 / snapLevel,
-      );
-      activeNode.position[1] = snapToGrid(
-        activeNode?.tmp?.y ?? activeNode.position[1],
-        5 / snapLevel,
-      );
+      if (settings.snapToGrid) {
+        const snapLevel = getSnapLevel();
+        activeNode.position[0] = snapToGrid(
+          activeNode?.tmp?.x ?? activeNode.position[0],
+          5 / snapLevel,
+        );
+        activeNode.position[1] = snapToGrid(
+          activeNode?.tmp?.y ?? activeNode.position[1],
+          5 / snapLevel,
+        );
+      } else {
+        activeNode.position[0] = activeNode?.tmp?.x ?? activeNode.position[0];
+        activeNode.position[1] = activeNode?.tmp?.y ?? activeNode.position[1];
+      }
       const nodes = [
         ...[...($selectedNodes?.values() || [])].map((id) => graph.getNode(id)),
       ] as NodeType[];
@@ -796,11 +808,9 @@
           const wrapper = createWasmWrapper(buffer);
           const definition = wrapper.get_definition();
           const res = NodeDefinitionSchema.parse(definition);
-          console.log(wrapper, res);
         }
       };
       reader.readAsArrayBuffer(files[0]);
-      console.log({ files });
     }
   }
 
@@ -858,7 +868,9 @@
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
 
-    <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
+    {#if settings?.showGrid !== false}
+      <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
+    {/if}
 
     {#if boxSelection && mouseDown}
       <BoxSelection

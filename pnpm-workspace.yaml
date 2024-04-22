@@ -2,3 +2,4 @@ packages:
   - app
   - packages/*
   - nodes/**/**/**/*
+  - '!**/.template'

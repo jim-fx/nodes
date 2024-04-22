@@ -1,5 +1,5 @@
 import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor } from "@nodes/types";
-import { fastHash, concat_encoded, encodeFloat, encode } from "@nodes/utils"
+import { fastHash, concatEncodedArrays, encodeFloat, encodeNestedArray, decodeNestedArray } from "@nodes/utils"
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
@@ -109,7 +109,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     const sortedNodes = nodes.sort((a, b) => (b.tmp?.depth || 0) - (a.tmp?.depth || 0));
 
     // here we store the intermediate results of the nodes
-    const results: Record<string, string | boolean | number> = {};
+    const results: Record<string, Int32Array> = {};
 
     const runSeed = settings["randomSeed"] === true ? Math.floor(Math.random() * 100000000) : 5120983;
 
@@ -192,7 +192,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
             }
 
             if (Array.isArray(value)) {
-              return encode(value);
+              return encodeNestedArray(value);
             }
 
             return value;
@@ -204,10 +204,14 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           // console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
 
-          const _inputs = concat_encoded(transformed_inputs);
+          const encoded_inputs = concatEncodedArrays(transformed_inputs);
           const a3 = performance.now();
-          // console.log(`executing ${node_type.id || node.id}`, _inputs);
-          results[node.id] = node_type.execute(_inputs) as number;
+          console.groupCollapsed(`executing ${node_type.id || node.id}`);
+          console.log(`Inputs:`, transformed_inputs);
+          console.log(`Encoded Inputs:`, encoded_inputs);
+          results[node.id] = node_type.execute(encoded_inputs);
+          console.log("Result:", decodeNestedArray(results[node.id]));
+          console.groupEnd();
           const duration = performance.now() - a3;
           if (duration > 5) {
             this.cache[cacheKey] = { eol: Date.now() + 10_000, value: results[node.id] };
@@ -217,6 +221,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           const a4 = performance.now();
           // console.log(`${a4 - a0}ms e2e duration`);
         } catch (e) {
+          console.groupEnd();
           console.error(`Error executing node ${node_type.id || node.id}`, e);
         }
 

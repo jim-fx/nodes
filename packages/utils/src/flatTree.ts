@@ -1,6 +1,6 @@
 type SparseArray<T = number> = (T | T[] | SparseArray<T>)[];
 
-export function concat_encoded(input: (number | number[])[]): number[] {
+export function concatEncodedArrays(input: (number | number[])[]): number[] {
 
   if (input.length === 1 && Array.isArray(input[0])) {
     return input[0]
@@ -26,11 +26,13 @@ export function concat_encoded(input: (number | number[])[]): number[] {
     }
   }
 
+  result.push(1, 1); // closing bracket
+
   return result
 }
 
 // Encodes a nested array into a flat array with bracket and distance notation
-export function encode(array: SparseArray): number[] {
+export function encodeNestedArray(array: SparseArray): number[] {
   const encoded = [0, 0]; // Initialize encoded array with root bracket notation
   let missingBracketIndex = 1; // Track where to insert the distance to the next bracket
 
@@ -44,7 +46,7 @@ export function encode(array: SparseArray): number[] {
         encoded.push(0, 1, 1, 1);
       } else {
         // Recursively encode non-empty arrays
-        const child = encode(item);
+        const child = encodeNestedArray(item);
         encoded.push(...child, 1, 0);
       }
       // Update missingBracketIndex to the position of the newly added bracket
@@ -59,7 +61,12 @@ export function encode(array: SparseArray): number[] {
   return encoded;
 };
 
-function decode_recursive(dense: number[], index = 0) {
+function decode_recursive(dense: number[] | Int32Array, index = 0) {
+
+  if (dense instanceof Int32Array) {
+    dense = Array.from(dense)
+  }
+
   const decoded: (number | number[])[] = [];
   let nextBracketIndex = dense[index + 1] + index + 1; // Calculate the index of the next bracket
 
@@ -83,6 +90,6 @@ function decode_recursive(dense: number[], index = 0) {
   return [decoded, index, nextBracketIndex] as const;
 }
 
-export function decode(dense: number[]) {
+export function decodeNestedArray(dense: number[] | Int32Array) {
   return decode_recursive(dense, 0)[0];
 }

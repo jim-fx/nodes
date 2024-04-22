@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{decode_float, encode_float, evaluate_arg, get_args, wrap_arg};
+use utils::{decode_float, encode_float, evaluate_int, get_args, wrap_arg};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -13,7 +13,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let args = get_args(input);
 
-    let size = evaluate_arg(args[0]);
+    let size = evaluate_int(args[0]);
     let decoded = decode_float(size);
     let negative_size = encode_float(-decoded);
 

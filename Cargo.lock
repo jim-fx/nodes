@@ -160,6 +160,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "noise"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "macros",
+ "serde",
+ "serde-wasm-bindgen",
+ "utils",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -299,20 +313,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "template"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "macros",
- "serde",
- "serde-wasm-bindgen",
- "utils",
- "wasm-bindgen",
- "wasm-bindgen-test",
- "web-sys",
 ]
 
 [[package]]

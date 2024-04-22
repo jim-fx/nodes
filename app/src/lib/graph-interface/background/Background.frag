@@ -67,27 +67,27 @@ void main(void) {
 
 
     //extra small grid
-    float m1 = grid(ux, uy, divisions*4.0, thickness*4.0) * 0.1;
-    float m2 = grid(ux, uy, divisions*16.0, thickness*16.0) * 0.03;
+    float m1 = grid(ux, uy, divisions*4.0, thickness*4.0) * 0.9;
+    float m2 = grid(ux, uy, divisions*16.0, thickness*16.0) * 0.5;
     float xsmall = max(m1, m2);
     
-    float s3 = circle_grid(ux, uy, cz/1.6, 1.0) * 0.2;
+    float s3 = circle_grid(ux, uy, cz/1.6, 1.0) * 0.5;
     xsmall = max(xsmall, s3);
 
     // small grid
-    float c1 = grid(ux, uy, divisions, thickness) * 0.2;
-    float c2 = grid(ux, uy, divisions*2.0, thickness) * 0.1;
+    float c1 = grid(ux, uy, divisions, thickness) * 0.6;
+    float c2 = grid(ux, uy, divisions*2.0, thickness) * 0.5;
     float small = max(c1, c2);
 
-    float s1 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.2;
+    float s1 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.5;
     small = max(small, s1);
 
     // large grid
-    float c3 = grid(ux, uy, divisions/8.0, thickness/8.0) * 0.1;
-    float c4 = grid(ux, uy, divisions/2.0, thickness/4.0) * 0.05;
+    float c3 = grid(ux, uy, divisions/8.0, thickness/8.0) * 0.5;
+    float c4 = grid(ux, uy, divisions/2.0, thickness/4.0) * 0.4;
     float large = max(c3, c4);
 
-    float s2 = circle_grid(ux, uy, cz*20.0, 1.0) * 0.2;
+    float s2 = circle_grid(ux, uy, cz*20.0, 1.0) * 0.4;
     large = max(large, s2);
 
     float c = mix(large, small, min(nz*2.0+0.05, 1.0));

@@ -18,6 +18,9 @@
   export const keymap = createKeyMap([]);
   setContext("keymap", keymap);
 
+  export let showGrid = false;
+  export let snapToGrid = false;
+
   const updateSettings = debounce((s) => {
     manager.setSettings(s);
   }, 200);
@@ -43,4 +46,4 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<GraphEl graph={manager} />
+<GraphEl graph={manager} settings={{ showGrid, snapToGrid }} />
