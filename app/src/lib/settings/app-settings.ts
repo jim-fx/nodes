@@ -35,26 +35,32 @@ export const AppSettingTypes = {
     value: true,
   },
   nodeInterface: {
+    __title: "Node Interface",
     showNodeGrid: {
       type: "boolean",
+      label: "Show Grid",
       value: true
     },
     snapToGrid: {
       type: "boolean",
+      label: "Snap to Grid",
       value: true
     }
   },
   stressTest: {
+    __title: "Stress Test",
     amount: {
       type: "integer",
       min: 2,
       max: 15
     },
     loadGrid: {
-      type: "button"
+      type: "button",
+      label: "Load Grid"
     },
     loadTree: {
-      type: "button"
+      type: "button",
+      label: "Load Tree"
     },
   },
   debug: {

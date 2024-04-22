@@ -138,7 +138,7 @@
 
 <style>
   header {
-    border-bottom: solid thin var(--outline);
+    /* border-bottom: solid thin var(--outline); */
     background-color: var(--layer-1);
   }
 
@@ -147,7 +147,7 @@
     width: 100vw;
     color: white;
     display: grid;
-    grid-template-rows: 50px 1fr;
+    grid-template-rows: 0px 1fr;
   }
 
   .wrapper :global(canvas) {

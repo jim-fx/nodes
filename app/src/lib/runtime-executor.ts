@@ -204,7 +204,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           // console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
 
-          const encoded_inputs = concatEncodedArrays(transformed_inputs);
+          const encoded_inputs = encodeNestedArray(transformed_inputs);
           const a3 = performance.now();
           console.groupCollapsed(`executing ${node_type.id || node.id}`);
           console.log(`Inputs:`, transformed_inputs);

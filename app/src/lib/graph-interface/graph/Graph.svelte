@@ -60,8 +60,8 @@
     edges: [number, number, number, string][];
   } = null;
 
-  let width = globalThis?.innerWidth ?? 100;
-  let height = globalThis?.innerHeight ?? 100;
+  let width = rect?.width ?? 100;
+  let height = rect?.height ?? 100;
 
   let cameraBounds = [-1000, 1000, -1000, 1000];
   $: cameraBounds = [

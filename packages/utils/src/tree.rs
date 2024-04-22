@@ -39,9 +39,6 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
                 // skip over the bracket encoding
                 idx += 2;
             } else {
-                if depth == 1 {
-                    arg_start_index = idx + 2;
-                }
                 // skip to the next bracket if we are at depth > 0
                 idx = next_bracket_index;
             }
@@ -58,12 +55,6 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
         }
 
         idx += 1;
-    }
-
-    println!("idx: {}, length: {}, asi: {}", idx, length, arg_start_index);
-
-    if arg_start_index < length {
-        out_args.push(&args[arg_start_index..]);
     }
 
     out_args
@@ -111,8 +102,6 @@ pub fn wrap_arg(arg: &[i32]) -> Vec<i32> {
 pub fn evaluate_node(input_args: &[i32]) -> i32 {
     let node_type = input_args[0];
 
-    println!("node_type: {} -> {:?}", node_type, input_args);
-
     match node_type {
         0 => crate::nodes::math_node(&input_args[1..]),
         1 => crate::nodes::random_node(&input_args[1..]),
@@ -156,8 +145,6 @@ pub fn evaluate_int(input_args: &[i32]) -> i32 {
 
     let args = get_args(input_args);
 
-    println!("args: {:?}", args);
-
     let mut resolved: Vec<i32> = Vec::new();
 
     for arg in args {
@@ -194,7 +181,7 @@ mod tests {
 
         // this should be the output
         /* [
-            [ 0, 2, 1048576000, 0, 20, 0, 4, 0, 0, 1073741824, 0, 9, 0, 5, 0, 0, 1073741824, 1073741824, 1, 1, 1, 0, 1, 1, 1, 4, 1041865114 ],
+            [ 0, 28, 0, 2, 1048576000, 0, 20, 0, 4, 0, 0, 1073741824, 0, 9, 0, 5, 0, 0, 1073741824, 1073741824, 1, 1, 1, 0, 1, 1, 1, 4, 1041865114 ],
             1086324736,
             1053609165,
             54
@@ -204,7 +191,7 @@ mod tests {
         let args = get_args(&input);
         println!("{:?}", args[0]);
 
-        assert_eq!(args[0].len(), 27);
+        assert_eq!(args[0].len(), 29);
         assert_eq!(args[1][0], 1086324736);
         assert_eq!(args[2][0], 1053609165);
     }
@@ -229,6 +216,8 @@ mod tests {
         // -> [1, 2, 3, [1, 2, 4, 2, 4]]
 
         let args = get_args(&input_a);
+
+        println!("{:?}", args);
 
         assert_eq!(args.len(), 4);
         assert_eq!(args[0], [1]);

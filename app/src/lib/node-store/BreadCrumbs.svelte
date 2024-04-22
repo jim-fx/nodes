@@ -44,7 +44,8 @@
     align-items: center;
     padding: 0.4em;
     gap: 0.8em;
-    height: 1em;
+    height: 35px;
+    box-sizing: border-box;
     border-bottom: solid thin var(--outline);
   }
   .breadcrumbs > button {

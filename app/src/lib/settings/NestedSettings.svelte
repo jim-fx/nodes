@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { NodeInput } from "@nodes/types";
-  import Input, { Details } from "@nodes/ui";
+  import Input from "@nodes/ui";
   import type { Writable } from "svelte/store";
 
   interface Nested {
@@ -11,7 +11,7 @@
   export let store: Writable<Record<string, any>>;
   export let depth = 0;
 
-  const keys = Object.keys(settings);
+  const keys = Object.keys(settings).filter((key) => key !== "__title");
   function isNodeInput(v: NodeInput | Nested): v is NodeInput {
     return "type" in v;
   }
@@ -24,7 +24,7 @@
       <div class="input input-{settings[key].type}">
         {#if settings[key].type === "button"}
           <button on:click={() => settings[key]?.callback?.()}
-            >{key || settings[key].label}</button
+            >{settings[key].label || key}</button
           >
         {:else}
           <label for={key}>{settings[key].label || key}</label>
@@ -37,7 +37,7 @@
       </div>
     {:else}
       <details>
-        <summary>{key}</summary>
+        <summary>{settings[key]?.__title || key}</summary>
         <div class="content">
           <svelte:self settings={settings[key]} {store} depth={depth + 1} />
         </div>
