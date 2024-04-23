@@ -1,5 +1,7 @@
+use crate::log;
+
 use super::{create_geometry_data, wrap_geometry_data};
-use glam::{Mat4, Quat, Vec3};
+use glam::{Mat4, Vec3};
 
 fn create_circle(res: usize) -> Vec<f32> {
     let angle = (2.0 * std::f32::consts::PI) / res as f32;
@@ -11,7 +13,6 @@ fn create_circle(res: usize) -> Vec<f32> {
     circle
 }
 
-#[rustfmt::skip]
 pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
     let point_amount = input_path.len() / 4;
     let face_amount = (point_amount - 1) * res_x * 2;
@@ -33,51 +34,63 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
     }
 
     for i in 0..point_amount {
-
         let index_offset = i * res_x * 6;
         let position_offset = i * res_x;
 
-        let point = Vec3::from_slice(&path[i*4..i*4+3]);
-        let thickness = path[i*4+3];
-        let next_point = if i == point_amount - 1 { point } else { Vec3::from_slice(&path[(i+1)*4..(i+1)*4+3]) };
-        let prev_point = if i == 0 { point } else { Vec3::from_slice(&path[(i-1)*4..(i-1)*4+3]) };
+        let pos = Vec3::new(path[i * 4], path[i * 4 + 1], path[i * 4 + 2]);
+        let thickness = path[i * 4 + 3];
 
-        let mut v = if i == 0 {
-            point - next_point
+        // Get direction of the current segment
+        let segment_dir = (if i == 0 {
+            Vec3::new(
+                pos[0] - path[i * 4 + 4],
+                pos[1] - path[i * 4 + 5],
+                pos[2] - path[i * 4 + 6],
+            )
         } else if i == point_amount - 1 {
-            prev_point - point
+            Vec3::new(
+                path[i * 4 - 4] - pos[0],
+                path[i * 4 - 3] - pos[1],
+                path[i * 4 - 2] - pos[2],
+            )
         } else {
-            prev_point - next_point
-        };
-        v = v.normalize();
+            Vec3::new(
+                path[i * 4 - 4] - path[i * 4 + 4],
+                path[i * 4 - 3] - path[i * 4 + 5],
+                path[i * 4 - 2] - path[i * 4 + 6],
+            )
+        })
+        .normalize();
 
-        let n = Vec3::new(0.0, -1.0, 0.0); // Assuming 'n' is the up vector or similar
-        let axis = n.cross(v);
-        let angle = n.dot(v).acos();
+        // In our case the up vector is always the Y axis
+        let up_vector = Vec3::NEG_Y;
 
-        let quat = Quat::from_axis_angle(axis, angle).normalize();
-        let mat = Mat4::IDENTITY * Mat4::from_quat(quat);
+        let binormal = up_vector.cross(segment_dir);
+
+        let rotation_angle = up_vector.dot(segment_dir).acos();
+
+        let rotation_matrix = Mat4::from_axis_angle(binormal, rotation_angle);
 
         for j in 0..res_x {
-
             if i < point_amount - 1 {
-
                 let i_index_offset = index_offset + j * 6;
                 let i_position_offset = position_offset + j;
 
                 //log!("i: {}, j: {}, i_index_offset: {}, i_position_offset: {} res_x: {}", i, j, i_index_offset, i_position_offset,res_x);
 
                 if j == res_x - 1 {
-                    indices[i_index_offset    ] = (i_position_offset + 1) as i32;
+                    indices[i_index_offset] = (i_position_offset + 1) as i32;
                     indices[i_index_offset + 1] = (i_position_offset + 1 - res_x) as i32;
                     indices[i_index_offset + 2] = (i_position_offset) as i32;
+
                     indices[i_index_offset + 3] = (i_position_offset) as i32;
                     indices[i_index_offset + 4] = (i_position_offset + res_x) as i32;
                     indices[i_index_offset + 5] = (i_position_offset + 1) as i32;
                 } else {
-                    indices[i_index_offset    ] = (i_position_offset + res_x + 1) as i32;
+                    indices[i_index_offset] = (i_position_offset + res_x + 1) as i32;
                     indices[i_index_offset + 1] = (i_position_offset + 1) as i32;
                     indices[i_index_offset + 2] = (i_position_offset) as i32;
+
                     indices[i_index_offset + 3] = (i_position_offset) as i32;
                     indices[i_index_offset + 4] = (i_position_offset + res_x) as i32;
                     indices[i_index_offset + 5] = (i_position_offset + res_x + 1) as i32;
@@ -87,24 +100,21 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
             // construct the points
             let idx = i * res_x * 3 + j * 3;
 
-            let circle_x = circle[j * 2    ] * thickness;
-            let circle_y = circle[j * 2 + 1] * thickness;
+            let circle_x = circle[j * 2] * thickness;
+            let circle_z = circle[j * 2 + 1] * thickness;
 
-            let _pt = Vec3::new(
-                point[0] + circle_x,
-                point[1],
-                point[2] + circle_y,
-            );
+            let point = rotation_matrix.transform_point3(Vec3::new(circle_x, 0.0, circle_z)) + pos;
+            let normal = rotation_matrix
+                .transform_vector3(Vec3::new(circle_x, 0.0, circle_z))
+                .normalize();
 
-            let pt = Mat4::transform_vector3(&mat, _pt) + point;
+            normals[idx] = normal[0];
+            normals[idx + 1] = normal[1];
+            normals[idx + 2] = normal[2];
 
-            normals[idx    ] = circle_x;
-            normals[idx + 1] = 0.0;
-            normals[idx + 2] = circle_y;
-
-            positions[idx    ] = pt[0];
-            positions[idx + 1] = pt[1];
-            positions[idx + 2] = pt[2];
+            positions[idx] = point[0];
+            positions[idx + 1] = point[1];
+            positions[idx + 2] = point[2];
         }
     }
 

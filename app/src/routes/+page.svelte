@@ -15,6 +15,9 @@
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
   import { decodeNestedArray, encodeNestedArray } from "@nodes/utils";
+  import type { PerspectiveCamera, Vector3 } from "three";
+  import type { OrbitControls } from "three/examples/jsm/Addons.js";
+  import GraphView from "$lib/graph-interface/graph/GraphView.svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -23,6 +26,9 @@
   globalThis.encode = encodeNestedArray;
 
   let res: Int32Array;
+  let viewerCamera: PerspectiveCamera;
+  let viewerControls: OrbitControls;
+  let viewerCenter: Vector3;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
@@ -38,6 +44,11 @@
 
   function handleResult(event: CustomEvent<Graph>) {
     res = runtimeExecutor.execute(event.detail, get(settings?.graph?.settings));
+
+    if ($AppSettings.centerCamera && viewerCamera && viewerCenter) {
+      viewerControls.target.copy(viewerCenter);
+      viewerControls.update();
+    }
   }
 
   function handleSave(event: CustomEvent<Graph>) {
@@ -117,7 +128,12 @@
   <header></header>
   <Grid.Row>
     <Grid.Cell>
-      <Viewer result={res} />
+      <Viewer
+        bind:controls={viewerControls}
+        bind:center={viewerCenter}
+        bind:camera={viewerCamera}
+        result={res}
+      />
     </Grid.Cell>
     <Grid.Cell>
       {#key graph}

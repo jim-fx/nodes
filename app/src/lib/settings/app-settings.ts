@@ -34,6 +34,11 @@ export const AppSettingTypes = {
     label: "Show Grid",
     value: true,
   },
+  centerCamera: {
+    type: "boolean",
+    label: "Center Camera",
+    value: true
+  },
   nodeInterface: {
     __title: "Node Interface",
     showNodeGrid: {

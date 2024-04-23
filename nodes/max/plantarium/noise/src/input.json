@@ -19,6 +19,12 @@
     },
     "seed": {
       "type": "seed"
+    },
+    "fixBottom": {
+      "type": "float",
+      "hidden": true,
+      "min": 0,
+      "max": 1
     }
   }
 }

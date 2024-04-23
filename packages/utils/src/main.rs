@@ -1,7 +1,7 @@
 use utils::get_args;
 
 #[rustfmt::skip]
-fn main() {
+fn test_split_args(){
     let inputs = vec![
         vec![0, 1, 0, 4, 1056964608, 1065353216, 1056964608, 1, 4, 1080872141, 1054951342, 32, 1, 1 ],
         vec![0, 4, 1056964608, 1065353216, 1056964608, 1, 4],
@@ -14,5 +14,6 @@ fn main() {
     for input in inputs {
         println!("RESULT: {:?}", get_args(&input));
     }
-
 }
+
+fn main() {}

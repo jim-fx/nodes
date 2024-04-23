@@ -86,6 +86,8 @@ pub struct DefaultOptions {
     pub setting: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<serde_json::Value>, // To handle both String and false
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hidden: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

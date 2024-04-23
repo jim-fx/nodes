@@ -1,10 +1,5 @@
-use glam::{Mat4, Vec3};
 use macros::include_definition_file;
-use utils::{
-    concat_args, evaluate_int,
-    geometry::{extrude_path, transform_geometry},
-    get_args, log,
-};
+use utils::{concat_args, evaluate_int, geometry::extrude_path, get_args, log};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/inputs.json");

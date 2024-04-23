@@ -12,6 +12,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     set_panic_hook();
 
     let args = get_args(input);
+
     let plants = get_args(args[0]);
     let scale = evaluate_float(args[1]);
     let strength = evaluate_float(args[2]);
@@ -32,8 +33,8 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                 let a = i as f64 / (points - 1) as f64;
                 let px = Vector2::new(0.0, a * scale as f64);
                 let pz = Vector2::new(a * scale as f64, 0.0);
-                let nx = open_simplex_2d(px, &hasher) as f32 * strength * 0.1;
-                let nz = open_simplex_2d(pz, &hasher) as f32 * strength * 0.1;
+                let nx = open_simplex_2d(px, &hasher) as f32 * strength * 0.1 * a as f32;
+                let nz = open_simplex_2d(pz, &hasher) as f32 * strength * 0.1 * a as f32;
                 plant[3 + i * 4] = encode_float(decode_float(plant[3 + i * 4]) + nx);
                 plant[5 + i * 4] = encode_float(decode_float(plant[5 + i * 4]) + nz);
             }

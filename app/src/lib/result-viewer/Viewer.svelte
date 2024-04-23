@@ -1,10 +1,20 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+  import {
+    BufferGeometry,
+    Float32BufferAttribute,
+    PerspectiveCamera,
+    Vector3,
+  } from "three";
   import { decodeFloat } from "@nodes/utils";
+  import type { OrbitControls } from "three/examples/jsm/Addons.js";
 
   export let result: Int32Array;
+
+  export let camera: PerspectiveCamera;
+  export let controls: OrbitControls;
+  export let center: Vector3;
 
   let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];
@@ -92,8 +102,6 @@
     return res;
   }
 
-  globalThis.parse_args = parse_args;
-
   function createLineGeometryFromEncodedData(encodedData: Int32Array) {
     const positions: Vector3[] = [];
 
@@ -120,19 +128,25 @@
       })
       .filter(Boolean) as Vector3[][];
 
+    center = new Vector3();
+
     geometries = inputs
       .map((input) => {
         if (input[0] === 1) {
           const geo = createGeometryFromEncodedData(input);
+          geo?.computeBoundingSphere();
+          if (geo.boundingSphere) {
+            center.add(geo.boundingSphere.center);
+          }
           return geo;
         }
       })
       .filter(Boolean) as BufferGeometry[];
 
-    console.log(lines);
+    center = center.divideScalar(geometries.length);
   }
 </script>
 
 <Canvas>
-  <Scene {geometries} {lines} />
+  <Scene bind:camera bind:controls {geometries} {lines} />
 </Canvas>

@@ -6,13 +6,12 @@
   import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
   import localStore from "$lib/helpers/localStore";
-  import { onMount } from "svelte";
 
   export let geometries: BufferGeometry[];
   export let lines: Vector3[][];
 
-  let camera: PerspectiveCamera;
-  let controls: OrbitControlsType;
+  export let camera: PerspectiveCamera;
+  export let controls: OrbitControlsType;
 
   const cameraTransform = localStore<{ camera: number[]; target: number[] }>(
     "nodes.camera.transform",
