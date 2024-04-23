@@ -58,6 +58,11 @@ export const AppSettingTypes = {
       label: "Show Indices",
       value: false,
     },
+    showVertices: {
+      type: "boolean",
+      label: "Show Vertices",
+      value: false,
+    },
     showStemLines: {
       type: "boolean",
       label: "Show Stem Lines",
