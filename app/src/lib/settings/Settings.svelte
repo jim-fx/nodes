@@ -10,6 +10,8 @@
     {
       icon: string;
       id: string;
+      hidden?: boolean;
+      props?: Record<string, unknown>;
       component?: typeof SvelteComponent<{}, {}, {}>;
       definition: Record<string, NodeInput>;
       settings: Writable<Record<string, unknown>>;
@@ -22,7 +24,7 @@
   );
   $: keys = panels
     ? (Object.keys(panels) as unknown as (keyof typeof panels)[]).filter(
-        (key) => !!panels[key]?.id,
+        (key) => !!panels[key]?.id && panels[key]?.hidden !== true,
       )
     : [];
 
@@ -79,7 +81,7 @@
     {/each}
   </div>
   <div class="content">
-    {#if $activePanel && panels[$activePanel]}
+    {#if $activePanel && panels[$activePanel] && panels[$activePanel].hidden !== true}
       <h1 class="m-0 p-4">{panels[$activePanel].id}</h1>
       {#key $activePanel}
         {#if panels[$activePanel]?.component}

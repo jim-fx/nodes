@@ -5,6 +5,7 @@ import EventEmitter from "./helpers/EventEmitter.js";
 import throttle from "./helpers/throttle.js";
 import { createLogger } from "./helpers/index.js";
 import type { NodeInput } from "@nodes/types";
+import { fastHashString } from "@nodes/utils";
 
 const logger = createLogger("graph-manager");
 
@@ -70,7 +71,13 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
   }
 
 
+  private lastSettingsHash = 0;
   setSettings(settings: Record<string, unknown>) {
+
+    let hash = fastHashString(JSON.stringify(settings));
+    if (hash === this.lastSettingsHash) return;
+    this.lastSettingsHash = hash;
+
     this.settings = settings;
     this.save();
     this.execute();

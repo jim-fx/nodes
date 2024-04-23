@@ -49,8 +49,12 @@ pub fn include_definition_file(input: TokenStream) -> TokenStream {
     });
 
     // Optionally, validate that the content is valid JSON
-    let _: NodeDefinition = serde_json::from_str(&json_content)
-        .unwrap_or_else(|err| panic!("JSON file contains invalid JSON: {}", err));
+    let _: NodeDefinition = serde_json::from_str(&json_content).unwrap_or_else(|err| {
+        panic!(
+            "JSON file contains invalid JSON: \n {} \n {}",
+            json_content, err
+        )
+    });
 
     // Generate the function that returns the JSON string
     let expanded = quote! {

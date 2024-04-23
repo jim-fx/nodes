@@ -42,6 +42,8 @@
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
 
+    inputEl.focus();
+
     isMouseDown = true;
 
     downV = value;

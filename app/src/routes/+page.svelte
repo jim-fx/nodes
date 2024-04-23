@@ -4,11 +4,11 @@
   import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
   import { RemoteNodeRegistry } from "$lib/node-registry-client";
   import * as templates from "$lib/graph-templates";
-  import type { Graph } from "@nodes/types";
+  import type { Graph, Node } from "@nodes/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
   import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
-  import { get, writable, type Writable } from "svelte/store";
+  import { get, writable, type Readable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/Keymap.svelte";
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
@@ -17,7 +17,7 @@
   import { decodeNestedArray, encodeNestedArray } from "@nodes/utils";
   import type { PerspectiveCamera, Vector3 } from "three";
   import type { OrbitControls } from "three/examples/jsm/Addons.js";
-  import GraphView from "$lib/graph-interface/graph/GraphView.svelte";
+  import ActiveNode from "$lib/settings/ActiveNode.svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
@@ -29,6 +29,7 @@
   let viewerCamera: PerspectiveCamera;
   let viewerControls: OrbitControls;
   let viewerCenter: Vector3;
+  let activeNode: Node | undefined;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
@@ -65,6 +66,12 @@
     shortcuts: {},
     nodeStore: {},
     graph: {},
+    activeNode: {
+      id: "Active Node",
+      icon: "i-tabler-adjustments",
+      props: { node: undefined, manager },
+      component: ActiveNode,
+    },
   };
 
   $: if (keymap) {
@@ -79,12 +86,21 @@
   }
 
   $: if (manager) {
+    settings.activeNode.props.manager = manager;
     settings.nodeStore = {
       id: "Node Store",
       icon: "i-tabler-database",
       props: { nodeRegistry, manager },
       component: NodeStore,
     };
+    settings = settings;
+  }
+
+  $: if (activeNode) {
+    settings.activeNode.props.node = activeNode;
+    settings = settings;
+  } else {
+    settings.activeNode.props.node = undefined;
     settings = settings;
   }
 
@@ -107,7 +123,7 @@
       };
 
     settings.graph = {
-      icon: "i-tabler-chart-bar",
+      icon: "i-tabler-git-fork",
       id: "graph",
       settings: writable(ev.detail.values),
       definition: {
@@ -139,6 +155,7 @@
       {#key graph}
         <GraphInterface
           bind:manager
+          bind:activeNode
           registry={nodeRegistry}
           {graph}
           bind:keymap

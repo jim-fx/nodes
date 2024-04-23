@@ -3,6 +3,7 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { getContext, onMount } from "svelte";
+  import Page from "../../../routes/+page.svelte";
   export let isActive = false;
   export let isSelected = false;
   export let inView = true;
@@ -17,9 +18,10 @@
 
   const type = node?.tmp?.type;
 
-  const parameters = Object.entries(type?.inputs || {})
-    .filter((p) => p[1].type !== "seed")
-    .filter((p) => !("setting" in p[1]));
+  const parameters = Object.entries(type?.inputs || {}).filter(
+    (p) =>
+      p[1].type !== "seed" && !("setting" in p[1]) && p[1]?.hidden !== true,
+  );
 
   const updateNodePosition =
     getContext<(n: Node) => void>("updateNodePosition");

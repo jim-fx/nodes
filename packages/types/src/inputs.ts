@@ -7,6 +7,7 @@ const DefaultOptionsSchema = z.object({
   label: z.string().optional(),
   description: z.string().optional(),
   accepts: z.array(z.string()).optional(),
+  hidden: z.boolean().optional(),
 });
 
 
@@ -38,6 +39,7 @@ export const NodeInputBooleanSchema = z.object({
 export const NodeInputSelectSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("select"),
+  options: z.array(z.string()).optional(),
   value: z.number().optional(),
 });
 
@@ -75,4 +77,4 @@ export const NodeInputSchema = z.union([
   NodeInputPlantSchema
 ]);
 
-export type NodeInput = z.infer<typeof InputSchema>;
+export type NodeInput = z.infer<typeof NodeInputSchema>;

@@ -39,10 +39,11 @@
   const edges = graph.edges;
 
   let wrapper: HTMLDivElement;
+  let rect: DOMRect;
   $: rect =
     wrapper && width
       ? wrapper.getBoundingClientRect()
-      : { x: 0, y: 0, width: 0, height: 0 };
+      : ({ x: 0, y: 0, width: 0, height: 0 } as DOMRect);
 
   let camera: OrthographicCamera;
   const minZoom = 1;
@@ -121,10 +122,13 @@
     const height =
       5 +
       10 *
-        Object.keys(node.inputs)
-          .filter((i) => i !== "seed")
-          .filter((p) => node?.inputs && !("setting" in node?.inputs?.[p]))
-          .length;
+        Object.keys(node.inputs).filter(
+          (p) =>
+            p !== "seed" &&
+            node?.inputs &&
+            !("setting" in node?.inputs?.[p]) &&
+            node.inputs[p].hidden !== true,
+        ).length;
     nodeHeightCache[nodeTypeId] = height;
     return height;
   }
@@ -756,7 +760,8 @@
       clickedNodeId === -1 &&
       !boxSelection &&
       cameraDown[0] === cameraPosition[0] &&
-      cameraDown[1] === cameraPosition[1]
+      cameraDown[1] === cameraPosition[1] &&
+      isBodyFocused()
     ) {
       $activeNodeId = -1;
       $selectedNodes?.clear();
@@ -817,7 +822,6 @@
   function handleDragEnter(e: DragEvent) {
     e.preventDefault();
     isDragging = true;
-    console.log(e);
   }
 
   function handlerDragOver(e: DragEvent) {
@@ -840,7 +844,7 @@
   });
 </script>
 
-<svelte:window on:mousemove={handleMouseMove} on:mouseup={handleMouseUp} />
+<svelte:window on:mousemove={handleMouseMove} />
 
 <div
   on:wheel={handleMouseScroll}
@@ -851,6 +855,7 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
+  on:mouseup={handleMouseUp}
   on:dragenter={handleDragEnter}
   on:dragover={handlerDragOver}
   on:drop={handleDrop}
