@@ -77,7 +77,7 @@
 >
   {#key id && graphId}
     <div class="content" class:disabled={$inputSockets?.has(socketId)}>
-      {#if inputType.label !== false}
+      {#if inputType.label !== ""}
         <label for={elementId}>{input.label || id}</label>
       {/if}
       {#if inputType.external !== true}

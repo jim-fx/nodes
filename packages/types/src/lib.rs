@@ -80,10 +80,10 @@ pub struct NodeInputSelect {
     pub default_options: DefaultOptions,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub value: Option<String>,
+    pub value: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<HashMap<String, Value>>,
+    pub options: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize)]

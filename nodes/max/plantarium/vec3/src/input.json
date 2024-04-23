@@ -6,15 +6,15 @@
   "inputs": {
     "0": {
       "type": "float",
-      "label": false
+      "label": ""
     },
     "1": {
       "type": "float",
-      "label": false
+      "label": ""
     },
     "2": {
       "type": "float",
-      "label": false
+      "label": ""
     }
   }
 }

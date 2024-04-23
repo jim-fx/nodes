@@ -2,6 +2,7 @@ mod encoding;
 mod nodes;
 mod tree;
 pub use encoding::*;
+pub use nodes::reset_call_count;
 pub use tree::*;
 pub mod geometry;
 

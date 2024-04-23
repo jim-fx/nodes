@@ -13,8 +13,7 @@
         "multiply",
         "divide"
       ],
-      "internal": true,
-      "value": 0
+      "internal": true
     },
     "a": {
       "type": "float",

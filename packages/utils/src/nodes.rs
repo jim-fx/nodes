@@ -1,4 +1,5 @@
 use crate::{encoding, log};
+use noise::{core::open_simplex::open_simplex_2d, permutationtable::PermutationTable, Vector2};
 
 pub fn math_node(args: &[i32]) -> i32 {
     let math_type = args[0];
@@ -19,16 +20,32 @@ pub fn math_node(args: &[i32]) -> i32 {
 
 static mut CALL_COUNT: i32 = 0;
 
+pub fn reset_call_count() {
+    unsafe {
+        CALL_COUNT = 0;
+    }
+}
+
 pub fn random_node(args: &[i32]) -> i32 {
     let min = encoding::decode_float(args[0]);
     let max = encoding::decode_float(args[1]);
-    let seed = (args[2] + unsafe { CALL_COUNT } * 2312312) % 100_000;
-    let v = seed as f32 / 100_000.0;
-    log!("Random node: min: {}, max: {}, seed: {}", min, max, seed);
-    let result = min + v * (max - min);
+
+    let seed = (args[2] + unsafe { CALL_COUNT }) % 100_000;
+    let hasher = PermutationTable::new(seed as u32);
+
+    let value = open_simplex_2d(Vector2::new(seed as f64, 5.0), &hasher) as f32 + 0.5;
+
+    log!(
+        "Random node: min: {}, max: {}, seed: {}, v: {}",
+        min,
+        max,
+        seed,
+        value
+    );
+    let result = min + value * (max - min);
 
     unsafe {
-        CALL_COUNT += 1;
+        CALL_COUNT = (CALL_COUNT + 512) % i32::MAX;
     }
 
     encoding::encode_float(result)

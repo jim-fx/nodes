@@ -13,13 +13,18 @@
       ],
       "external": true
     },
+    "amount": {
+      "type": "integer",
+      "min": 1,
+      "max": 64,
+      "value": 1
+    },
     "length": {
       "type": "float",
       "value": 2
     },
     "thickness": {
       "type": "float",
-      "element": "slider",
       "value": 2
     },
     "resolution_curve": {

@@ -16,11 +16,13 @@
     props: Node["props"],
     inputs: Record<string, NodeInput>,
   ) {
-    const store = {};
+    const store: Record<string, unknown> = {};
     Object.keys(inputs).forEach((key) => {
-      store[key] = props[key] || inputs[key].value;
+      if (props) {
+        //@ts-ignore
+        store[key] = props[key] || inputs[key].value;
+      }
     });
-    console.log({ store, props });
     return writable(store);
   }
 
@@ -35,24 +37,18 @@
 
   function updateNode() {
     if (!node || !$store) return;
+    let needsUpdate = false;
     Object.keys($store).forEach((_key: string) => {
       node.props = node.props || {};
       const key = _key as keyof typeof $store;
-      let needsUpdate = false;
-      console.log({ key });
-      if (
-        node &&
-        $store &&
-        key in node.props &&
-        node.props[key] !== $store[key]
-      ) {
+      if (node && $store && node.props[key] !== $store[key]) {
         needsUpdate = true;
         node.props[key] = $store[key];
       }
-      if (needsUpdate) {
-        manager.execute();
-      }
     });
+    if (needsUpdate) {
+      manager.execute();
+    }
   }
 
   $: if (store && $store) {

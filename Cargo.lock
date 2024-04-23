@@ -170,6 +170,7 @@ name = "nodes-noise"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "glam",
  "macros",
  "noise",
  "serde",
@@ -386,6 +387,7 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
+ "noise",
  "serde",
  "serde_json",
  "wasm-bindgen",

@@ -32,6 +32,15 @@ pub fn node_definition(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+fn add_line_numbers(input: String) -> String {
+    return input
+        .split('\n')
+        .enumerate()
+        .map(|(i, line)| format!("{:2}: {}", i + 1, line))
+        .collect::<Vec<String>>()
+        .join("\n");
+}
+
 #[proc_macro]
 pub fn include_definition_file(input: TokenStream) -> TokenStream {
     let file_path = syn::parse_macro_input!(input as syn::LitStr).value();
@@ -51,8 +60,9 @@ pub fn include_definition_file(input: TokenStream) -> TokenStream {
     // Optionally, validate that the content is valid JSON
     let _: NodeDefinition = serde_json::from_str(&json_content).unwrap_or_else(|err| {
         panic!(
-            "JSON file contains invalid JSON: \n {} \n {}",
-            json_content, err
+            "JSON file contains invalid JSON: \n{} \n{}",
+            err,
+            add_line_numbers(json_content.clone())
         )
     });
 
