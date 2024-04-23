@@ -14,7 +14,11 @@
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
-  import { decodeNestedArray, encodeNestedArray } from "@nodes/utils";
+  import {
+    decodeFloat,
+    decodeNestedArray,
+    encodeNestedArray,
+  } from "@nodes/utils";
   import type { PerspectiveCamera, Vector3 } from "three";
   import type { OrbitControls } from "three/examples/jsm/Addons.js";
   import ActiveNode from "$lib/settings/ActiveNode.svelte";
@@ -24,6 +28,7 @@
 
   globalThis.decode = decodeNestedArray;
   globalThis.encode = encodeNestedArray;
+  globalThis.decodeFloat = decodeFloat;
 
   let res: Int32Array;
   let viewerCamera: PerspectiveCamera;

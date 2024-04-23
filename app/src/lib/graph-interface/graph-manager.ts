@@ -384,8 +384,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
       return;
     }
 
-
-
     const node: Node = { id: this.createNodeId(), type, position, tmp: { type: nodeType }, props };
 
     this.nodes.update((nodes) => {

@@ -15,6 +15,7 @@ const diff = create({
 })
 
 const log = createLogger("history")
+log.mute();
 
 export class HistoryManager {
 

@@ -1,5 +1,3 @@
-use crate::log;
-
 use super::{create_geometry_data, wrap_geometry_data};
 use glam::{Mat4, Vec3};
 

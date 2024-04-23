@@ -121,110 +121,80 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       const node_type = this.definitionMap.get(node.type)!;
 
       if (node?.tmp && node_type?.execute) {
-        const inputs: Record<string, string | number | boolean> = {};
-        for (const [key, input] of Object.entries(node_type.inputs || {})) {
+
+        const inputs = Object.entries(node_type.inputs || {}).map(([key, input]) => {
 
           if (input.type === "seed") {
-            inputs[key] = runSeed;
-            continue;
+            return runSeed;
           }
 
           if (input.setting) {
             if (settings[input.setting] === undefined) {
-              if (input.value !== undefined) {
-                inputs[key] = input.value;
+              if ("value" in input && input.value !== undefined) {
+                if (input.type === "float") {
+                  return encodeFloat(input.value);
+                }
+                return input.value;
               } else {
                 log.warn(`Setting ${input.setting} is not defined`);
               }
             } else {
-              inputs[key] = settings[input.setting] as number;
+              if (input.type === "float") {
+                return encodeFloat(settings[input.setting] as number);
+              }
+              return settings[input.setting];
             }
-            continue;
           }
 
           // check if the input is connected to another node
-          const inputNode = node.tmp.inputNodes?.[key];
+          const inputNode = node.tmp?.inputNodes?.[key];
           if (inputNode) {
             if (results[inputNode.id] === undefined) {
               throw new Error("Input node has no result");
             }
-            inputs[key] = results[inputNode.id];
-            continue;
+            return results[inputNode.id];
           }
 
-          // if the input is not connected to another node, we use the value from the node itself
-          let value = node.props?.[key] ?? input?.value;
-          if (Array.isArray(value)) {
-            inputs[key] = [0, value.length + 1, ...value, 1, 1];
-          } else {
-            inputs[key] = value;
+          // If the value is stored in the node itself, we use that value
+          if (node.props?.[key] !== undefined) {
+            let value = node.props[key];
+            if (input.type === "vec3") {
+              return [0, 4, ...value.map(v => encodeFloat(v)), 1, 1]
+            } else if (Array.isArray(value)) {
+              return [0, value.length + 1, ...value, 1, 1];
+            } else if (input.type === "float") {
+              return encodeFloat(value);
+            } else {
+              return value;
+            }
           }
 
-        }
+          let defaultValue = input.value;
+          if (defaultValue !== undefined) {
+            if (Array.isArray(defaultValue)) {
+              return [0, defaultValue.length + 1, ...defaultValue.map(v => encodeFloat(v)), 1, 1];
+            } else if (input.type === "float") {
+              return encodeFloat(defaultValue);
+            } else {
+              return defaultValue;
+            }
+          }
 
+          throw new Error(`Input ${key} is not connected and has no default value`);
 
-        // log.log(" ");
-        // log.log("--> EXECUTING NODE " + node_type.id, node.id);
+        });
 
-
-        // execute the node and store the result
         try {
-          const a0 = performance.now();
 
-          const node_inputs = Object.entries(inputs);
-          const cacheKey = "123" || `${node.id}/${fastHash(node_inputs.map(([_, value]: [string, any]) => {
-            return value
-          }))}`;
-
-          const a1 = performance.now();
-          // log.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
-
-          if (false && this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
-            results[node.id] = this.cache[cacheKey].value;
-            log.log(`Using cached value`);
-            continue;
-          }
-
-          const transformed_inputs = node_inputs.map(([key, value]: [string, any]) => {
-            const input_type = node_type.inputs?.[key]!;
-            if (value instanceof Int32Array) {
-              let _v = new Array(value.length);
-              for (let i = 0; i < value.length; i++) {
-                _v[i] = value[i];
-              }
-              return _v;
-            }
-
-            if (input_type.type === "float") {
-              return encodeFloat(value as number);
-            }
-
-            return value;
-          });
-
-          // log.log(transformed_inputs);
-
-          const a2 = performance.now();
-
-          // log.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
-
-          const encoded_inputs = concatEncodedArrays(transformed_inputs);
-          const a3 = performance.now();
+          const encoded_inputs = concatEncodedArrays(inputs);
           log.group(`executing ${node_type.id || node.id}`);
-          log.log(`Inputs:`, transformed_inputs);
+          log.log(`Inputs:`, inputs);
           log.log(`Encoded Inputs:`, encoded_inputs);
           results[node.id] = node_type.execute(encoded_inputs);
           log.log("Result:", results[node.id]);
           log.log("Result (decoded):", decodeNestedArray(results[node.id]));
           log.groupEnd();
-          const duration = performance.now() - a3;
-          if (duration > 5) {
-            this.cache[cacheKey] = { eol: Date.now() + 10_000, value: results[node.id] };
-            // log.log(`Caching for 10 seconds`);
-          }
-          // log.log(`${duration}ms Executed`);
-          const a4 = performance.now();
-          // log.log(`${a4 - a0}ms e2e duration`);
+
         } catch (e) {
           log.groupEnd();
           log.error(`Error executing node ${node_type.id || node.id}`, e);

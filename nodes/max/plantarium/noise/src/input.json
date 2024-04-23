@@ -21,6 +21,7 @@
       "type": "float",
       "label": "Fixate bottom of plant",
       "hidden": true,
+      "value": 0,
       "min": 0,
       "max": 1
     },

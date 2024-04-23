@@ -9,6 +9,7 @@
   export let max: number | undefined = undefined;
   export let step = 1;
   export let value = 0;
+  export let id = "";
 
   if (!value) {
     value = 0;

@@ -12,7 +12,7 @@ export function concatEncodedArrays(input: (number | number[])[]): number[] {
 
   for (let i = 0; i < input.length; i++) {
     const item = input[i];
-    if (Array.isArray(item)) {
+    if (Array.isArray(item) || item instanceof Int32Array) {
       result.push(...item);
       last_closing_bracket = result.length - 1;
     } else {

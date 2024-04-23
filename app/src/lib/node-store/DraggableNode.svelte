@@ -6,12 +6,25 @@
 
   let dragging = false;
 
+  let nodeData = {
+    id: 0,
+    type: node.id,
+    position: [0, 0] as [number, number],
+    props: {},
+    tmp: {
+      type: node,
+    },
+  };
+
   function handleDragStart(e: DragEvent) {
     dragging = true;
     const box = (e?.target as HTMLElement)?.getBoundingClientRect();
     if (e.dataTransfer === null) return;
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("data/node-id", node.id);
+    if (nodeData.props) {
+      e.dataTransfer.setData("data/node-props", JSON.stringify(nodeData.props));
+    }
     e.dataTransfer.setData(
       "data/node-offset-x",
       Math.round(box.left - e.clientX).toString(),
@@ -33,19 +46,7 @@
     tabindex="0"
     on:dragstart={handleDragStart}
   >
-    <NodeHtml
-      inView={true}
-      position={"relative"}
-      z={5}
-      node={{
-        id: 0,
-        type: node.id,
-        position: [0, 0],
-        tmp: {
-          type: node,
-        },
-      }}
-    />
+    <NodeHtml inView={true} position={"relative"} z={5} bind:node={nodeData} />
   </div>
 </div>
 

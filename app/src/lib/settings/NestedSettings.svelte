@@ -25,38 +25,39 @@
   }
 </script>
 
-{#each keys as key}
-  {@const value = settings[key]}
-  <div class="wrapper" class:first-level={depth === 0}>
-    {#if isNodeInput(value)}
-      <div class="input input-{settings[key].type}">
-        {#if settings[key].type === "button"}
-          <button on:click={() => settings[key]?.callback?.()}
-            >{settings[key].label || key}</button
-          >
-        {:else}
-          <label for={key}>{settings[key].label || key}</label>
-          <Input
-            id={key}
-            input={value}
-            bind:value={$store[value?.setting || key]}
-          />
-        {/if}
-      </div>
-    {:else}
-      {#if depth > 0}
-        <hr />
-      {/if}
-
-      <details bind:open={$expandedDetails[key]}>
-        <summary>{settings[key]?.__title || key}</summary>
-        <div class="content">
-          <svelte:self settings={settings[key]} {store} depth={depth + 1} />
+{#if store}
+  {#each keys as key}
+    {@const value = settings[key]}
+    <div class="wrapper" class:first-level={depth === 0}>
+      {#if isNodeInput(value)}
+        <div class="input input-{settings[key].type}">
+          {#if settings[key].type === "button"}
+            <button on:click={() => settings[key]?.callback?.()}
+              >{settings[key].label || key}</button
+            >
+          {:else if "setting" in value}
+            <label for={key}>{settings[key].label || key}</label>
+            <Input id={key} input={value} bind:value={$store[value?.setting]} />
+          {:else}
+            <label for={key}>{settings[key].label || key}</label>
+            <Input id={key} input={value} bind:value={$store[key]} />
+          {/if}
         </div>
-      </details>
-    {/if}
-  </div>
-{/each}
+      {:else}
+        {#if depth > 0}
+          <hr />
+        {/if}
+
+        <details bind:open={$expandedDetails[key]}>
+          <summary>{settings[key]?.__title || key}</summary>
+          <div class="content">
+            <svelte:self settings={settings[key]} {store} depth={depth + 1} />
+          </div>
+        </details>
+      {/if}
+    </div>
+  {/each}
+{/if}
 
 <style>
   summary {

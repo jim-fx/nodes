@@ -796,11 +796,19 @@
         my += parseInt(nodeOffsetY);
       }
 
+      let props = {};
+      let rawNodeProps = event.dataTransfer.getData("data/node-props");
+      if (rawNodeProps) {
+        try {
+          props = JSON.parse(rawNodeProps);
+        } catch (e) {}
+      }
+
       const pos = projectScreenToWorld(mx, my);
       graph.loadNode(nodeId).then(() => {
         graph.createNode({
           type: nodeId,
-          props: {},
+          props,
           position: pos,
         });
       });
