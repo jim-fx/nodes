@@ -1,5 +1,8 @@
 import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor } from "@nodes/types";
-import { fastHash, concatEncodedArrays, encodeFloat, encodeNestedArray, decodeNestedArray } from "@nodes/utils"
+import { fastHash, concatEncodedArrays, encodeFloat, decodeNestedArray } from "@nodes/utils"
+import { createLogger } from "./helpers";
+
+const log = createLogger("runtime-executor");
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
@@ -131,7 +134,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
               if (input.value !== undefined) {
                 inputs[key] = input.value;
               } else {
-                console.warn(`Setting ${input.setting} is not defined`);
+                log.warn(`Setting ${input.setting} is not defined`);
               }
             } else {
               inputs[key] = settings[input.setting] as number;
@@ -160,8 +163,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         }
 
 
-        // console.log(" ");
-        // console.log("--> EXECUTING NODE " + node_type.id, node.id);
+        // log.log(" ");
+        // log.log("--> EXECUTING NODE " + node_type.id, node.id);
 
 
         // execute the node and store the result
@@ -174,11 +177,11 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           }))}`;
 
           const a1 = performance.now();
-          // console.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
+          // log.log(`${a1 - a0}ms hashed inputs: ${node.id} -> ${cacheKey}`);
 
           if (false && this.cache[cacheKey] && this.cache[cacheKey].eol > Date.now()) {
             results[node.id] = this.cache[cacheKey].value;
-            console.log(`Using cached value`);
+            log.log(`Using cached value`);
             continue;
           }
 
@@ -199,32 +202,32 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
             return value;
           });
 
-          // console.log(transformed_inputs);
+          // log.log(transformed_inputs);
 
           const a2 = performance.now();
 
-          // console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
+          // log.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
 
           const encoded_inputs = concatEncodedArrays(transformed_inputs);
           const a3 = performance.now();
-          console.groupCollapsed(`executing ${node_type.id || node.id}`);
-          console.log(`Inputs:`, transformed_inputs);
-          console.log(`Encoded Inputs:`, encoded_inputs);
+          log.group(`executing ${node_type.id || node.id}`);
+          log.log(`Inputs:`, transformed_inputs);
+          log.log(`Encoded Inputs:`, encoded_inputs);
           results[node.id] = node_type.execute(encoded_inputs);
-          console.log("Result:", results[node.id]);
-          console.log("Result (decoded):", decodeNestedArray(results[node.id]));
-          console.groupEnd();
+          log.log("Result:", results[node.id]);
+          log.log("Result (decoded):", decodeNestedArray(results[node.id]));
+          log.groupEnd();
           const duration = performance.now() - a3;
           if (duration > 5) {
             this.cache[cacheKey] = { eol: Date.now() + 10_000, value: results[node.id] };
-            // console.log(`Caching for 10 seconds`);
+            // log.log(`Caching for 10 seconds`);
           }
-          // console.log(`${duration}ms Executed`);
+          // log.log(`${duration}ms Executed`);
           const a4 = performance.now();
-          // console.log(`${a4 - a0}ms e2e duration`);
+          // log.log(`${a4 - a0}ms e2e duration`);
         } catch (e) {
-          console.groupEnd();
-          console.error(`Error executing node ${node_type.id || node.id}`, e);
+          log.groupEnd();
+          log.error(`Error executing node ${node_type.id || node.id}`, e);
         }
 
       }

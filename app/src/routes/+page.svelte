@@ -65,11 +65,21 @@
     },
     shortcuts: {},
     nodeStore: {},
-    graph: {},
+    graph: {
+      id: "graph",
+      icon: "i-tabler-git-fork",
+      definition: {
+        randomSeed: {
+          type: "boolean",
+          label: "Random Seed",
+          value: true,
+        },
+      },
+    },
     activeNode: {
       id: "Active Node",
       icon: "i-tabler-adjustments",
-      props: { node: undefined, manager },
+      props: { node: undefined, manager: undefined },
       component: ActiveNode,
     },
   };
@@ -122,18 +132,10 @@
         graph = templates.tree(store.amount);
       };
 
-    settings.graph = {
-      icon: "i-tabler-git-fork",
-      id: "graph",
-      settings: writable(ev.detail.values),
-      definition: {
-        randomSeed: {
-          type: "boolean",
-          label: "Random Seed",
-          value: true,
-        },
-        ...ev.detail.types,
-      },
+    settings.graph.settings = writable(ev.detail.values);
+    settings.graph.definition = {
+      ...settings.graph.definition,
+      ...ev.detail.types,
     };
 
     settings = settings;

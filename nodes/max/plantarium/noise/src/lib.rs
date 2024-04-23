@@ -70,10 +70,16 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
             for i in 0..points {
                 let a = i as f64 / (points - 1) as f64;
 
-                let px = Vector2::new(j as f64 + a * length * scale, a * scale as f64);
-                let pz = Vector2::new(a * scale as f64, j as f64 + a * length * scale);
+                let px = Vector2::new(1000.0 + j as f64 + a * length * scale, a * scale as f64);
+                let py = Vector2::new(2000.0 + j as f64 + a * length * scale, a * scale as f64);
+                let pz = Vector2::new(3000.0 + j as f64 + a * length * scale, a * scale as f64);
 
                 let nx = open_simplex_2d(px, &hasher) as f32
+                    * strength
+                    * 0.1
+                    * lerp(1.0, a as f32, fix_bottom);
+
+                let ny = open_simplex_2d(py, &hasher) as f32
                     * strength
                     * 0.1
                     * lerp(1.0, a as f32, fix_bottom);
@@ -84,6 +90,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                     * lerp(1.0, a as f32, fix_bottom);
 
                 plant[3 + i * 4] = encode_float(decode_float(plant[3 + i * 4]) + nx);
+                plant[4 + i * 4] = encode_float(decode_float(plant[4 + i * 4]) + ny);
                 plant[5 + i * 4] = encode_float(decode_float(plant[5 + i * 4]) + nz);
             }
 
