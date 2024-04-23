@@ -3,6 +3,7 @@
   import NestedSettings from "./NestedSettings.svelte";
   import { writable } from "svelte/store";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
+  import { encodeFloat } from "@nodes/utils";
 
   function filterInputs(inputs: Record<string, NodeInput>) {
     return Object.fromEntries(
@@ -41,11 +42,17 @@
     Object.keys($store).forEach((_key: string) => {
       node.props = node.props || {};
       const key = _key as keyof typeof $store;
-      if (node && $store && node.props[key] !== $store[key]) {
-        needsUpdate = true;
-        node.props[key] = $store[key];
+      if (node && $store) {
+        if (Array.isArray($store[key])) {
+          node.props[key] = [...$store[key]].map((v) => encodeFloat(v));
+          needsUpdate = true;
+        } else if (node.props[key] !== $store[key]) {
+          needsUpdate = true;
+          node.props[key] = $store[key];
+        }
       }
     });
+    console.log(needsUpdate, node.props, $store);
     if (needsUpdate) {
       manager.execute();
     }

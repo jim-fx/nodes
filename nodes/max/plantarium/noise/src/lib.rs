@@ -2,7 +2,8 @@ use glam::Vec3;
 use macros::include_definition_file;
 use noise::{core::open_simplex::open_simplex_2d, permutationtable::PermutationTable, Vector2};
 use utils::{
-    concat_args, decode_float, encode_float, evaluate_float, get_args, log, set_panic_hook,
+    concat_args, decode_float, encode_float, evaluate_float, evaluate_vec3, get_args, log,
+    set_panic_hook,
 };
 use wasm_bindgen::prelude::*;
 
@@ -30,13 +31,16 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let seed = args[4][0];
 
+    let directional_strength = evaluate_vec3(args[5]);
+
     let hasher = PermutationTable::new(seed as u32);
     log!(
-        "scale: {}, strength: {}, fix_bottom: {}, seed: {}",
+        "scale: {}, strength: {}, fix_bottom: {}, seed: {}, directional: {:?}",
         scale,
         strength,
         fix_bottom,
-        seed
+        seed,
+        directional_strength
     );
 
     let output: Vec<Vec<i32>> = plants
@@ -77,16 +81,19 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                 let nx = open_simplex_2d(px, &hasher) as f32
                     * strength
                     * 0.1
+                    * directional_strength[0]
                     * lerp(1.0, a as f32, fix_bottom);
 
                 let ny = open_simplex_2d(py, &hasher) as f32
                     * strength
                     * 0.1
+                    * directional_strength[1]
                     * lerp(1.0, a as f32, fix_bottom);
 
                 let nz = open_simplex_2d(pz, &hasher) as f32
                     * strength
                     * 0.1
+                    * directional_strength[2]
                     * lerp(1.0, a as f32, fix_bottom);
 
                 plant[3 + i * 4] = encode_float(decode_float(plant[3 + i * 4]) + nx);

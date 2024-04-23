@@ -26,6 +26,15 @@
     },
     "seed": {
       "type": "seed"
+    },
+    "directionalStrength": {
+      "type": "vec3",
+      "hidden": true,
+      "value": [
+        1,
+        1,
+        1
+      ]
     }
   }
 }

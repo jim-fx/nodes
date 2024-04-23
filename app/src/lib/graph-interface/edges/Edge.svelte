@@ -1,10 +1,13 @@
 <script context="module" lang="ts">
   import { colors } from "../graph/stores";
-  import { get } from "svelte/store";
 
   const circleMaterial = new MeshBasicMaterial({
-    color: get(colors).outline,
+    color: get(colors).edge,
     toneMapped: false,
+  });
+
+  colors.subscribe((c) => {
+    circleMaterial.color.copy(c.edge.clone().convertSRGBToLinear());
   });
 
   const lineCache = new Map<number, BufferGeometry>();
@@ -20,10 +23,11 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { MeshLineMaterial } from "@threlte/extras";
-  import { BufferGeometry, Color, MeshBasicMaterial, Vector3 } from "three";
+  import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
+  import { get } from "svelte/store";
 
   export let from: { x: number; y: number };
   export let to: { x: number; y: number };
@@ -75,11 +79,7 @@
     update();
   }
 
-  const lineColor = new Color($colors.outline);
-
-  $: if ($colors.outline) {
-    lineColor.copyLinearToSRGB($colors.outline);
-  }
+  $: lineColor = $colors["edge"].clone().convertSRGBToLinear();
 </script>
 
 <T.Mesh
@@ -104,11 +104,6 @@
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial
-      width={3}
-      attenuate={false}
-      color={lineColor}
-      toneMapped={false}
-    />
+    <MeshLineMaterial width={3} attenuate={false} color={lineColor} />
   </T.Mesh>
 {/if}

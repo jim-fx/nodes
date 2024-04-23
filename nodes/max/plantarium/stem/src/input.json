@@ -21,11 +21,11 @@
     },
     "length": {
       "type": "float",
-      "value": 2
+      "value": 5
     },
     "thickness": {
       "type": "float",
-      "value": 2
+      "value": 0.2
     },
     "resolution_curve": {
       "type": "integer",

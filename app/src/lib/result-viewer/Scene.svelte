@@ -6,6 +6,7 @@
   import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
   import localStore from "$lib/helpers/localStore";
+  import { Inspector } from "three-inspect";
 
   export let geometries: BufferGeometry[];
   export let lines: Vector3[][];

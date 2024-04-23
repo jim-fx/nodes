@@ -21,6 +21,8 @@
     bw = width / cameraPosition[2];
     bh = height / cameraPosition[2];
   }
+  $: backgroundColor = $colors["layer-0"];
+  $: lineColor = $colors["outline"];
 </script>
 
 <T.Group
@@ -52,8 +54,8 @@
         },
       }}
       uniforms.camPos.value={cameraPosition}
-      uniforms.backgroundColor.value={$colors.layer0}
-      uniforms.lineColor.value={$colors.outline}
+      uniforms.backgroundColor.value={backgroundColor}
+      uniforms.lineColor.value={lineColor}
       uniforms.zoomLimits.value={[minZoom, maxZoom]}
       uniforms.dimensions.value={[width, height]}
     />

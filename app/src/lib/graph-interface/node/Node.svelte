@@ -1,8 +1,6 @@
 <script lang="ts">
   import type { Node } from "@nodes/types";
   import { getContext, onMount } from "svelte";
-  import NodeHeader from "./NodeHeader.svelte";
-  import NodeParameter from "./NodeParameter.svelte";
   import { activeNodeId, selectedNodes } from "../graph/stores.js";
   import { colors } from "../graph/stores";
   import { T } from "@threlte/core";
@@ -33,6 +31,9 @@
     updateNodePosition?.(node);
   }
 
+  $: colorBright = $colors["layer-2"];
+  $: colorDark = $colors["layer-1"];
+
   onMount(() => {
     node.tmp = node.tmp || {};
     node.tmp.mesh = meshRef;
@@ -61,8 +62,8 @@
       uWidth: { value: 20 },
       uHeight: { value: height },
     }}
-    uniforms.uColorBright.value={$colors.layer2}
-    uniforms.uColorDark.value={$colors.layer1}
+    uniforms.uColorBright.value={colorBright}
+    uniforms.uColorDark.value={colorDark}
     uniforms.uStrokeColor.value={isSelected
       ? $colors.selected
       : isActive
