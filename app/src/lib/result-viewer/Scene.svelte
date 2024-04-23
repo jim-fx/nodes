@@ -23,16 +23,6 @@
   <T.GridHelper args={[20, 20]} />
 {/if}
 
-{#if lines}
-  {#each lines as line}
-    <T.Mesh>
-      <MeshLineGeometry points={line} />
-
-      <MeshLineMaterial width={0.1} depthTest={false} />
-    </T.Mesh>
-  {/each}
-{/if}
-
 <T.PerspectiveCamera position={[-10, 10, 10]} makeDefault fov={50}>
   <OrbitControls />
 </T.PerspectiveCamera>
@@ -54,6 +44,19 @@
     </T.Points>
   {/if}
   <T.Mesh geometry={geo}>
-    <T.MeshStandardMaterial color="green" wireframe={$AppSettings.wireframe} />
+    <T.MeshStandardMaterial
+      color="green"
+      depthTest={true}
+      wireframe={$AppSettings.wireframe}
+    />
   </T.Mesh>
 {/each}
+
+{#if $AppSettings.showStemLines && lines}
+  {#each lines as line}
+    <T.Mesh scale={2}>
+      <MeshLineGeometry points={line} />
+      <MeshLineMaterial width={0.1} color="red" depthTest={false} />
+    </T.Mesh>
+  {/each}
+{/if}

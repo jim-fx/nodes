@@ -58,6 +58,11 @@ export const AppSettingTypes = {
       label: "Show Indices",
       value: false,
     },
+    showStemLines: {
+      type: "boolean",
+      label: "Show Stem Lines",
+      value: false,
+    },
     stressTest: {
       __title: "Stress Test",
       amount: {

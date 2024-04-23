@@ -35,10 +35,10 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
         if arg_type == 0 {
             // this is stem
-            let stem = &arg[2..arg.len() - 2];
+            let stem = &arg[3..arg.len() - 2];
             output.push(arg.to_vec());
+            log!("stem: {:?}", stem);
             let geometry = extrude_path(stem, resolution);
-            log!("geometry: {:?}", geometry);
             output.push(geometry);
         } else if arg_type == 1 {
             // this is geometry
