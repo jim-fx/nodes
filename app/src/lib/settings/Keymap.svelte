@@ -14,7 +14,7 @@
         <div class="command-wrapper">
           <div class="command">
             {#if key.ctrl}
-              <span>Ctrl + </span>
+              <span>Ctrl</span>
             {/if}
             {#if key.shift}
               <span>Shift</span>
@@ -22,7 +22,7 @@
             {#if key.alt}
               <span>Alt</span>
             {/if}
-            <span>{key.key}</span>
+            {key.key}
           </div>
         </div>
         <p>{key.description}</p>
@@ -68,5 +68,10 @@
     margin: 0;
     display: flex;
     align-items: center;
+  }
+
+  span::after {
+    content: " +";
+    opacity: 0.5;
   }
 </style>

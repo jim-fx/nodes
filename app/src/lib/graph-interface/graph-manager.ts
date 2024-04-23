@@ -241,7 +241,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
         let settingId = nodeType.inputs[key].setting;
         if (settingId) {
           settingTypes[settingId] = nodeType.inputs[key];
-          if (settingValues[settingId] === undefined && "value" in type.inputs[key]) {
+          if (settingValues[settingId] === undefined && "value" in nodeType.inputs[key]) {
             settingValues[settingId] = nodeType.inputs[key].value;
           }
         }

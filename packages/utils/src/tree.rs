@@ -1,90 +1,103 @@
 use crate::decode_float;
 
 pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
-    let mut idx: usize = 0;
-    let mut depth = -1;
-
-    let mut next_bracket_index = 0;
+    println!("-------------------");
+    println!("{:?}", args);
 
     let mut out_args: Vec<&[i32]> = Vec::new();
+    let mut depth = 0;
+    let mut i = 0;
+    let mut start_index = 0;
+    let mut nbi = 0;
+    let len = args.len();
 
-    let length = args.len();
-
-    let mut arg_start_index = 2;
-
-    while idx < length {
-        let is_bracket = idx == next_bracket_index;
-        let value = args[idx];
-
-        // if we are at a bracket
-        if is_bracket {
-            // if we are at the end of the args
-            if idx >= length - 1 {
-                break;
-            }
-
-            next_bracket_index = 1 + idx + args[idx + 1] as usize;
-
-            if value == 0 {
-                depth += 1;
-            } else if value == 1 {
-                depth -= 1;
-            }
-
-            if depth == 0 {
-                if value == 1 {
-                    out_args.push(&args[arg_start_index..idx]);
-                    arg_start_index = idx + 2;
-                }
-                // skip over the bracket encoding
-                idx += 2;
-            } else {
-                // skip to the next bracket if we are at depth > 0
-                idx = next_bracket_index;
-            }
-
-            continue;
-        }
-
-        out_args.push(&args[arg_start_index..=idx]);
-        arg_start_index = idx + 1;
-
-        // this is at the end of args where normally multiple ] are encoded
-        if depth < 0 {
+    while i < len {
+        print!("{:2} ", i);
+        let val = args[i];
+        let is_bracket = i == nbi;
+        let is_opening_bracket = val == 0;
+        if i >= len - 1 {
             break;
         }
+        if is_bracket {
+            nbi = i + args[i + 1] as usize + 1;
+            if !is_opening_bracket {
+                depth -= 1;
+            }
+        }
 
-        idx += 1;
+        for _ in 0..depth {
+            print!("-");
+        }
+
+        if is_bracket {
+            if is_opening_bracket {
+                if depth == 1 {
+                    start_index = i;
+                }
+                println!("[ {}", start_index);
+                depth += 1;
+            } else {
+                println!("] {}", start_index);
+                if depth == 1 {
+                    out_args.push(&args[start_index..i + 2]);
+                    println!("-> {:?}", &args[start_index..i + 2]);
+                    start_index = i + 2;
+                }
+            }
+            i += 2;
+            continue;
+        } else {
+            if depth == 1 {
+                out_args.push(&args[i..i + 1]);
+                println!("-> {:?}", &args[i..i + 1]);
+                start_index = i + 1;
+            } else {
+                println!("{}", val);
+            }
+        }
+
+        i += 1;
     }
 
     out_args
 }
 
-pub fn concat_args(mut data: Vec<Vec<i32>>) -> Vec<i32> {
+pub fn concat_args(mut data: Vec<&[i32]>) -> Vec<i32> {
     let mut total_length = 4; // Start with 4 to account for [0, 1] at the start and [1, 1] at the end
 
     // Calculate the total length first to avoid reallocations
     for vec in &data {
-        total_length += vec.len(); // +4 for [0, 1] and [1, 1] per inner vec
+        if vec.len() == 1 {
+            total_length += 1;
+        } else {
+            total_length += vec.len(); // +4 for [0, 1] and [1, 1] per inner vec
+        }
     }
 
     let mut result = Vec::with_capacity(total_length);
 
     // Add [0, 1] initially
-    // result.push(0);
-    // result.push(1);
+    result.push(0);
+    result.push(1);
+
+    let mut last_closing_bracket = 1;
 
     // Process each vector
     for vec in data.iter_mut() {
-        result.push(0);
-        result.push(1);
-        result.append(vec);
-        result.push(1);
-        result.push(1);
+        if vec.len() == 1 {
+            result.push(vec[0]);
+            result[last_closing_bracket] += 1;
+            continue;
+        } else {
+            result.extend_from_slice(vec);
+            last_closing_bracket = result.len() - 1;
+            result[last_closing_bracket] = 1;
+        }
     }
 
     // Add [1, 1] at the end
-    // result.push(1);
+    result.push(1);
     result.push(1);
 
     result

@@ -150,7 +150,12 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           }
 
           // if the input is not connected to another node, we use the value from the node itself
-          inputs[key] = node.props?.[key] ?? input?.value;
+          let value = node.props?.[key] ?? input?.value;
+          if (Array.isArray(value)) {
+            inputs[key] = [0, value.length + 1, ...value, 1, 1];
+          } else {
+            inputs[key] = value;
+          }
 
         }
 
@@ -191,10 +196,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
               return encodeFloat(value as number);
             }
 
-            if (Array.isArray(value)) {
-              return encodeNestedArray(value);
-            }
-
             return value;
           });
 
@@ -204,13 +205,14 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
           // console.log(`${a2 - a1}ms TRANSFORMED_INPUTS`);
 
-          const encoded_inputs = encodeNestedArray(transformed_inputs);
+          const encoded_inputs = concatEncodedArrays(transformed_inputs);
           const a3 = performance.now();
           console.groupCollapsed(`executing ${node_type.id || node.id}`);
           console.log(`Inputs:`, transformed_inputs);
           console.log(`Encoded Inputs:`, encoded_inputs);
           results[node.id] = node_type.execute(encoded_inputs);
-          console.log("Result:", decodeNestedArray(results[node.id]));
+          console.log("Result:", results[node.id]);
+          console.log("Result (decoded):", decodeNestedArray(results[node.id]));
           console.groupEnd();
           const duration = performance.now() - a3;
           if (duration > 5) {

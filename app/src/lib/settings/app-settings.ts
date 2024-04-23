@@ -47,22 +47,6 @@ export const AppSettingTypes = {
       value: true
     }
   },
-  stressTest: {
-    __title: "Stress Test",
-    amount: {
-      type: "integer",
-      min: 2,
-      max: 15
-    },
-    loadGrid: {
-      type: "button",
-      label: "Load Grid"
-    },
-    loadTree: {
-      type: "button",
-      label: "Load Tree"
-    },
-  },
   debug: {
     wireframe: {
       type: "boolean",
@@ -73,6 +57,22 @@ export const AppSettingTypes = {
       type: "boolean",
       label: "Show Indices",
       value: false,
+    },
+    stressTest: {
+      __title: "Stress Test",
+      amount: {
+        type: "integer",
+        min: 2,
+        max: 15
+      },
+      loadGrid: {
+        type: "button",
+        label: "Load Grid"
+      },
+      loadTree: {
+        type: "button",
+        label: "Load Tree"
+      },
     },
   }
 }

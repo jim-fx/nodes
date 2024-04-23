@@ -32,7 +32,7 @@ export const NodeInputIntegerSchema = z.object({
 export const NodeInputBooleanSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("boolean"),
-  vale: z.boolean().optional(),
+  value: z.boolean().optional(),
 });
 
 export const NodeInputSelectSchema = z.object({

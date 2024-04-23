@@ -1,11 +1,13 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { BufferGeometry, Float32BufferAttribute } from "three";
+  import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+  import { decodeFloat } from "@nodes/utils";
 
   export let result: Int32Array;
 
   let geometries: BufferGeometry[] = [];
+  let lines: Vector3[][] = [];
 
   function createGeometryFromEncodedData(
     encodedData: Int32Array,
@@ -90,8 +92,33 @@
     return res;
   }
 
+  globalThis.parse_args = parse_args;
+
+  function createLineGeometryFromEncodedData(encodedData: Int32Array) {
+    const positions: Vector3[] = [];
+
+    const amount = (encodedData.length - 1) / 4;
+
+    for (let i = 0; i < amount; i++) {
+      const x = decodeFloat(encodedData[1 + i * 4 + 0]);
+      const y = decodeFloat(encodedData[1 + i * 4 + 1]);
+      const z = decodeFloat(encodedData[1 + i * 4 + 2]);
+      positions.push(new Vector3(x, y, z));
+    }
+
+    return positions;
+  }
+
   $: if (result) {
     const inputs = parse_args(result);
+
+    lines = inputs
+      .map((input) => {
+        if (input[0] === 0) {
+          return createLineGeometryFromEncodedData(input);
+        }
+      })
+      .filter(Boolean) as Vector3[][];
 
     geometries = inputs
       .map((input) => {
@@ -101,9 +128,11 @@
         }
       })
       .filter(Boolean) as BufferGeometry[];
+
+    console.log(lines);
   }
 </script>
 
 <Canvas>
-  <Scene geometry={geometries} />
+  <Scene {geometries} {lines} />
 </Canvas>

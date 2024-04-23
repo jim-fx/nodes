@@ -90,6 +90,7 @@
         {:else}
           <div class="flex flex-col">
             <NestedSettings
+              id={$activePanel}
               settings={constructNested(panels[$activePanel])}
               store={panels[$activePanel].settings}
             />
@@ -125,6 +126,7 @@
 
   .content {
     background: var(--layer-1);
+    position: relative;
   }
 
   .tabs {

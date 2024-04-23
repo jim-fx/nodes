@@ -9,11 +9,23 @@ test("it correctly concats nested arrays", () => {
 
   const output = concatEncodedArrays([input_a, input_b, input_c]);
 
+  console.log("Output", output);
+
   const decoded = decodeNestedArray(output);
 
   expect(decoded[0]).toEqual([1, 2, 3]);
+  expect(decoded[1]).toEqual(2);
+  expect(decoded[2]).toEqual([4, 5, 6]);
 
+});
 
+test("it correctly concats nested arrays with nested arrays", () => {
+  const input_c = encodeNestedArray([1, 2, 3]);
+  const output = concatEncodedArrays([42, 12, input_c]);
+  const decoded = decodeNestedArray(output);
+  expect(decoded[0]).toEqual(42);
+  expect(decoded[1]).toEqual(12);
+  expect(decoded[2]).toEqual([1, 2, 3]);
 });
 
 // Original test case

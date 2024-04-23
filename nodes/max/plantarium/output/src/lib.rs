@@ -13,13 +13,14 @@ include_definition_file!("src/inputs.json");
 pub fn execute(input: &[i32]) -> Vec<i32> {
     utils::set_panic_hook();
 
-    log!("output input: {:?}", input);
-
     let args = get_args(input);
 
     log!("output args: {:?}", args);
 
     let inputs = get_args(args[0]);
+
+    log!("output inputs: {:?}", inputs);
+
     let resolution = evaluate_int(args[1]) as usize;
 
     log!("inputs: {}, resolution: {}", inputs.len(), resolution);
@@ -30,16 +31,14 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
             continue;
         }
 
-        let arg_type = arg[0];
-
-        log!("arg: {:?}", arg);
+        let arg_type = arg[2];
 
         if arg_type == 0 {
             // this is stem
-            let _arg = &arg[3..];
-            let mut geometry = extrude_path(_arg, resolution);
-            let matrix = Mat4::from_translation(Vec3::new(0.0, 0.0, 0.0));
-            geometry = transform_geometry(geometry, matrix);
+            let stem = &arg[2..arg.len() - 2];
+            output.push(arg.to_vec());
+            let geometry = extrude_path(stem, resolution);
+            log!("geometry: {:?}", geometry);
             output.push(geometry);
         } else if arg_type == 1 {
             // this is geometry
@@ -47,5 +46,5 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         }
     }
 
-    concat_args(output)
+    concat_args(output.iter().map(|v| v.as_slice()).collect())
 }

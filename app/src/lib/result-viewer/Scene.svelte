@@ -1,11 +1,13 @@
 <script lang="ts">
   import { T } from "@threlte/core";
-  import { Text } from "@threlte/extras";
-  import type { BufferGeometry } from "three";
+  import { MeshLineGeometry, MeshLineMaterial, Text } from "@threlte/extras";
+  import type { BufferGeometry, Vector3 } from "three";
   import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
 
-  export let geometry: BufferGeometry[];
+  export let geometries: BufferGeometry[];
+  export let lines: Vector3[][];
+  $: console.log({ geometries, lines });
 
   function getPosition(geo: BufferGeometry, i: number) {
     const pos = [
@@ -21,6 +23,16 @@
   <T.GridHelper args={[20, 20]} />
 {/if}
 
+{#if lines}
+  {#each lines as line}
+    <T.Mesh>
+      <MeshLineGeometry points={line} />
+
+      <MeshLineMaterial width={0.1} depthTest={false} />
+    </T.Mesh>
+  {/each}
+{/if}
+
 <T.PerspectiveCamera position={[-10, 10, 10]} makeDefault fov={50}>
   <OrbitControls />
 </T.PerspectiveCamera>
@@ -28,7 +40,7 @@
 <T.DirectionalLight position={[0, 10, 10]} />
 <T.AmbientLight intensity={0.5} />
 
-{#each geometry as geo}
+{#each geometries as geo}
   {#if $AppSettings.showIndices}
     {#each geo.attributes.position.array as _, i}
       {#if i % 3 === 0}

@@ -15,6 +15,12 @@ pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32
 
     let mut geo = vec![0; amount];
 
+    log!(
+        "create_geometry_data: vertices: {} faces: {}",
+        vertex_amount,
+        face_amount
+    );
+
     geo[0] = 0; // opening bracket
     geo[1] = amount as i32 - 2; // opening bracket
     geo[2] = 1; // type: geometry
@@ -43,13 +49,6 @@ pub fn wrap_geometry_data(geometry: &mut [i32]) -> GeometryData {
     let (faces, rest) = rest.split_at_mut(face_amount * 3);
     let (positions_slice, rest) = rest.split_at_mut(vertices_amount * 3);
     let (normals_slice, _) = rest.split_at_mut(vertices_amount * 3);
-
-    log!(
-        "Vertices: {}, normals: {}, Total floats: {}",
-        positions_slice.len(),
-        normals_slice.len(),
-        total_floats
-    );
 
     assert!(
         positions_slice.len() + normals_slice.len() == total_floats,

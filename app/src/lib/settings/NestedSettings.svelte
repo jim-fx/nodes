@@ -1,4 +1,5 @@
 <script lang="ts">
+  import localStore from "$lib/helpers/localStore";
   import type { NodeInput } from "@nodes/types";
   import Input from "@nodes/ui";
   import type { Writable } from "svelte/store";
@@ -6,6 +7,13 @@
   interface Nested {
     [key: string]: Nested | NodeInput;
   }
+
+  export let id: string;
+
+  $: expandedDetails = localStore<Record<string, boolean>>(
+    `nodes.settings.expanded.${id}`,
+    {},
+  );
 
   export let settings: Nested;
   export let store: Writable<Record<string, any>>;
@@ -36,7 +44,11 @@
         {/if}
       </div>
     {:else}
-      <details>
+      {#if depth > 0}
+        <hr />
+      {/if}
+
+      <details bind:open={$expandedDetails[key]}>
         <summary>{settings[key]?.__title || key}</summary>
         <div class="content">
           <svelte:self settings={settings[key]} {store} depth={depth + 1} />
@@ -50,11 +62,11 @@
   summary {
     cursor: pointer;
     user-select: none;
+    margin-bottom: 1em;
   }
   details {
-    padding: 1rem;
-    box-sizing: border-box;
-    border-bottom: solid thin var(--outline);
+    padding: 1em;
+    padding-bottom: 0;
   }
 
   .input {
@@ -69,6 +81,7 @@
   .input-boolean {
     display: flex;
     flex-direction: row;
+    align-items: center;
   }
   .input-boolean > label {
     order: 2;
@@ -83,5 +96,13 @@
   }
   .first-level > details {
     border: none;
+  }
+  hr {
+    position: absolute;
+    margin: 0;
+    left: 0;
+    right: 0;
+    border: none;
+    border-bottom: solid thin var(--outline);
   }
 </style>

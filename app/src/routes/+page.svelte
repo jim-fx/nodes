@@ -14,12 +14,13 @@
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
-  import { decodeNestedArray } from "@nodes/utils";
+  import { decodeNestedArray, encodeNestedArray } from "@nodes/utils";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
   globalThis.decode = decodeNestedArray;
+  globalThis.encode = encodeNestedArray;
 
   let res: Int32Array;
 
@@ -82,15 +83,17 @@
       types: Record<string, unknown>;
     }>,
   ) {
-    settings.general.definition.stressTest.loadGrid.callback = function () {
-      const store = get(settings.general.settings);
-      graph = templates.grid(store.amount, store.amount);
-    };
+    settings.general.definition.debug.stressTest.loadGrid.callback =
+      function () {
+        const store = get(settings.general.settings);
+        graph = templates.grid(store.amount, store.amount);
+      };
 
-    settings.general.definition.stressTest.loadTree.callback = function () {
-      const store = get(settings.general.settings);
-      graph = templates.tree(store.amount);
-    };
+    settings.general.definition.debug.stressTest.loadTree.callback =
+      function () {
+        const store = get(settings.general.settings);
+        graph = templates.tree(store.amount);
+      };
 
     settings.graph = {
       icon: "i-tabler-chart-bar",

@@ -14,11 +14,6 @@ export function concatEncodedArrays(input: (number | number[])[]): number[] {
     const item = input[i];
     if (Array.isArray(item)) {
       result.push(...item);
-      if (item.length > 2) {
-        if (item[item.length - 2] !== 1 && item[item.length - 1] !== 1) {
-          result.push(1, 1); // add closing bracket if missing
-        }
-      }
       last_closing_bracket = result.length - 1;
     } else {
       result[last_closing_bracket]++;
@@ -46,8 +41,10 @@ export function encodeNestedArray(array: SparseArray): number[] {
         encoded.push(0, 1, 1, 1);
       } else {
         // Recursively encode non-empty arrays
+        console.log("recursing", item);
         const child = encodeNestedArray(item);
-        encoded.push(...child, 1, 0);
+        console.log("recursed", child);
+        encoded.push(...child);
       }
       // Update missingBracketIndex to the position of the newly added bracket
       missingBracketIndex = encoded.length - 1;
@@ -57,8 +54,10 @@ export function encodeNestedArray(array: SparseArray): number[] {
       // Update the distance for the last opened bracket
       if (missingBracketIndex) encoded[missingBracketIndex] = index + 2;
     }
+    console.log(encoded, item);
   }
-  return encoded;
+
+  return [...encoded, 1, 1];
 };
 
 function decode_recursive(dense: number[] | Int32Array, index = 0) {
