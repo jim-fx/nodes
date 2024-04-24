@@ -11,17 +11,6 @@ export class RemoteNodeRegistry implements NodeRegistry {
   constructor(private url: string) { }
 
   async loadNode(id: `${string}/${string}/${string}`) {
-    const wasmResponse = await this.fetchNode(id);
-
-    const wrapper = createWasmWrapper(wasmResponse);
-
-    const definition = wrapper.get_definition();
-
-    return {
-      ...definition,
-      id,
-      execute: wrapper.execute
-    };
   }
 
   async fetchUsers() {
@@ -67,7 +56,20 @@ export class RemoteNodeRegistry implements NodeRegistry {
   async load(nodeIds: `${string}/${string}/${string}`[]) {
     const a = performance.now();
 
-    const nodes = await Promise.all(nodeIds.map(id => this.loadNode(id)));
+    const nodes = await Promise.all(nodeIds.map(async id => {
+
+      const wasmResponse = await this.fetchNode(id);
+
+      const wrapper = createWasmWrapper(wasmResponse);
+
+      const definition = wrapper.get_definition();
+
+      return {
+        ...definition,
+        id,
+        execute: wrapper.execute
+      };
+    }));
 
     for (const node of nodes) {
       this.nodes.set(node.id, node);

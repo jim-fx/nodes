@@ -15,7 +15,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     let args = split_args(input);
 
     assert_eq!(args.len(), 2, "Expected 2 arguments, got {}", args.len());
-
     let inputs = split_args(args[0]);
 
     let resolution = evaluate_int(args[1]) as usize;

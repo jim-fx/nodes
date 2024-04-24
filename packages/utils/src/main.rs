@@ -1,6 +1,6 @@
 use utils::{
     geometry::{create_multiple_paths, create_path, wrap_multiple_paths},
-    get_args,
+    split_args,
 };
 
 #[allow(dead_code)]
@@ -16,7 +16,7 @@ fn test_split_args(){
     ];
 
     for input in inputs {
-        println!("RESULT: {:?}", get_args(&input));
+        println!("RESULT: {:?}", split_args(&input));
     }
 }
 

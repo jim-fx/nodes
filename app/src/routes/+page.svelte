@@ -1,7 +1,10 @@
 <script lang="ts">
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
-  import { MemoryRuntimeExecutor } from "$lib/runtime-executor";
+  import {
+    MemoryRuntimeExecutor,
+    MemoryRuntimeCache,
+  } from "$lib/runtime-executor";
   import { RemoteNodeRegistry } from "$lib/node-registry-client";
   import * as templates from "$lib/graph-templates";
   import type { Graph, Node } from "@nodes/types";
@@ -22,9 +25,15 @@
   import type { PerspectiveCamera, Vector3 } from "three";
   import type { OrbitControls } from "three/examples/jsm/Addons.js";
   import ActiveNode from "$lib/settings/panels/ActiveNode.svelte";
+  import { createPerformanceStore } from "$lib/performance";
+  import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
 
+  const nodePerformance = createPerformanceStore();
+
+  const runtimeCache = new MemoryRuntimeCache();
   const nodeRegistry = new RemoteNodeRegistry("");
-  const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
+  const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
+  runtimeExecutor.perf = nodePerformance;
 
   globalThis.decode = decodeNestedArray;
   globalThis.encode = encodeNestedArray;
@@ -95,6 +104,12 @@
           value: true,
         },
       },
+    },
+    performance: {
+      id: "performance",
+      icon: "i-tabler-brand-speedtest",
+      props: { store: nodePerformance, title: "Runtime Performance" },
+      component: PerformanceViewer,
     },
     activeNode: {
       id: "Active Node",

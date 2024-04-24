@@ -1,16 +1,51 @@
-import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor } from "@nodes/types";
-import { fastHash, concatEncodedArrays, encodeFloat, decodeNestedArray } from "@nodes/utils"
+import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor, NodeInput } from "@nodes/types";
+import { concatEncodedArrays, encodeFloat, fastHashArray } from "@nodes/utils"
 import { createLogger } from "./helpers";
+import type { RuntimeCache } from "@nodes/types";
+import type { PerformanceStore } from "./performance";
 
 const log = createLogger("runtime-executor");
+log.mute()
+
+function getValue(input: NodeInput, value?: unknown) {
+  if (value === undefined && "value" in input) {
+    value = input.value
+  }
+  if (input.type === "float") {
+    return encodeFloat(value as number);
+  }
+
+  if (Array.isArray(value)) {
+    if (input.type === "vec3") {
+      return [0, value.length + 1, ...value.map(v => encodeFloat(v)), 1, 1] as number[];
+    }
+    return [0, value.length + 1, ...value, 1, 1] as number[];
+  }
+
+  if (typeof value === "boolean") {
+    return value ? 1 : 0;
+  }
+
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (value instanceof Int32Array) {
+    return value;
+  }
+
+  throw new Error(`Unknown input type ${input.type}`);
+}
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   private definitionMap: Map<string, NodeDefinition> = new Map();
 
-  private cache: Record<string, { eol: number, value: any }> = {};
+  private randomSeed = Math.floor(Math.random() * 100000000);
 
-  constructor(private registry: NodeRegistry) { }
+  perf?: PerformanceStore;
+
+  constructor(private registry: NodeRegistry, private cache?: RuntimeCache) { }
 
   private getNodeDefinitions(graph: Graph) {
 
@@ -67,26 +102,23 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     const stack = [outputNode];
     while (stack.length) {
       const node = stack.pop();
-      if (node) {
-        node.tmp = node.tmp || {};
-
-        if (node?.tmp?.depth === undefined) {
-          node.tmp.depth = 0;
-        }
-        if (node?.tmp?.parents !== undefined) {
-          for (const parent of node.tmp.parents) {
-            parent.tmp = parent.tmp || {};
-            if (parent.tmp?.depth === undefined) {
-              parent.tmp.depth = node.tmp.depth + 1;
-              stack.push(parent);
-            } else {
-              parent.tmp.depth = Math.max(parent.tmp.depth, node.tmp.depth + 1);
-            }
+      if (!node) continue;
+      node.tmp = node.tmp || {};
+      if (node?.tmp?.depth === undefined) {
+        node.tmp.depth = 0;
+      }
+      if (node?.tmp?.parents !== undefined) {
+        for (const parent of node.tmp.parents) {
+          parent.tmp = parent.tmp || {};
+          if (parent.tmp?.depth === undefined) {
+            parent.tmp.depth = node.tmp.depth + 1;
+            stack.push(parent);
+          } else {
+            parent.tmp.depth = Math.max(parent.tmp.depth, node.tmp.depth + 1);
           }
         }
-
-        nodes.push(node);
       }
+      nodes.push(node);
     }
 
     return [outputNode, nodes] as const;
@@ -94,8 +126,17 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   execute(graph: Graph, settings: Record<string, unknown>) {
 
+    this.perf?.startRun();
+
+    let a0 = performance.now();
+
+    let a = performance.now();
+
     // Then we add some metadata to the graph
     const [outputNode, nodes] = this.addMetaData(graph);
+    let b = performance.now();
+
+    this.perf?.addPoint("metadata", b - a);
 
     /*
     * Here we sort the nodes into buckets, which we then execute one by one
@@ -114,100 +155,109 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // here we store the intermediate results of the nodes
     const results: Record<string, Int32Array> = {};
 
-    const runSeed = settings["randomSeed"] === true ? Math.floor(Math.random() * 100000000) : 5120983;
-
     for (const node of sortedNodes) {
 
       const node_type = this.definitionMap.get(node.type)!;
 
-      if (node?.tmp && node_type?.execute) {
+      if (!node_type || !node.tmp || !node_type.execute) {
+        log.warn(`Node ${node.id} has no definition`);
+        continue;
+      };
 
-        const inputs = Object.entries(node_type.inputs || {}).map(([key, input]) => {
+      a = performance.now();
 
-          if (input.type === "seed") {
-            return runSeed;
+      // Collect the inputs for the node
+      const inputs = Object.entries(node_type.inputs || {}).map(([key, input]) => {
+
+        if (input.type === "seed") {
+          if (settings["randomSeed"] === true) {
+            return Math.floor(Math.random() * 100000000)
+          } else {
+            return this.randomSeed
           }
-
-          if (input.setting) {
-            if (settings[input.setting] === undefined) {
-              if ("value" in input && input.value !== undefined) {
-                if (input.type === "float") {
-                  return encodeFloat(input.value);
-                }
-                return input.value;
-              } else {
-                log.warn(`Setting ${input.setting} is not defined`);
-              }
-            } else {
-              if (input.type === "float") {
-                return encodeFloat(settings[input.setting] as number);
-              }
-              return settings[input.setting];
-            }
-          }
-
-          // check if the input is connected to another node
-          const inputNode = node.tmp?.inputNodes?.[key];
-          if (inputNode) {
-            if (results[inputNode.id] === undefined) {
-              throw new Error("Input node has no result");
-            }
-            return results[inputNode.id];
-          }
-
-          // If the value is stored in the node itself, we use that value
-          if (node.props?.[key] !== undefined) {
-            let value = node.props[key];
-            if (input.type === "vec3") {
-              return [0, 4, ...value.map(v => encodeFloat(v)), 1, 1]
-            } else if (Array.isArray(value)) {
-              return [0, value.length + 1, ...value, 1, 1];
-            } else if (input.type === "float") {
-              return encodeFloat(value);
-            } else {
-              return value;
-            }
-          }
-
-          let defaultValue = input.value;
-          if (defaultValue !== undefined) {
-            if (Array.isArray(defaultValue)) {
-              return [0, defaultValue.length + 1, ...defaultValue.map(v => encodeFloat(v)), 1, 1];
-            } else if (input.type === "float") {
-              return encodeFloat(defaultValue);
-            } else {
-              return defaultValue;
-            }
-          }
-
-          throw new Error(`Input ${key} is not connected and has no default value`);
-
-        });
-
-        try {
-
-          const encoded_inputs = concatEncodedArrays(inputs);
-          log.group(`executing ${node_type.id || node.id}`);
-          log.log(`Inputs:`, inputs);
-          log.log(`Encoded Inputs:`, encoded_inputs);
-          results[node.id] = node_type.execute(encoded_inputs);
-          log.log("Result:", results[node.id]);
-          log.log("Result (decoded):", decodeNestedArray(results[node.id]));
-          log.groupEnd();
-
-        } catch (e) {
-          log.groupEnd();
-          log.error(`Error executing node ${node_type.id || node.id}`, e);
         }
 
+        // If the input is linked to a setting, we use that value
+        if (input.setting) {
+          return getValue(input, settings[input.setting]);
+        }
+
+        // check if the input is connected to another node
+        const inputNode = node.tmp?.inputNodes?.[key];
+        if (inputNode) {
+          if (results[inputNode.id] === undefined) {
+            throw new Error("Input node has no result");
+          }
+          return results[inputNode.id];
+        }
+
+        // If the value is stored in the node itself, we use that value
+        if (node.props?.[key] !== undefined) {
+          return getValue(input, node.props[key]);
+        }
+
+        return getValue(input);
+      });
+      b = performance.now();
+
+      this.perf?.addPoint("collected-inputs", b - a);
+
+      try {
+
+        a = performance.now();
+        const encoded_inputs = concatEncodedArrays(inputs);
+        b = performance.now();
+        this.perf?.addPoint("encoded-inputs", b - a);
+
+        let inputHash = `node-${node.id}-${fastHashArray(encoded_inputs)}`;
+        let cachedValue = this.cache?.get(inputHash);
+        if (cachedValue !== undefined) {
+          log.log(`Using cached value for ${node_type.id || node.id}`);
+          results[node.id] = cachedValue as Int32Array;
+          continue;
+        }
+
+        log.group(`executing ${node_type.id || node.id}`);
+        log.log(`Inputs:`, inputs);
+        a = performance.now();
+        results[node.id] = node_type.execute(encoded_inputs);
+        b = performance.now();
+        this.perf?.addPoint("node/" + node_type.id, b - a);
+        log.log("Result:", results[node.id]);
+        log.groupEnd();
+
+      } catch (e) {
+        log.groupEnd();
+        log.error(`Error executing node ${node_type.id || node.id}`, e);
       }
+
+
     }
 
     // return the result of the parent of the output node
     const res = results[outputNode.id];
 
+    this.perf?.addPoint("total", performance.now() - a0);
+
+    this.perf?.stopRun();
+
     return res as unknown as Int32Array;
 
+  }
+
+}
+
+export class MemoryRuntimeCache implements RuntimeCache {
+
+  private cache: Record<string, unknown> = {};
+  get<T>(key: string): T | undefined {
+    return this.cache[key] as T;
+  }
+  set<T>(key: string, value: T): void {
+    this.cache[key] = value;
+  }
+  clear(): void {
+    this.cache = {};
   }
 
 }

@@ -7,7 +7,7 @@
   import { getContext, onMount, setContext } from "svelte";
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
-  import type { Node, Node as NodeType, Socket } from "@nodes/types";
+  import type { Node, NodeId, Node as NodeType, Socket } from "@nodes/types";
   import { NodeDefinitionSchema } from "@nodes/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
   import {
@@ -783,7 +783,7 @@
     event.preventDefault();
     isDragging = false;
     if (!event.dataTransfer) return;
-    const nodeId = event.dataTransfer.getData("data/node-id");
+    const nodeId: NodeId = event.dataTransfer.getData("data/node-id");
 
     if (nodeId) {
       let mx = event.clientX - rect.x;
@@ -805,7 +805,7 @@
       }
 
       const pos = projectScreenToWorld(mx, my);
-      graph.loadNode(nodeId).then(() => {
+      graph.load([nodeId]).then(() => {
         graph.createNode({
           type: nodeId,
           props,

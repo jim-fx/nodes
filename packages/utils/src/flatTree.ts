@@ -1,27 +1,40 @@
 type SparseArray<T = number> = (T | T[] | SparseArray<T>)[];
 
-export function concatEncodedArrays(input: (number | number[])[]): number[] {
+export function concatEncodedArrays(input: (number | number[] | Int32Array)[]): Int32Array {
 
-  if (input.length === 1 && Array.isArray(input[0])) {
-    return input[0]
+  let totalLength = 4;
+  for (let i = 0; i < input.length; i++) {
+    const item = input[i];
+    if (Array.isArray(item) || item instanceof Int32Array) {
+      totalLength += item.length;
+    } else {
+      totalLength++;
+    }
   }
 
-  const result = [0, 1]; // opening bracket
+  const result = new Int32Array(totalLength);
 
+  result[0] = 0;
+  result[1] = 1;
+
+  let index = 2; // Start after the opening bracket
   let last_closing_bracket = 1;
 
   for (let i = 0; i < input.length; i++) {
     const item = input[i];
     if (Array.isArray(item) || item instanceof Int32Array) {
-      result.push(...item);
-      last_closing_bracket = result.length - 1;
+      result.set(item, index);
+      index += item.length;
+      last_closing_bracket = index - 1;
     } else {
       result[last_closing_bracket]++;
-      result.push(item);
+      result[index] = item;
+      index++;
     }
   }
 
-  result.push(1, 1); // closing bracket
+  result[totalLength - 2] = 1;
+  result[totalLength - 1] = 1;
 
   return result
 }
