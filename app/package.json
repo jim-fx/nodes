@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "svelte-kit sync && vite build",
     "test": "vitest",
     "preview": "vite preview",
     "tauri:dev": "tauri dev",
