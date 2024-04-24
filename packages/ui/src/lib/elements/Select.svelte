@@ -1,7 +1,7 @@
 <script lang="ts">
   export let options: string[] = [];
   export let value: number = 0;
-  export let id: string;
+  export let id = "";
 </script>
 
 <select {id} bind:value>

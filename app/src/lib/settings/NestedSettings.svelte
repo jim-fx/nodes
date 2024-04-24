@@ -21,7 +21,7 @@
 
   const keys = Object.keys(settings).filter((key) => key !== "__title");
   function isNodeInput(v: NodeInput | Nested): v is NodeInput {
-    return "type" in v;
+    return v && "type" in v;
   }
 </script>
 

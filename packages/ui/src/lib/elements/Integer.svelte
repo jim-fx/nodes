@@ -96,6 +96,7 @@
   <input
     bind:value
     bind:this={inputEl}
+    {id}
     {step}
     {max}
     {min}

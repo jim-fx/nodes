@@ -2,16 +2,16 @@
   import type { Hst } from "@histoire/plugin-svelte";
   export let Hst: Hst;
   import Float from "./Float.svelte";
+  import StoryContent from "$lib/helpers/StoryContent.svelte";
+  import StorySettings from "$lib/helpers/StorySettings.svelte";
+  let theme = "dark";
 </script>
 
 <Hst.Story>
-  <div>
+  <StoryContent {theme}>
     <Float value={0} min={0} max={6.9} />
-  </div>
+  </StoryContent>
+  <svelte:fragment slot="controls">
+    <StorySettings bind:theme />
+  </svelte:fragment>
 </Hst.Story>
-
-<style>
-  div {
-    padding: 1em;
-  }
-</style>

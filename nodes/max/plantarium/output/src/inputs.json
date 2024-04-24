@@ -3,7 +3,10 @@
   "outputs": [],
   "inputs": {
     "input": {
-      "type": "plant",
+      "type": "path",
+      "accepts": [
+        "geometry"
+      ],
       "external": true
     },
     "resolution_circle": {

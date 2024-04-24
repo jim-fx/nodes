@@ -2,4 +2,5 @@ packages:
   - app
   - packages/*
   - nodes/**/**/**/*
+  - '!nodes/**/**/**/pkg'
   - '!**/.template'

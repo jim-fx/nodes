@@ -1,11 +1,11 @@
 {
   "id": "max/plantarium/noise",
   "outputs": [
-    "plant"
+    "path"
   ],
   "inputs": {
     "plant": {
-      "type": "plant"
+      "type": "path"
     },
     "scale": {
       "type": "float",

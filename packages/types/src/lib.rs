@@ -104,13 +104,13 @@ pub struct NodeInputVec3 {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct NodeInputModel {
+pub struct NodeInputGeometry {
     #[serde(flatten)]
     pub default_options: DefaultOptions,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct NodeInputPlant {
+pub struct NodeInputPath {
     #[serde(flatten)]
     pub default_options: DefaultOptions,
 }
@@ -125,8 +125,8 @@ pub enum NodeInput {
     select(NodeInputSelect),
     seed(NodeInputSeed),
     vec3(NodeInputVec3),
-    model(NodeInputModel),
-    plant(NodeInputPlant),
+    geometry(NodeInputGeometry),
+    path(NodeInputPath),
 }
 
 #[derive(Serialize, Deserialize)]

@@ -1,0 +1,105 @@
+{
+  "stories": [
+    {
+      "id": "src-lib-elements-checkbox-story-svelte",
+      "title": "Checkbox",
+      "group": null,
+      "layout": {
+        "type": "single",
+        "iframe": true
+      },
+      "icon": null,
+      "iconColor": null,
+      "docsOnly": false,
+      "variants": [
+        {
+          "id": "_default",
+          "title": "default"
+        }
+      ],
+      "relativePath": "src/lib/elements/Checkbox.story.svelte",
+      "supportPluginId": "svelte4",
+      "treePath": [
+        "Checkbox"
+      ],
+      "virtual": false,
+      "markdownFile": null
+    },
+    {
+      "id": "src-lib-elements-float-story-svelte",
+      "title": "Float",
+      "group": null,
+      "layout": {
+        "type": "single",
+        "iframe": true
+      },
+      "icon": null,
+      "iconColor": null,
+      "docsOnly": false,
+      "variants": [
+        {
+          "id": "_default",
+          "title": "default"
+        }
+      ],
+      "relativePath": "src/lib/elements/Float.story.svelte",
+      "supportPluginId": "svelte4",
+      "treePath": [
+        "Float"
+      ],
+      "virtual": false,
+      "markdownFile": null
+    },
+    {
+      "id": "src-lib-elements-integer-story-svelte",
+      "title": "Integer",
+      "group": null,
+      "layout": {
+        "type": "single",
+        "iframe": true
+      },
+      "icon": null,
+      "iconColor": null,
+      "docsOnly": false,
+      "variants": [
+        {
+          "id": "_default",
+          "title": "default"
+        }
+      ],
+      "relativePath": "src/lib/elements/Integer.story.svelte",
+      "supportPluginId": "svelte4",
+      "treePath": [
+        "Integer"
+      ],
+      "virtual": false,
+      "markdownFile": null
+    },
+    {
+      "id": "src-lib-elements-select-story-svelte",
+      "title": "Select",
+      "group": null,
+      "layout": {
+        "type": "single",
+        "iframe": true
+      },
+      "icon": null,
+      "iconColor": null,
+      "docsOnly": false,
+      "variants": [
+        {
+          "id": "_default",
+          "title": "default"
+        }
+      ],
+      "relativePath": "src/lib/elements/Select.story.svelte",
+      "supportPluginId": "svelte4",
+      "treePath": [
+        "Select"
+      ],
+      "virtual": false,
+      "markdownFile": null
+    }
+  ],
+  "markdownFiles": []
+}

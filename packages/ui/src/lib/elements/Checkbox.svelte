@@ -7,7 +7,7 @@
     value = value === 1;
   }
 
-  export let id: string;
+  export let id = "";
 </script>
 
 <input {id} type="checkbox" bind:checked={value} />

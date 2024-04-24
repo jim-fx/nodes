@@ -1,4 +1,4 @@
-use super::{create_geometry_data, wrap_geometry_data};
+use super::{create_geometry_data, wrap_geometry_data, PathData};
 use glam::{Mat4, Vec3};
 
 fn create_circle(res: usize) -> Vec<f32> {
@@ -11,8 +11,8 @@ fn create_circle(res: usize) -> Vec<f32> {
     circle
 }
 
-pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
-    let point_amount = input_path.len() / 4;
+pub fn extrude_path(input_path: PathData, res_x: usize) -> Vec<i32> {
+    let point_amount = input_path.points.len() / 4;
     let face_amount = (point_amount - 1) * res_x * 2;
     let vertices_amount = point_amount * res_x;
 
@@ -26,12 +26,9 @@ pub fn extrude_path(input_path: &[i32], res_x: usize) -> Vec<i32> {
     let positions = geometry.positions;
     let indices = geometry.faces;
 
-    let path: &[f32];
-    unsafe {
-        path = std::slice::from_raw_parts(input_path.as_ptr() as *const f32, input_path.len());
-    }
+    let path: &[f32] = input_path.points;
 
-    for i in 0..point_amount {
+    for i in 0..input_path.length {
         let index_offset = i * res_x * 6;
         let position_offset = i * res_x;
 

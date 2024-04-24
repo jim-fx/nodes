@@ -8,8 +8,8 @@
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
   import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
-  import { get, writable, type Readable, type Writable } from "svelte/store";
-  import Keymap from "$lib/settings/Keymap.svelte";
+  import { get, writable, type Writable } from "svelte/store";
+  import Keymap from "$lib/settings/panels/Keymap.svelte";
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
@@ -21,7 +21,7 @@
   } from "@nodes/utils";
   import type { PerspectiveCamera, Vector3 } from "three";
   import type { OrbitControls } from "three/examples/jsm/Addons.js";
-  import ActiveNode from "$lib/settings/ActiveNode.svelte";
+  import ActiveNode from "$lib/settings/panels/ActiveNode.svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);

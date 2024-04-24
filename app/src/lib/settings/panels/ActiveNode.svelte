@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Node, NodeInput } from "@nodes/types";
-  import NestedSettings from "./NestedSettings.svelte";
+  import NestedSettings from "../NestedSettings.svelte";
   import { writable } from "svelte/store";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
 
@@ -35,6 +35,7 @@
     : undefined;
   $: store = node ? createStore(node.props, nodeDefinition) : undefined;
 
+  let lastPropsHash = "";
   function updateNode() {
     if (!node || !$store) return;
     let needsUpdate = false;
@@ -46,6 +47,11 @@
         node.props[key] = $store[key];
       }
     });
+    let propsHash = JSON.stringify(node.props);
+    if (propsHash === lastPropsHash) {
+      return;
+    }
+    lastPropsHash = propsHash;
     // console.log(needsUpdate, node.props, $store);
     if (needsUpdate) {
       manager.execute();

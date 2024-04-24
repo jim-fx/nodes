@@ -3,7 +3,9 @@
     "build": "pnpm build:nodes && pnpm build:app",
     "build:app": "pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
+    "build:stories": "pnpm -r --filter 'ui' story:build",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
+    "build:deploy": "pnpm build && pnpm build:stories && cp -r ./packages/ui/.histoire/dist ./app/build/ui",
     "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"
   }
 }

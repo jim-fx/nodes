@@ -368,6 +368,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "template"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "macros",
+ "serde",
+ "serde-wasm-bindgen",
+ "utils",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "types"
 version = "0.1.0"
 dependencies = [

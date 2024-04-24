@@ -1,5 +1,9 @@
-use utils::get_args;
+use utils::{
+    geometry::{create_multiple_paths, create_path, wrap_multiple_paths},
+    get_args,
+};
 
+#[allow(dead_code)]
 #[rustfmt::skip]
 fn test_split_args(){
     let inputs = vec![
@@ -16,4 +20,17 @@ fn test_split_args(){
     }
 }
 
-fn main() {}
+fn test_path() {
+    // let path_data = create_path(3, 2);
+    // println!("{:?}", path_data);
+
+    let mut multiple_paths = create_multiple_paths(1, 4, 1);
+    let mut wrapped_paths = wrap_multiple_paths(&mut multiple_paths);
+    wrapped_paths[0].points[0] = 1.0;
+    println!("{:?}", wrapped_paths);
+    println!("{:?}", multiple_paths);
+}
+
+fn main() {
+    test_path()
+}

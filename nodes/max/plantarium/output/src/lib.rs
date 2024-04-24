@@ -1,5 +1,9 @@
 use macros::include_definition_file;
-use utils::{concat_args, evaluate_int, geometry::extrude_path, get_args, log};
+use utils::{
+    concat_args, evaluate_int,
+    geometry::{extrude_path, wrap_path},
+    get_args, log,
+};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/inputs.json");
@@ -10,30 +14,25 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let args = get_args(input);
 
-    log!("output args: {:?}", args);
-
     let inputs = get_args(args[0]);
-
-    log!("output inputs: {:?}", inputs);
 
     let resolution = evaluate_int(args[1]) as usize;
 
+    log!("output inputs: {:?}", inputs);
     log!("inputs: {}, resolution: {}", inputs.len(), resolution);
 
     let mut output: Vec<Vec<i32>> = Vec::new();
     for arg in inputs {
-        if arg.len() < 3 {
-            continue;
-        }
-
         let arg_type = arg[2];
+        log!("arg_type: {}, \n {:?}", arg_type, arg,);
 
         if arg_type == 0 {
-            // this is stem
-            let stem = &arg[3..arg.len() - 2];
-            output.push(arg.to_vec());
-            log!("stem: {:?}", stem);
-            let geometry = extrude_path(stem, resolution);
+            // this is path
+            let mut vec = arg.to_vec();
+            output.push(vec.clone());
+            let path_data = wrap_path(&mut vec);
+            log!("{:?}", path_data);
+            let geometry = extrude_path(path_data, resolution);
             output.push(geometry);
         } else if arg_type == 1 {
             // this is geometry

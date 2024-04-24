@@ -55,14 +55,14 @@ export const NodeInputVec3Schema = z.object({
   value: z.array(z.number()).optional(),
 });
 
-export const NodeInputModelSchema = z.object({
+export const NodeInputGeometrySchema = z.object({
   ...DefaultOptionsSchema.shape,
-  type: z.literal("model"),
+  type: z.literal("geometry"),
 });
 
-export const NodeInputPlantSchema = z.object({
+export const NodeInputPathSchema = z.object({
   ...DefaultOptionsSchema.shape,
-  type: z.literal("plant"),
+  type: z.literal("path"),
 });
 
 export const NodeInputSchema = z.union([
@@ -73,8 +73,8 @@ export const NodeInputSchema = z.union([
   NodeInputSelectSchema,
   NodeInputSeedSchema,
   NodeInputVec3Schema,
-  NodeInputModelSchema,
-  NodeInputPlantSchema
+  NodeInputGeometrySchema,
+  NodeInputPathSchema
 ]);
 
 export type NodeInput = z.infer<typeof NodeInputSchema>;

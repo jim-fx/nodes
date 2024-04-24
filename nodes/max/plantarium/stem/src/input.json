@@ -1,7 +1,7 @@
 {
   "id": "max/plantarium/stem",
   "outputs": [
-    "plant"
+    "path"
   ],
   "inputs": {
     "origin": {

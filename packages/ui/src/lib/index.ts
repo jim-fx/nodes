@@ -10,3 +10,5 @@ import Details from "./Details.svelte";
 export { Float, Integer, Select, Checkbox, Input, Details };
 
 export default Input;
+
+export { default as ShortCut } from "./ShortCut.svelte";

@@ -42,7 +42,7 @@ body {
   overflow: hidden;
 
   --neutral-100: #E7E7E7;
-  --neutral-200: #A6A6A6;
+  --neutral-200: #CECECE;
   --neutral-300: #7C7C7C;
   --neutral-400: #2D2D2D;
   --neutral-500: #171717;
@@ -79,7 +79,7 @@ body.theme-light {
   --outline: var(--neutral-300);
   --layer-0: var(--neutral-100);
   --layer-1: var(--neutral-100);
-  --layer-2: var(--neutral-100);
+  --layer-2: var(--neutral-200);
   --layer-3: var(--neutral-500);
   --active: #000000;
   --selected: #c65a19;

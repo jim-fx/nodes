@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { getBoundingValue } from "../helpers/getBoundingValue";
+  import { getBoundingValue } from "../helpers/getBoundingValue.js";
 
   export let value = 0.5;
   export let step = 0.01;
@@ -123,10 +123,11 @@
   .component-wrapper {
     position: relative;
     background-color: var(--layer-2, #4b4b4b);
-    border-radius: 2px;
+    border-radius: 4px;
     user-select: none;
     transition: box-shadow 0.3s ease;
-    outline: solid 1px var(--outline);
+    border: solid 1px var(--outline);
+    box-sizing: border-box;
     overflow: hidden;
     border-radius: var(--border-radius, 2px);
   }

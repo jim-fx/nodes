@@ -6,8 +6,13 @@ pub struct GeometryData<'a> {
     pub faces: &'a mut [i32],     // View into `data`
 }
 
+static GEOMETRY_HEADER_SIZE: usize = 3;
+// 0: geometry type = 0
+// 1: vertex amount
+// 2: face amount
+
 pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32> {
-    let amount = 3 // definition (type, vertex_amount, face_amount)
+    let amount = GEOMETRY_HEADER_SIZE // definition (type, vertex_amount, face_amount)
       + 4 // opening and closing brackets
       + vertex_amount * 3  // positions
       + vertex_amount * 3  // normals
@@ -35,12 +40,12 @@ pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32
 pub fn wrap_geometry_data(geometry: &mut [i32]) -> GeometryData {
     // Basic validity checks
     assert!(
-        geometry.len() > 5,
+        geometry.len() > GEOMETRY_HEADER_SIZE,
         "Geometry vector does not contain enough data for a header."
     );
 
     // Split at after header
-    let (header, rest) = geometry.split_at_mut(5);
+    let (header, rest) = geometry.split_at_mut(2 + GEOMETRY_HEADER_SIZE);
 
     let vertices_amount = header[3] as usize;
     let face_amount = header[4] as usize;
