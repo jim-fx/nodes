@@ -10,18 +10,18 @@
     "scale": {
       "type": "float",
       "min": 0.1,
-      "max": 100
+      "max": 10
     },
     "strength": {
       "type": "float",
       "min": 0.1,
-      "max": 100
+      "max": 10
     },
     "fixBottom": {
       "type": "float",
       "label": "Fixate bottom of plant",
       "hidden": true,
-      "value": 0,
+      "value": 1,
       "min": 0,
       "max": 1
     },

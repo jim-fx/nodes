@@ -3,15 +3,14 @@ import { createWasmWrapper } from "@nodes/utils";
 import { createLogger } from "./helpers";
 
 const log = createLogger("node-registry");
+log.mute();
+
 export class RemoteNodeRegistry implements NodeRegistry {
 
   status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeDefinition> = new Map();
 
   constructor(private url: string) { }
-
-  async loadNode(id: `${string}/${string}/${string}`) {
-  }
 
   async fetchUsers() {
     const response = await fetch(`${this.url}/nodes/users.json`);
@@ -57,6 +56,10 @@ export class RemoteNodeRegistry implements NodeRegistry {
     const a = performance.now();
 
     const nodes = await Promise.all(nodeIds.map(async id => {
+
+      if (this.nodes.has(id)) {
+        return this.nodes.get(id);
+      }
 
       const wasmResponse = await this.fetchNode(id);
 

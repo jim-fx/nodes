@@ -10,6 +10,7 @@ export const AppSettings = localStore("node-settings", {
   showVertices: false,
   centerCamera: true,
   showStemLines: false,
+  amount: 5
 });
 
 const themes = ["dark", "light", "catppuccin", "solarized", "high-contrast", "nord", "dracula"];

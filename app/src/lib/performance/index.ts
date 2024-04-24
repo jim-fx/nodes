@@ -1,6 +1,6 @@
 import { readable, type Readable } from "svelte/store";
 
-type PerformanceData = {
+export type PerformanceData = {
   total: Record<string, number>;
   runs: Record<string, number[]>[];
 }
@@ -8,6 +8,7 @@ export interface PerformanceStore extends Readable<PerformanceData> {
   startRun(): void;
   stopRun(): void;
   addPoint(name: string, value?: number): void;
+  get: () => PerformanceData;
 }
 
 export function createPerformanceStore(): PerformanceStore {
@@ -41,7 +42,7 @@ export function createPerformanceStore(): PerformanceStore {
 
       data.runs.push(currentRun);
       currentRun = undefined;
-      set(data);
+      if (set) set(data);
     }
   }
 
@@ -51,11 +52,16 @@ export function createPerformanceStore(): PerformanceStore {
     currentRun[name].push(value);
   }
 
+  function get() {
+    return data;
+  }
+
   return {
     subscribe,
     startRun,
     stopRun,
     addPoint,
+    get
   }
 }
 

@@ -3,7 +3,7 @@
   import { ShortCut } from "@nodes/ui";
 
   export let keymap: ReturnType<typeof createKeyMap>;
-  const keys = keymap.keys;
+  const keys = keymap?.keys;
 </script>
 
 <div class="wrapper">
@@ -13,7 +13,12 @@
     {#each $keys as key}
       {#if key.description}
         <div class="command-wrapper">
-          <ShortCut {...key} />
+          <ShortCut
+            alt={key.alt}
+            ctrl={key.ctrl}
+            shift={key.shift}
+            key={key.key}
+          />
         </div>
         <p>{key.description}</p>
       {/if}

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { Inspector } from "three-inspect";
   import {
     BufferGeometry,
     Float32BufferAttribute,
@@ -13,9 +12,10 @@
 
   export let result: Int32Array;
 
-  export let camera: PerspectiveCamera;
-  export let controls: OrbitControls;
-  export let center: Vector3;
+  let camera: PerspectiveCamera;
+  let controls: OrbitControls;
+  let center: Vector3;
+  export let centerCamera: boolean = true;
 
   let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];

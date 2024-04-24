@@ -1,17 +1,14 @@
 <script lang="ts">
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
-  import {
-    MemoryRuntimeExecutor,
-    MemoryRuntimeCache,
-  } from "$lib/runtime-executor";
+  import { WorkerRuntimeExecutor } from "$lib/worker-runtime-executor";
   import { RemoteNodeRegistry } from "$lib/node-registry-client";
   import * as templates from "$lib/graph-templates";
   import type { Graph, Node } from "@nodes/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
-  import { AppSettings, AppSettingTypes } from "$lib/settings/app-settings";
-  import { get, writable, type Writable } from "svelte/store";
+  import { AppSettingTypes, AppSettings } from "$lib/settings/app-settings";
+  import { writable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/panels/Keymap.svelte";
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
@@ -22,27 +19,22 @@
     decodeNestedArray,
     encodeNestedArray,
   } from "@nodes/utils";
-  import type { PerspectiveCamera, Vector3 } from "three";
-  import type { OrbitControls } from "three/examples/jsm/Addons.js";
-  import ActiveNode from "$lib/settings/panels/ActiveNode.svelte";
-  import { createPerformanceStore } from "$lib/performance";
+  import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
+  import Panel from "$lib/settings/Panel.svelte";
+  import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
+  import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
 
-  const nodePerformance = createPerformanceStore();
-
-  const runtimeCache = new MemoryRuntimeCache();
   const nodeRegistry = new RemoteNodeRegistry("");
-  const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
-  runtimeExecutor.perf = nodePerformance;
+  const workerRuntime = new WorkerRuntimeExecutor();
+
+  let performanceData: PerformanceData;
 
   globalThis.decode = decodeNestedArray;
   globalThis.encode = encodeNestedArray;
   globalThis.decodeFloat = decodeFloat;
 
   let res: Int32Array;
-  let viewerCamera: PerspectiveCamera;
-  let viewerControls: OrbitControls;
-  let viewerCenter: Vector3;
   let activeNode: Node | undefined;
 
   let graph = localStorage.getItem("graph")
@@ -56,124 +48,33 @@
   }
 
   let keymap: ReturnType<typeof createKeyMap>;
+  let graphSettings = writable<Record<string, any>>({});
+  let graphSettingTypes = {};
 
-  function handleResult(event: CustomEvent<Graph>) {
+  async function handleResult(event: CustomEvent<Graph>) {
+    const settings = $graphSettings;
+    if (!settings) return;
     try {
-      res = runtimeExecutor.execute(
-        event.detail,
-        get(settingPanels?.graph?.settings),
-      );
+      res = await workerRuntime.execute(event.detail, settings);
+      performanceData = await workerRuntime.getPerformanceData();
     } catch (error) {
       console.log("errors", error);
     }
+  }
 
-    if ($AppSettings.centerCamera && viewerCamera && viewerCenter) {
-      if (
-        Number.isNaN(viewerCenter.x) ||
-        Number.isNaN(viewerCenter.y) ||
-        Number.isNaN(viewerCenter.z)
-      ) {
-        // viewerCenter.set(0, 0, 0);
-      } else {
-        viewerControls.target.copy(viewerCenter);
-      }
-      viewerControls.update();
-    }
+  $: if (AppSettings) {
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
+      graph = templates.grid($AppSettings.amount, $AppSettings.amount);
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.loadTree.callback = () => {
+      graph = templates.tree($AppSettings.amount, $AppSettings.amount);
+    };
   }
 
   function handleSave(event: CustomEvent<Graph>) {
     localStorage.setItem("graph", JSON.stringify(event.detail));
-  }
-
-  let settingPanels: Record<string, any> = {
-    general: {
-      id: "general",
-      icon: "i-tabler-settings",
-      settings: AppSettings,
-      definition: AppSettingTypes,
-    },
-    shortcuts: {},
-    nodeStore: {},
-    graph: {
-      id: "graph",
-      icon: "i-tabler-git-fork",
-      definition: {
-        randomSeed: {
-          type: "boolean",
-          label: "Random Seed",
-          value: true,
-        },
-      },
-    },
-    performance: {
-      id: "performance",
-      icon: "i-tabler-brand-speedtest",
-      props: { store: nodePerformance, title: "Runtime Performance" },
-      component: PerformanceViewer,
-    },
-    activeNode: {
-      id: "Active Node",
-      icon: "i-tabler-adjustments",
-      props: { node: undefined, manager: undefined },
-      component: ActiveNode,
-    },
-  };
-
-  $: if (keymap) {
-    settingPanels.shortcuts = {
-      id: "shortcuts",
-      icon: "i-tabler-keyboard",
-      props: { keymap },
-      component: Keymap,
-    };
-
-    settingPanels = settingPanels;
-  }
-
-  $: if (manager) {
-    settingPanels.activeNode.props.manager = manager;
-    settingPanels.nodeStore = {
-      id: "Node Store",
-      icon: "i-tabler-database",
-      props: { nodeRegistry, manager },
-      component: NodeStore,
-    };
-    settingPanels = settingPanels;
-  }
-
-  $: if (activeNode) {
-    settingPanels.activeNode.props.node = activeNode;
-    settingPanels = settingPanels;
-  } else {
-    settingPanels.activeNode.props.node = undefined;
-    settingPanels = settingPanels;
-  }
-
-  function handleSettings(
-    ev: CustomEvent<{
-      values: Record<string, unknown>;
-      types: Record<string, unknown>;
-    }>,
-  ) {
-    settingPanels.general.definition.debug.stressTest.loadGrid.callback =
-      function () {
-        const store = get(settingPanels.general.settings);
-        graph = templates.grid(store.amount, store.amount);
-      };
-
-    settingPanels.general.definition.debug.stressTest.loadTree.callback =
-      function () {
-        const store = get(settingPanels.general.settings);
-        graph = templates.tree(store.amount);
-      };
-
-    settingPanels.graph.settings = writable(ev.detail.values);
-    settingPanels.graph.definition = {
-      ...settingPanels.graph.definition,
-      ...ev.detail.types,
-    };
-
-    settingPanels = settingPanels;
   }
 </script>
 
@@ -181,29 +82,69 @@
   <header></header>
   <Grid.Row>
     <Grid.Cell>
-      <Viewer
-        bind:controls={viewerControls}
-        bind:center={viewerCenter}
-        bind:camera={viewerCamera}
-        result={res}
-      />
+      <Viewer centerCamera={$AppSettings.centerCamera} result={res} />
     </Grid.Cell>
     <Grid.Cell>
       {#key graph}
         <GraphInterface
+          {graph}
+          registry={nodeRegistry}
           bind:manager
           bind:activeNode
-          registry={nodeRegistry}
-          {graph}
           bind:keymap
           showGrid={$AppSettings?.showNodeGrid}
           snapToGrid={$AppSettings?.snapToGrid}
-          settings={settingPanels?.graph?.settings}
-          on:settings={handleSettings}
+          bind:settings={graphSettings}
+          bind:settingTypes={graphSettingTypes}
           on:result={handleResult}
           on:save={handleSave}
         />
-        <Settings panels={settingPanels}></Settings>
+        <Settings>
+          <Panel id="general" title="General" icon="i-tabler-settings">
+            <NestedSettings
+              id="general"
+              store={AppSettings}
+              settings={AppSettingTypes}
+            />
+          </Panel>
+          <Panel id="node-store" title="Node Store" icon="i-tabler-database">
+            <NodeStore registry={nodeRegistry} />
+          </Panel>
+          <Panel
+            id="performance"
+            title="Performance"
+            icon="i-tabler-brand-speedtest"
+          >
+            {#if performanceData}
+              <PerformanceViewer data={performanceData} />
+            {/if}
+          </Panel>
+          <Panel
+            id="shortcuts"
+            title="Keyboard Shortcuts"
+            icon="i-tabler-keyboard"
+          >
+            {#if keymap}
+              <Keymap {keymap} />
+            {/if}
+          </Panel>
+          <Panel
+            id="graph-settings"
+            title="Graph Settings"
+            icon="i-tabler-brand-git"
+          >
+            {#if Object.keys(graphSettingTypes).length > 0}
+              <GraphSettings type={graphSettingTypes} store={graphSettings} />
+            {/if}
+          </Panel>
+          <Panel
+            id="active-node"
+            title="Node Settings"
+            icon="i-tabler-adjustments"
+          >
+            <ActiveNodeSettings {manager} node={activeNode} />
+          </Panel>
+        </Settings>
       {/key}
     </Grid.Cell>
   </Grid.Row>

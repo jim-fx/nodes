@@ -27,6 +27,8 @@
   export let showGrid = false;
   export let snapToGrid = false;
 
+  export let settingTypes = {};
+
   const updateSettings = debounce((s) => {
     manager.setSettings(s);
   }, 200);
@@ -36,7 +38,8 @@
   }
 
   manager.on("settings", (settings) => {
-    dispatch("settings", settings);
+    settingTypes = settings.types;
+    $settings = settings.values;
   });
 
   manager.on("result", (result) => {

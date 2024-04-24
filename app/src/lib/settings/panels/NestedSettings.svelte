@@ -4,8 +4,12 @@
   import Input from "@nodes/ui";
   import type { Writable } from "svelte/store";
 
+  type Button = { type: "button"; label?: string; callback: () => void };
+
+  type Input = NodeInput | Button;
+
   interface Nested {
-    [key: string]: Nested | NodeInput;
+    [key: string]: (Nested & { __title?: string }) | Input;
   }
 
   export let id: string;
@@ -20,22 +24,23 @@
   export let depth = 0;
 
   const keys = Object.keys(settings).filter((key) => key !== "__title");
-  function isNodeInput(v: NodeInput | Nested): v is NodeInput {
+  function isNodeInput(v: Input | Nested): v is Input {
     return v && "type" in v;
   }
+  console.log({ settings, store });
 </script>
 
-{#if store}
+{#if $store}
   {#each keys as key}
     {@const value = settings[key]}
     <div class="wrapper" class:first-level={depth === 0}>
-      {#if isNodeInput(value)}
+      {#if value !== undefined && isNodeInput(value)}
         <div class="input input-{settings[key].type}">
-          {#if settings[key].type === "button"}
-            <button on:click={() => settings[key]?.callback?.()}
-              >{settings[key].label || key}</button
+          {#if value.type === "button"}
+            <button on:click={() => value?.callback?.()}
+              >{value.label || key}</button
             >
-          {:else if "setting" in value}
+          {:else if "setting" in value && value.setting !== undefined}
             <label for={key}>{settings[key].label || key}</label>
             <Input id={key} input={value} bind:value={$store[value?.setting]} />
           {:else}

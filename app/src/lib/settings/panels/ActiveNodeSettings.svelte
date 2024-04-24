@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Node, NodeInput } from "@nodes/types";
-  import NestedSettings from "../NestedSettings.svelte";
+  import NestedSettings from "./NestedSettings.svelte";
   import { writable } from "svelte/store";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
 
@@ -28,7 +28,7 @@
 
   export let manager: GraphManager;
 
-  export let node: Node;
+  export let node: Node | undefined;
   let nodeDefinition: Record<string, NodeInput> | undefined;
   $: nodeDefinition = node?.tmp?.type
     ? filterInputs(node.tmp.type.inputs)

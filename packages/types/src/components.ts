@@ -33,7 +33,7 @@ export interface RuntimeExecutor {
   * @param graph - The graph to execute
   * @returns The result of the execution
   */
-  execute: (graph: Graph, settings: Record<string, unknown>) => unknown;
+  execute: (graph: Graph, settings: Record<string, unknown>) => Int32Array;
 }
 
 export interface RuntimeCache {

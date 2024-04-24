@@ -4,7 +4,7 @@
   import BreadCrumbs from "./BreadCrumbs.svelte";
   import DraggableNode from "./DraggableNode.svelte";
 
-  export let nodeRegistry: RemoteNodeRegistry;
+  export let registry: RemoteNodeRegistry;
 
   const activeId = localStore<
     `${string}` | `${string}/${string}` | `${string}/${string}/${string}`
@@ -20,7 +20,7 @@
     <div class="header">
       <h3>Users</h3>
     </div>
-    {#await nodeRegistry.fetchUsers()}
+    {#await registry.fetchUsers()}
       <div>Loading...</div>
     {:then users}
       {#each users as user}
@@ -34,7 +34,7 @@
       <div>{error.message}</div>
     {/await}
   {:else if !activeCollection}
-    {#await nodeRegistry.fetchUser(activeUser)}
+    {#await registry.fetchUser(activeUser)}
       <div>Loading...</div>
     {:then user}
       <div class="header">
@@ -68,11 +68,11 @@
       ></button>
       <h3>Nodes</h3>
     </div>
-    {#await nodeRegistry.fetchCollection(`${activeUser}/${activeCollection}`)}
+    {#await registry.fetchCollection(`${activeUser}/${activeCollection}`)}
       <div>Loading...</div>
     {:then collection}
       {#each collection.nodes as node}
-        {#await nodeRegistry.fetchNodeDefinition(node.id)}
+        {#await registry.fetchNodeDefinition(node.id)}
           <div>Loading...</div>
         {:then node}
           <DraggableNode {node} />

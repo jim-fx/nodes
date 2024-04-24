@@ -1,32 +1,33 @@
 <script lang="ts">
-  import type { NodeInput } from "@nodes/types";
-  import type { Writable } from "svelte/store";
   import localStore from "$lib/helpers/localStore";
-  import type { SvelteComponent } from "svelte";
-  import NestedSettings from "./NestedSettings.svelte";
+  import { setContext } from "svelte";
+  import { derived } from "svelte/store";
 
-  export let panels: Record<
+  let panels: Record<
     string,
     {
       icon: string;
       id: string;
-      hidden?: boolean;
-      props?: Record<string, unknown>;
-      component?: typeof SvelteComponent<{}, {}, {}>;
-      definition: Record<string, NodeInput>;
-      settings: Writable<Record<string, unknown>>;
     }
-  >;
+  > = {};
 
   const activePanel = localStore<keyof typeof panels | false>(
     "nodes.settings.activePanel",
     false,
   );
+
   $: keys = panels
     ? (Object.keys(panels) as unknown as (keyof typeof panels)[]).filter(
-        (key) => !!panels[key]?.id && panels[key]?.hidden !== true,
+        (key) => !!panels[key]?.id,
       )
     : [];
+
+  setContext("registerPanel", (id: string, icon: string) => {
+    panels[id] = { id, icon };
+    return derived(activePanel, ($activePanel) => {
+      return $activePanel === id;
+    });
+  });
 
   function setActivePanel(panel: keyof typeof panels | false) {
     if (panel === $activePanel) {
@@ -36,28 +37,6 @@
     } else {
       $activePanel = false;
     }
-  }
-
-  interface Nested {
-    [key: string]: NodeInput | Nested;
-  }
-
-  function constructNested(panel: (typeof panels)[keyof typeof panels]) {
-    const nested: Nested = {};
-
-    for (const key in panel.definition) {
-      const parts = key.split(".");
-      let current = nested;
-      for (let i = 0; i < parts.length; i++) {
-        if (i === parts.length - 1) {
-          current[parts[i]] = panel.definition[key];
-        } else {
-          current[parts[i]] = current[parts[i]] || {};
-          current = current[parts[i]] as Nested;
-        }
-      }
-    }
-    return nested;
   }
 </script>
 
@@ -81,25 +60,7 @@
     {/each}
   </div>
   <div class="content">
-    {#if $activePanel && panels[$activePanel] && panels[$activePanel].hidden !== true}
-      <h1 class="m-0 p-4">{panels[$activePanel].id}</h1>
-      {#key $activePanel}
-        {#if panels[$activePanel]?.component}
-          <svelte:component
-            this={panels[$activePanel].component}
-            {...panels[$activePanel]?.props}
-          />
-        {:else}
-          <div class="flex flex-col">
-            <NestedSettings
-              id={$activePanel}
-              settings={constructNested(panels[$activePanel])}
-              store={panels[$activePanel].settings}
-            />
-          </div>
-        {/if}
-      {/key}
-    {/if}
+    <slot />
   </div>
 </div>
 
