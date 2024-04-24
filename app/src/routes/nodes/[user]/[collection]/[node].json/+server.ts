@@ -11,7 +11,7 @@ export const entries: EntryGenerator = async () => {
   return users.map(user => {
     return user.collections.map(collection => {
       return collection.nodes.map(node => {
-        return { user: user.id, collection: collection.id, node: node.id }
+        return { user: user.id, collection: collection.id.split("/")[1], node: node.id.split("/")[2] }
       });
     })
   }).flat(2);

@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "pnpm build:nodes && pnpm build:app",
-    "build:app": "pnpm -r --filter 'app' build",
+    "build:app": "pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
     "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"

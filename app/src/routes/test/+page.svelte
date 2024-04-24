@@ -2,9 +2,9 @@
   import {
     decodeFloat,
     encodeFloat,
-    decode,
-    encode,
-    concat_encoded,
+    decodeNestedArray,
+    encodeNestedArray,
+    concatEncodedArrays,
   } from "@nodes/utils";
 
   console.clear();
@@ -28,14 +28,14 @@
   }
 
   if (false) {
-    const input_a = encode([1, 2, 3]);
+    const input_a = encodeNestedArray([1, 2, 3]);
     const input_b = 2;
     const input_c = 89;
-    const input_d = encode([4, 5, 6]);
+    const input_d = encodeNestedArray([4, 5, 6]);
 
-    const output = concat_encoded([input_a, input_b, input_c, input_d]);
+    const output = concatNestedArrays([input_a, input_b, input_c, input_d]);
 
-    const decoded = decode(output);
+    const decoded = decodeNestedArray(output);
     console.log("CONCAT", [input_a, input_b, input_c, input_d]);
     console.log(output);
     console.log(decoded);
@@ -84,14 +84,14 @@
     console.log("INPUT");
     console.log(input);
 
-    let encoded = encode(input);
+    let encoded = encodeNestedArray(input);
     // encoded = [];
     console.log("ENCODED");
     console.log(encoded);
 
     encoded = [0, 2, 1, 0, 4, 4, 2, 4, 1, 2, 2, 0, 3, 2, 3, 1, 1, 1, 1];
 
-    const decoded = decode(encoded);
+    const decoded = decodeNestedArray(encoded);
     console.log("DECODED");
     console.log(decoded);
 

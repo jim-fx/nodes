@@ -14,10 +14,10 @@
   },
   "exports": {
     ".": {
-      "types": "./src/lib/index.ts",
-      "svelte": "./src/lib/index.ts"
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js"
     },
-    "./app.css": "./src/lib/app.css"
+    "./app.css": "./dist/app.css"
   },
   "files": [
     "dist",

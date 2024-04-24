@@ -8,7 +8,7 @@ export const entries: EntryGenerator = async () => {
   const users = await registry.getUsers();
   return users.map(user => {
     return user.collections.map(collection => {
-      return { user: user.id, collection: collection.id }
+      return { user: user.id, collection: collection.id.split("/")[1] }
     })
   }).flat(2);
 }
