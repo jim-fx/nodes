@@ -7,6 +7,9 @@ export const AppSettings = localStore("node-settings", {
   snapToGrid: true,
   wireframes: false,
   showIndices: false,
+  showVertices: false,
+  centerCamera: true,
+  showStemLines: false,
 });
 
 const themes = ["dark", "light", "catppuccin", "solarized", "high-contrast", "nord", "dracula"];

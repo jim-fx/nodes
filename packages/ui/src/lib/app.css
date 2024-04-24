@@ -127,7 +127,7 @@ body.theme-nord {
   --layer-3: #5E81AC;
   --active: #8999bd;
   --selected: #b76c3f;
-  --connection: #232731;
+  --connection: #4C566A;
 }
 
 body.theme-dracula {
@@ -137,6 +137,7 @@ body.theme-dracula {
   --layer-1: #44475A;
   --layer-2: #32374D;
   --layer-3: #BD93F9;
+  --connection: #6272A4;
 }
 
 body {

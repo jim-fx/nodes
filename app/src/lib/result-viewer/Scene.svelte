@@ -1,7 +1,17 @@
 <script lang="ts">
   import { T } from "@threlte/core";
-  import { MeshLineGeometry, MeshLineMaterial, Text } from "@threlte/extras";
-  import type { BufferGeometry, PerspectiveCamera, Vector3 } from "three";
+  import {
+    MeshLineGeometry,
+    MeshLineMaterial,
+    Text,
+    useTexture,
+  } from "@threlte/extras";
+  import {
+    Texture,
+    type BufferGeometry,
+    type PerspectiveCamera,
+    type Vector3,
+  } from "three";
   import type { OrbitControls as OrbitControlsType } from "three/addons/controls/OrbitControls.js";
   import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
@@ -13,6 +23,8 @@
 
   export let camera: PerspectiveCamera;
   export let controls: OrbitControlsType;
+
+  const matcap = useTexture("/matcap_green.jpg");
 
   const cameraTransform = localStore<{ camera: number[]; target: number[] }>(
     "nodes.camera.transform",
@@ -58,7 +70,7 @@
 </T.PerspectiveCamera>
 
 <T.DirectionalLight position={[0, 10, 10]} />
-<T.AmbientLight intensity={0.5} />
+<T.AmbientLight intensity={2} />
 
 {#each geometries as geo}
   {#if $AppSettings.showIndices}
@@ -75,13 +87,18 @@
       <T.PointsMaterial size={0.25} />
     </T.Points>
   {/if}
-  <T.Mesh geometry={geo}>
-    <T.MeshStandardMaterial
-      color="green"
-      depthTest={true}
-      wireframe={$AppSettings.wireframe}
-    />
-  </T.Mesh>
+  {#await matcap then value}
+    <T.Mesh geometry={geo}>
+      <T.MeshMatcapMaterial matcap={value} />
+      {#if false}
+        <T.MeshStandardMaterial
+          color="green"
+          depthTest={true}
+          wireframe={$AppSettings.wireframe}
+        />
+      {/if}
+    </T.Mesh>
+  {/await}
 {/each}
 
 {#if $AppSettings.showStemLines && lines}
