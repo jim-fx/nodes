@@ -1,6 +1,6 @@
 use macros::include_definition_file;
 use utils::{
-    encode_float, evaluate_float, geometry::calculate_normals, get_args, set_panic_hook, wrap_arg,
+    encode_float, evaluate_float, geometry::calculate_normals, set_panic_hook, split_args, wrap_arg,
 };
 use wasm_bindgen::prelude::*;
 use web_sys::console;
@@ -13,7 +13,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     set_panic_hook();
 
-    let args = get_args(input);
+    let args = split_args(input);
 
     console::log_1(&format!("WASM(cube): input: {:?} -> {:?}", input, args ).into());
 

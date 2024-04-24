@@ -2,7 +2,7 @@ use macros::include_definition_file;
 use utils::{
     evaluate_float, evaluate_int, evaluate_vec3,
     geometry::{create_multiple_paths, wrap_multiple_paths},
-    get_args, log, reset_call_count, set_panic_hook,
+    log, reset_call_count, set_panic_hook, split_args,
 };
 use wasm_bindgen::prelude::*;
 
@@ -14,7 +14,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     reset_call_count();
 
-    let args = get_args(input);
+    let args = split_args(input);
 
     let amount = evaluate_int(args[1]) as usize;
     let path_resolution = evaluate_int(args[4]) as usize;

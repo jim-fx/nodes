@@ -2,7 +2,7 @@ use macros::include_definition_file;
 use utils::{
     concat_args, evaluate_int,
     geometry::{extrude_path, wrap_path},
-    get_args, log,
+    log, split_args,
 };
 use wasm_bindgen::prelude::*;
 
@@ -12,9 +12,11 @@ include_definition_file!("src/inputs.json");
 pub fn execute(input: &[i32]) -> Vec<i32> {
     utils::set_panic_hook();
 
-    let args = get_args(input);
+    let args = split_args(input);
 
-    let inputs = get_args(args[0]);
+    assert_eq!(args.len(), 2, "Expected 2 arguments, got {}", args.len());
+
+    let inputs = split_args(args[0]);
 
     let resolution = evaluate_int(args[1]) as usize;
 
@@ -28,10 +30,9 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
         if arg_type == 0 {
             // this is path
-            let mut vec = arg.to_vec();
+            let vec = arg.to_vec();
             output.push(vec.clone());
-            let path_data = wrap_path(&mut vec);
-            log!("{:?}", path_data);
+            let path_data = wrap_path(arg);
             let geometry = extrude_path(path_data, resolution);
             output.push(geometry);
         } else if arg_type == 1 {

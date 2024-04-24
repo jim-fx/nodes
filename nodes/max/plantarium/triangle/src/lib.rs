@@ -1,5 +1,5 @@
 use macros::include_definition_file;
-use utils::{decode_float, encode_float, evaluate_int, get_args, wrap_arg};
+use utils::{decode_float, encode_float, evaluate_int, split_args, wrap_arg};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -11,7 +11,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     utils::set_panic_hook();
 
-    let args = get_args(input);
+    let args = split_args(input);
 
     let size = evaluate_int(args[0]);
     let decoded = decode_float(size);

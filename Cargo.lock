@@ -3,7 +3,13 @@
 version = 3
 
 [[package]]
-name = "array"
+name = "autocfg"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1fdabc7756949593fe60f30ec81974b613357de856987752631dea1e3394c80"
+
+[[package]]
+name = "box"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
@@ -17,16 +23,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "autocfg"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1fdabc7756949593fe60f30ec81974b613357de856987752631dea1e3394c80"
-
-[[package]]
-name = "box"
+name = "branch"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
+ "glam",
  "macros",
  "serde",
  "serde-wasm-bindgen",
@@ -111,20 +112,6 @@ dependencies = [
 
 [[package]]
 name = "math"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "macros",
- "serde",
- "serde-wasm-bindgen",
- "utils",
- "wasm-bindgen",
- "wasm-bindgen-test",
- "web-sys",
-]
-
-[[package]]
-name = "max-plantarium-sum"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
@@ -365,20 +352,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "template"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "macros",
- "serde",
- "serde-wasm-bindgen",
- "utils",
- "wasm-bindgen",
- "wasm-bindgen-test",
- "web-sys",
 ]
 
 [[package]]

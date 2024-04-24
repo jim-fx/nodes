@@ -2,8 +2,8 @@ use glam::Vec3;
 use macros::include_definition_file;
 use noise::{core::open_simplex::open_simplex_2d, permutationtable::PermutationTable, Vector2};
 use utils::{
-    concat_args, evaluate_float, evaluate_vec3, geometry::wrap_path, get_args, reset_call_count,
-    set_panic_hook,
+    concat_args, evaluate_float, evaluate_int, evaluate_vec3, geometry::wrap_path_mut,
+    reset_call_count, set_panic_hook, split_args,
 };
 use wasm_bindgen::prelude::*;
 
@@ -19,9 +19,9 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     reset_call_count();
 
-    let args = get_args(input);
+    let args = split_args(input);
 
-    let plants = get_args(args[0]);
+    let plants = split_args(args[0]);
     let scale = (evaluate_float(args[1]) * 0.1) as f64;
     let strength = evaluate_float(args[2]);
     let fix_bottom = evaluate_float(args[3]);
@@ -30,7 +30,17 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let directional_strength = evaluate_vec3(args[5]);
 
+    let depth = evaluate_int(args[6]);
+
     let hasher = PermutationTable::new(seed as u32);
+
+    let mut max_depth = 0;
+    for path_data in plants.iter() {
+        if path_data[2] != 0 {
+            continue;
+        }
+        max_depth = max_depth.max(path_data[3]);
+    }
 
     let output: Vec<Vec<i32>> = plants
         .iter()
@@ -43,7 +53,11 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                 return path_data;
             }
 
-            let path = wrap_path(&mut path_data);
+            if path_data[3] < (max_depth - depth + 1) {
+                return path_data;
+            }
+
+            let path = wrap_path_mut(&mut path_data);
 
             let p0 = Vec3::new(path.points[0], path.points[1], path.points[2]);
 

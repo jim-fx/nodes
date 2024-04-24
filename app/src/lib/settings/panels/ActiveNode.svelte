@@ -64,11 +64,17 @@
 </script>
 
 {#if node}
-  {#if nodeDefinition && store && Object.keys(nodeDefinition).length > 0}
-    <NestedSettings id="activeNodeSettings" settings={nodeDefinition} {store} />
-  {:else}
-    <p class="mx-4">Active Node has no Settings</p>
-  {/if}
+  {#key node.id}
+    {#if nodeDefinition && store && Object.keys(nodeDefinition).length > 0}
+      <NestedSettings
+        id="activeNodeSettings"
+        settings={nodeDefinition}
+        {store}
+      />
+    {:else}
+      <p class="mx-4">Active Node has no Settings</p>
+    {/if}
+  {/key}
 {:else}
   <p class="mx-4">No active node</p>
 {/if}

@@ -49,10 +49,25 @@
   let keymap: ReturnType<typeof createKeyMap>;
 
   function handleResult(event: CustomEvent<Graph>) {
-    res = runtimeExecutor.execute(event.detail, get(settings?.graph?.settings));
+    try {
+      res = runtimeExecutor.execute(
+        event.detail,
+        get(settingPanels?.graph?.settings),
+      );
+    } catch (error) {
+      console.log("errors", error);
+    }
 
     if ($AppSettings.centerCamera && viewerCamera && viewerCenter) {
-      viewerControls.target.copy(viewerCenter);
+      if (
+        Number.isNaN(viewerCenter.x) ||
+        Number.isNaN(viewerCenter.y) ||
+        Number.isNaN(viewerCenter.z)
+      ) {
+        // viewerCenter.set(0, 0, 0);
+      } else {
+        viewerControls.target.copy(viewerCenter);
+      }
       viewerControls.update();
     }
   }
@@ -61,7 +76,7 @@
     localStorage.setItem("graph", JSON.stringify(event.detail));
   }
 
-  let settings: Record<string, any> = {
+  let settingPanels: Record<string, any> = {
     general: {
       id: "general",
       icon: "i-tabler-settings",
@@ -90,33 +105,33 @@
   };
 
   $: if (keymap) {
-    settings.shortcuts = {
+    settingPanels.shortcuts = {
       id: "shortcuts",
       icon: "i-tabler-keyboard",
       props: { keymap },
       component: Keymap,
     };
 
-    settings = settings;
+    settingPanels = settingPanels;
   }
 
   $: if (manager) {
-    settings.activeNode.props.manager = manager;
-    settings.nodeStore = {
+    settingPanels.activeNode.props.manager = manager;
+    settingPanels.nodeStore = {
       id: "Node Store",
       icon: "i-tabler-database",
       props: { nodeRegistry, manager },
       component: NodeStore,
     };
-    settings = settings;
+    settingPanels = settingPanels;
   }
 
   $: if (activeNode) {
-    settings.activeNode.props.node = activeNode;
-    settings = settings;
+    settingPanels.activeNode.props.node = activeNode;
+    settingPanels = settingPanels;
   } else {
-    settings.activeNode.props.node = undefined;
-    settings = settings;
+    settingPanels.activeNode.props.node = undefined;
+    settingPanels = settingPanels;
   }
 
   function handleSettings(
@@ -125,25 +140,25 @@
       types: Record<string, unknown>;
     }>,
   ) {
-    settings.general.definition.debug.stressTest.loadGrid.callback =
+    settingPanels.general.definition.debug.stressTest.loadGrid.callback =
       function () {
-        const store = get(settings.general.settings);
+        const store = get(settingPanels.general.settings);
         graph = templates.grid(store.amount, store.amount);
       };
 
-    settings.general.definition.debug.stressTest.loadTree.callback =
+    settingPanels.general.definition.debug.stressTest.loadTree.callback =
       function () {
-        const store = get(settings.general.settings);
+        const store = get(settingPanels.general.settings);
         graph = templates.tree(store.amount);
       };
 
-    settings.graph.settings = writable(ev.detail.values);
-    settings.graph.definition = {
-      ...settings.graph.definition,
+    settingPanels.graph.settings = writable(ev.detail.values);
+    settingPanels.graph.definition = {
+      ...settingPanels.graph.definition,
       ...ev.detail.types,
     };
 
-    settings = settings;
+    settingPanels = settingPanels;
   }
 </script>
 
@@ -168,12 +183,12 @@
           bind:keymap
           showGrid={$AppSettings?.showNodeGrid}
           snapToGrid={$AppSettings?.snapToGrid}
-          settings={settings?.graph?.settings}
+          settings={settingPanels?.graph?.settings}
           on:settings={handleSettings}
           on:result={handleResult}
           on:save={handleSave}
         />
-        <Settings panels={settings}></Settings>
+        <Settings panels={settingPanels}></Settings>
       {/key}
     </Grid.Cell>
   </Grid.Row>

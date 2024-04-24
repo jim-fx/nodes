@@ -15,7 +15,7 @@
       "step": 0.05,
       "value": 0.8
     },
-    "thiccness": {
+    "thickness": {
       "type": "float",
       "min": 0,
       "max": 1,
@@ -47,7 +47,7 @@
       "value": 1
     },
     "depth": {
-      "type": "float",
+      "type": "integer",
       "hidden": true,
       "min": 1,
       "value": 1,

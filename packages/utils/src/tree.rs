@@ -1,6 +1,6 @@
 use crate::decode_float;
 
-pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
+pub fn split_args(args: &[i32]) -> Vec<&[i32]> {
     println!("-------------------");
     println!("{:?}", args);
 
@@ -47,20 +47,58 @@ pub fn get_args(args: &[i32]) -> Vec<&[i32]> {
             }
             i += 2;
             continue;
+        } else if depth == 1 {
+            out_args.push(&args[i..i + 1]);
+            println!("-> {:?}", &args[i..i + 1]);
+            start_index = i + 1;
         } else {
-            if depth == 1 {
-                out_args.push(&args[i..i + 1]);
-                println!("-> {:?}", &args[i..i + 1]);
-                start_index = i + 1;
-            } else {
-                println!("{}", val);
-            }
+            println!("{}", val);
         }
 
         i += 1;
     }
 
     out_args
+}
+
+pub fn concat_arg_vecs(data: Vec<Vec<i32>>) -> Vec<i32> {
+    let mut total_length = 4; // Start with 4 to account for [0, 1] at the start and [1, 1] at the end
+
+    // Calculate the total length first to avoid reallocations
+    for vec in &data {
+        if vec.len() == 1 {
+            total_length += 1;
+        } else {
+            total_length += vec.len(); // +4 for [0, 1] and [1, 1] per inner vec
+        }
+    }
+
+    let mut result = Vec::with_capacity(total_length);
+
+    // Add [0, 1] initially
+    result.push(0);
+    result.push(1);
+
+    let mut last_closing_bracket = 1;
+
+    // Process each vector
+    for vec in data {
+        if vec.len() == 1 {
+            result.push(vec[0]);
+            result[last_closing_bracket] += 1;
+            continue;
+        } else {
+            result.extend(vec);
+            last_closing_bracket = result.len() - 1;
+            result[last_closing_bracket] = 1;
+        }
+    }
+
+    // Add [1, 1] at the end
+    result.push(1);
+    result.push(1);
+
+    result
 }
 
 pub fn concat_args(mut data: Vec<&[i32]>) -> Vec<i32> {
@@ -131,7 +169,7 @@ pub fn evaluate_vec3(input_args: &[i32]) -> Vec<f32> {
         ];
     }
 
-    let args = get_args(input_args);
+    let args = split_args(input_args);
 
     assert!(
         args.len() == 3,
@@ -156,7 +194,7 @@ pub fn evaluate_int(input_args: &[i32]) -> i32 {
         return input_args[0];
     }
 
-    let args = get_args(input_args);
+    let args = split_args(input_args);
 
     let mut resolved: Vec<i32> = Vec::new();
 
@@ -192,7 +230,7 @@ mod tests {
             1053609165, 54,
         ];
 
-        let args = get_args(&input);
+        let args = split_args(&input);
         println!("{:?}", args[0]);
 
         assert_eq!(args[0].len(), 29);
@@ -219,7 +257,7 @@ mod tests {
         let input_a = vec![0, 4, 1, 2, 3, 0, 7, 1, 2, 4, 2, 4, 1, 1, 1, 1];
         // -> [1, 2, 3, [1, 2, 4, 2, 4]]
 
-        let args = get_args(&input_a);
+        let args = split_args(&input_a);
 
         println!("{:?}", args);
 
@@ -235,7 +273,7 @@ mod tests {
         let input_b = vec![0, 3, 7, 1, 0, 4, 4, 2, 4, 1, 2, 2, 0, 3, 2, 3, 1, 1, 1, 1];
         // -> [1,[4,2,4], 2, [2,3]]
 
-        let args = get_args(&input_b);
+        let args = split_args(&input_b);
 
         assert_eq!(args.len(), 5);
         assert_eq!(args[0], [7]);
@@ -258,14 +296,14 @@ mod tests {
         // 2 -> first number
         // 3 -> second number
 
-        let args = get_args(&input);
+        let args = split_args(&input);
 
         assert_eq!(args.len(), 4);
         assert_eq!(args[0], [0]);
         assert_eq!(args[1], [2]);
         assert_eq!(args[3], [0, 3, 0, 128]);
 
-        let nested_args = get_args(args[2]);
+        let nested_args = split_args(args[2]);
 
         assert_eq!(nested_args.len(), 4);
     }

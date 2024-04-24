@@ -7,7 +7,6 @@
     useTexture,
   } from "@threlte/extras";
   import {
-    Texture,
     type BufferGeometry,
     type PerspectiveCamera,
     type Vector3,
@@ -16,7 +15,6 @@
   import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
   import localStore from "$lib/helpers/localStore";
-  import { Inspector } from "three-inspect";
 
   export let geometries: BufferGeometry[];
   export let lines: Vector3[][];
@@ -89,13 +87,9 @@
   {/if}
   {#await matcap then value}
     <T.Mesh geometry={geo}>
-      <T.MeshMatcapMaterial matcap={value} />
+      <T.MeshMatcapMaterial matcap={value} wireframe={$AppSettings.wireframe} />
       {#if false}
-        <T.MeshStandardMaterial
-          color="green"
-          depthTest={true}
-          wireframe={$AppSettings.wireframe}
-        />
+        <T.MeshStandardMaterial color="green" depthTest={true} />
       {/if}
     </T.Mesh>
   {/await}

@@ -1,15 +1,15 @@
 use crate::log;
 
+static GEOMETRY_HEADER_SIZE: usize = 3;
+// 0: geometry type = 0
+// 1: vertex amount
+// 2: face amount
+
 pub struct GeometryData<'a> {
     pub positions: &'a mut [f32], // View into `data`
     pub normals: &'a mut [f32],   // View into `data`
     pub faces: &'a mut [i32],     // View into `data`
 }
-
-static GEOMETRY_HEADER_SIZE: usize = 3;
-// 0: geometry type = 0
-// 1: vertex amount
-// 2: face amount
 
 pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32> {
     let amount = GEOMETRY_HEADER_SIZE // definition (type, vertex_amount, face_amount)
