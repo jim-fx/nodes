@@ -1,0 +1,25 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: 'main'
+
+jobs:
+  build_site:
+    runs-on: ubuntu-latest
+    container: jimfx/nodes:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: build
+        run: pnpm run build
+
+      - name: Upload Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # this should match the `pages` option in your adapter-static options
+          path: 'app/build/'
