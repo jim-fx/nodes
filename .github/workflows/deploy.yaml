@@ -23,7 +23,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
           chmod 600 /tmp/id_rsa
           mkdir -p ~/.config/rclone
-          echo -e "[sftp-remote]\ntype = sftp\nhost = ${SSH_HOST}\nuser = ${SSH_USER}\nport = ${SSH_PORT}\nkey_file = /tmp/id_rsa" > ~/.config/rclone/rclone.conf
+          echo "[sftp-remote]\ntype = sftp\nhost = ${SSH_HOST}\nuser = ${SSH_USER}\nport = ${SSH_PORT}\nkey_file = /tmp/id_rsa" > ~/.config/rclone/rclone.conf
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ vars.SSH_HOST }}
