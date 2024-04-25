@@ -1,47 +1,27 @@
 use crate::decode_float;
 
 pub fn split_args(args: &[i32]) -> Vec<&[i32]> {
-    println!("-------------------");
-    println!("{:?}", args);
-
     let mut out_args: Vec<&[i32]> = Vec::new();
     let mut depth = 0;
     let mut i = 0;
     let mut start_index = 0;
-    let mut nbi = 0;
+    let mut next_bracket_index = 0;
     let len = args.len();
 
     while i < len {
-        print!("{:2} ", i);
-        let val = args[i];
-        let is_bracket = i == nbi;
-        let is_opening_bracket = val == 0;
-        if i >= len - 1 {
-            break;
-        }
-        if is_bracket {
-            nbi = i + args[i + 1] as usize + 1;
-            if !is_opening_bracket {
-                depth -= 1;
-            }
-        }
-
-        for _ in 0..depth {
-            print!("-");
-        }
-
-        if is_bracket {
-            if is_opening_bracket {
+        // check if we are at a bracket
+        if i == next_bracket_index {
+            next_bracket_index = i + args[i + 1] as usize + 1;
+            // check if the bracket is opening
+            if args[i] == 0 {
                 if depth == 1 {
                     start_index = i;
                 }
-                println!("[ {}", start_index);
                 depth += 1;
             } else {
-                println!("] {}", start_index);
+                depth -= 1;
                 if depth == 1 {
                     out_args.push(&args[start_index..i + 2]);
-                    println!("-> {:?}", &args[start_index..i + 2]);
                     start_index = i + 2;
                 }
             }
@@ -49,12 +29,8 @@ pub fn split_args(args: &[i32]) -> Vec<&[i32]> {
             continue;
         } else if depth == 1 {
             out_args.push(&args[i..i + 1]);
-            println!("-> {:?}", &args[i..i + 1]);
             start_index = i + 1;
-        } else {
-            println!("{}", val);
         }
-
         i += 1;
     }
 

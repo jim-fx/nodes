@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, useTask } from "@threlte/core";
+  import { T } from "@threlte/core";
   import {
     MeshLineGeometry,
     MeshLineMaterial,
@@ -9,41 +9,21 @@
   import {
     type Group,
     type BufferGeometry,
-    type PerspectiveCamera,
     Vector3,
     type Vector3Tuple,
     Box3,
   } from "three";
-  import type { OrbitControls as OrbitControlsType } from "three/addons/controls/OrbitControls.js";
-  import { OrbitControls } from "@threlte/extras";
   import { AppSettings } from "../settings/app-settings";
-  import localStore from "$lib/helpers/localStore";
+  import Camera from "./Camera.svelte";
 
   export let geometries: BufferGeometry[];
   export let lines: Vector3[][];
   let geos: Group;
 
-  let camera: PerspectiveCamera;
-  let controls: OrbitControlsType;
   export let centerCamera: boolean = true;
+  let center = new Vector3(0, 4, 0);
 
   const matcap = useTexture("/matcap_green.jpg");
-
-  const cameraTransform = localStore<{
-    camera: Vector3Tuple;
-    target: Vector3Tuple;
-  }>("nodes.camera.transform", {
-    camera: [0, 0, 10],
-    target: [0, 0, 0],
-  });
-
-  function saveCameraState() {
-    if (!camera) return;
-    $cameraTransform = {
-      camera: camera.position.toArray(),
-      target: controls.target.toArray(),
-    };
-  }
 
   function getPosition(geo: BufferGeometry, i: number) {
     return [
@@ -53,61 +33,20 @@
     ] as Vector3Tuple;
   }
 
-  let cameraTarget: Vector3;
-  let duration = 0;
-  let totalDuration = 5;
-  const { start, stop, started } = useTask((delta) => {
-    duration += delta;
-    if (!cameraTarget) {
-      stop();
-      return;
-    }
-    // This function will be executed on every frame
-    if (duration >= totalDuration) {
-      controls.target.copy(cameraTarget);
-      stop();
-      controls.update();
-    } else {
-      const t = duration / totalDuration;
-      controls.target.lerp(cameraTarget, t);
-      controls.update();
-    }
-  });
-  stop();
-
   $: if (geometries && geos && centerCamera) {
-    const aabb = new Box3();
-    aabb.setFromObject(geos);
-    const newCenter = aabb.getCenter(new Vector3());
-    if (
-      newCenter &&
-      newCenter.x !== 0 &&
-      newCenter.y !== 0 &&
-      newCenter.z !== 0
-    ) {
-      cameraTarget = newCenter;
-      duration = 0;
-      start();
-    }
+    const aabb = new Box3().setFromObject(geos);
+    center = aabb
+      .getCenter(new Vector3())
+      .max(new Vector3(-4, -4, -4))
+      .min(new Vector3(4, 4, 4));
   }
 </script>
+
+<Camera {center} {centerCamera} />
 
 {#if $AppSettings.showGrid}
   <T.GridHelper args={[20, 20]} />
 {/if}
-
-<T.PerspectiveCamera
-  bind:ref={camera}
-  position={$cameraTransform.camera}
-  makeDefault
-  fov={50}
->
-  <OrbitControls
-    bind:ref={controls}
-    on:change={saveCameraState}
-    target={$cameraTransform.target}
-  />
-</T.PerspectiveCamera>
 
 <T.DirectionalLight position={[0, 10, 10]} />
 <T.AmbientLight intensity={2} />
