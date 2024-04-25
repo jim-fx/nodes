@@ -1,7 +1,7 @@
 import { MemoryRuntimeExecutor } from "./runtime-executor";
 import { RemoteNodeRegistry } from "./node-registry-client";
 import type { Graph } from "@nodes/types";
-import { createPerformanceStore } from "./performance";
+import { createPerformanceStore } from "./performance/store";
 
 const nodeRegistry = new RemoteNodeRegistry("");
 const executor = new MemoryRuntimeExecutor(nodeRegistry);

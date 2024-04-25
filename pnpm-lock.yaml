@@ -102,53 +102,25 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1(@types/node@20.12.7)(jsdom@24.0.0)(sass@1.75.0)
 
-  nodes/max/plantarium/array: {}
-
-  nodes/max/plantarium/array/pkg: {}
-
   nodes/max/plantarium/box: {}
 
-  nodes/max/plantarium/box/pkg: {}
-
-  nodes/max/plantarium/branches: {}
-
-  nodes/max/plantarium/branches/pkg: {}
+  nodes/max/plantarium/branch: {}
 
   nodes/max/plantarium/float: {}
 
-  nodes/max/plantarium/float/pkg: {}
-
   nodes/max/plantarium/math: {}
-
-  nodes/max/plantarium/math/pkg: {}
 
   nodes/max/plantarium/noise: {}
 
-  nodes/max/plantarium/noise/pkg: {}
-
   nodes/max/plantarium/output: {}
-
-  nodes/max/plantarium/output/pkg: {}
 
   nodes/max/plantarium/random: {}
 
-  nodes/max/plantarium/random/pkg: {}
-
   nodes/max/plantarium/stem: {}
-
-  nodes/max/plantarium/stem/pkg: {}
-
-  nodes/max/plantarium/sum: {}
-
-  nodes/max/plantarium/sum/pkg: {}
 
   nodes/max/plantarium/triangle: {}
 
-  nodes/max/plantarium/triangle/pkg: {}
-
   nodes/max/plantarium/vec3: {}
-
-  nodes/max/plantarium/vec3/pkg: {}
 
   packages/types:
     dependencies:

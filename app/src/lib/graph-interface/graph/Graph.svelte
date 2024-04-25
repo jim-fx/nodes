@@ -52,7 +52,6 @@
   let mouseDown: null | [number, number] = null;
   let mouseDownId = -1;
   let boxSelection = false;
-  let loaded = false;
   const cameraDown = [0, 0];
   let cameraPosition: [number, number, number] = [0, 0, 4];
   let addMenuPosition: [number, number] | null = null;
@@ -783,7 +782,7 @@
     event.preventDefault();
     isDragging = false;
     if (!event.dataTransfer) return;
-    const nodeId: NodeId = event.dataTransfer.getData("data/node-id");
+    const nodeId = event.dataTransfer.getData("data/node-id") as NodeId;
 
     if (nodeId) {
       let mx = event.clientX - rect.x;
@@ -805,7 +804,7 @@
       }
 
       const pos = projectScreenToWorld(mx, my);
-      graph.load([nodeId]).then(() => {
+      graph.registry.load([nodeId]).then(() => {
         graph.createNode({
           type: nodeId,
           props,

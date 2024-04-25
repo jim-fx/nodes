@@ -5,7 +5,7 @@ export const AppSettings = localStore("node-settings", {
   showGrid: true,
   showNodeGrid: true,
   snapToGrid: true,
-  wireframes: false,
+  wireframe: false,
   showIndices: false,
   showVertices: false,
   centerCamera: true,

@@ -114,3 +114,15 @@ export function withSubComponents<A, B extends Record<string, any>>(
   });
   return component as A & B;
 }
+
+export function humanizeNumber(number: number): string {
+  const suffixes = ["", "K", "M", "B", "T"];
+  if (number < 1000) {
+    return number.toString();
+  }
+  const numLength = Math.floor(Math.log10(number)) + 1;
+  const baseIndex = Math.floor((numLength - 1) / 3);
+  const base = Math.pow(10, baseIndex * 3);
+  const rounded = Math.round(number / base * 10) / 10;
+  return rounded + suffixes[baseIndex];
+}

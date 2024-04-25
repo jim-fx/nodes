@@ -1,35 +1,33 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import {
-    BufferGeometry,
-    Float32BufferAttribute,
-    PerspectiveCamera,
-    Vector3,
-  } from "three";
+  import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
   import { decodeFloat } from "@nodes/utils";
-  import type { OrbitControls } from "three/examples/jsm/Addons.js";
+  import type { PerformanceStore } from "$lib/performance";
 
   export let result: Int32Array;
 
-  let camera: PerspectiveCamera;
-  let controls: OrbitControls;
-  let center: Vector3;
   export let centerCamera: boolean = true;
+  export let perf: PerformanceStore;
 
   let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];
 
+  let totalVertices = 0;
+  let totalFaces = 0;
+
   function createGeometryFromEncodedData(
     encodedData: Int32Array,
+    geometry = new BufferGeometry(),
   ): BufferGeometry {
-    const geometry = new BufferGeometry();
-
     // Extract data from the encoded array
     let index = 0;
     const geometryType = encodedData[index++];
     const vertexCount = encodedData[index++];
     const faceCount = encodedData[index++];
+
+    totalVertices += vertexCount;
+    totalFaces += faceCount;
 
     // Indices
     const indicesEnd = index + faceCount * 3;
@@ -119,8 +117,17 @@
   }
 
   $: if (result) {
-    const inputs = parse_args(result);
+    perf?.startRun();
 
+    let a = performance.now();
+    const inputs = parse_args(result);
+    let b = performance.now();
+    perf?.addPoint("parse-args", b - a);
+
+    totalVertices = 0;
+    totalFaces = 0;
+
+    a = performance.now();
     lines = inputs
       .map((input) => {
         if (input[0] === 0) {
@@ -128,26 +135,27 @@
         }
       })
       .filter(Boolean) as Vector3[][];
+    b = performance.now();
+    perf?.addPoint("create-lines", b - a);
 
-    center = new Vector3();
-
+    a = performance.now();
     geometries = inputs
-      .map((input) => {
+      .map((input, i) => {
         if (input[0] === 1) {
-          const geo = createGeometryFromEncodedData(input);
-          geo?.computeBoundingSphere();
-          if (geo.boundingSphere) {
-            center.add(geo.boundingSphere.center);
-          }
-          return geo;
+          return createGeometryFromEncodedData(input, geometries[i]);
         }
       })
       .filter(Boolean) as BufferGeometry[];
+    b = performance.now();
+    perf?.addPoint("create-geometries", b - a);
 
-    center = center.divideScalar(geometries.length);
+    perf?.addPoint("total-vertices", totalVertices);
+    perf?.addPoint("total-faces", totalFaces);
+
+    perf?.stopRun();
   }
 </script>
 
 <Canvas>
-  <Scene bind:camera bind:controls {geometries} {lines} />
+  <Scene {geometries} {lines} {centerCamera} />
 </Canvas>

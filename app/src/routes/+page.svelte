@@ -24,11 +24,14 @@
   import Panel from "$lib/settings/Panel.svelte";
   import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
+  import { createPerformanceStore } from "$lib/performance";
+  import { type PerformanceData } from "$lib/performance/store";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const workerRuntime = new WorkerRuntimeExecutor();
 
   let performanceData: PerformanceData;
+  let viewerPerformance = createPerformanceStore();
 
   globalThis.decode = decodeNestedArray;
   globalThis.encode = encodeNestedArray;
@@ -51,14 +54,37 @@
   let graphSettings = writable<Record<string, any>>({});
   let graphSettingTypes = {};
 
-  async function handleResult(event: CustomEvent<Graph>) {
-    const settings = $graphSettings;
-    if (!settings) return;
+  let isWorking = false;
+
+  let unfinished:
+    | {
+        graph: Graph;
+        settings: Record<string, any>;
+      }
+    | undefined;
+
+  async function handleResult(_graph: Graph, _settings: Record<string, any>) {
+    if (!_settings) return;
+    if (isWorking) {
+      unfinished = {
+        graph: _graph,
+        settings: _settings,
+      };
+      return;
+    }
+    isWorking = true;
     try {
-      res = await workerRuntime.execute(event.detail, settings);
+      res = await workerRuntime.execute(_graph, _settings);
       performanceData = await workerRuntime.getPerformanceData();
+      isWorking = false;
     } catch (error) {
       console.log("errors", error);
+    }
+
+    if (unfinished) {
+      let d = unfinished;
+      unfinished = undefined;
+      handleResult(d.graph, d.settings);
     }
   }
 
@@ -69,7 +95,7 @@
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.loadTree.callback = () => {
-      graph = templates.tree($AppSettings.amount, $AppSettings.amount);
+      graph = templates.tree($AppSettings.amount);
     };
   }
 
@@ -82,7 +108,11 @@
   <header></header>
   <Grid.Row>
     <Grid.Cell>
-      <Viewer centerCamera={$AppSettings.centerCamera} result={res} />
+      <Viewer
+        centerCamera={$AppSettings.centerCamera}
+        result={res}
+        perf={viewerPerformance}
+      />
     </Grid.Cell>
     <Grid.Cell>
       {#key graph}
@@ -96,7 +126,7 @@
           snapToGrid={$AppSettings?.snapToGrid}
           bind:settings={graphSettings}
           bind:settingTypes={graphSettingTypes}
-          on:result={handleResult}
+          on:result={(ev) => handleResult(ev.detail, $graphSettings)}
           on:save={handleSave}
         />
         <Settings>
@@ -116,7 +146,10 @@
             icon="i-tabler-brand-speedtest"
           >
             {#if performanceData}
-              <PerformanceViewer data={performanceData} />
+              <PerformanceViewer
+                data={performanceData}
+                viewer={$viewerPerformance}
+              />
             {/if}
           </Panel>
           <Panel
