@@ -29,12 +29,15 @@ function updateColors() {
   lastStyle = hash;
 }
 
-updateColors();
-
 export const colors = readable(store, set => {
 
   updateColors();
   set(store);
+
+  setTimeout(() => {
+    updateColors();
+    set(store);
+  }, 1000);
 
   window.onload = function () { updateColors(); set(store) };
 
