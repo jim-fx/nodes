@@ -1,7 +1,12 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+  import {
+    BufferAttribute,
+    BufferGeometry,
+    Float32BufferAttribute,
+    Vector3,
+  } from "three";
   import { decodeFloat } from "@nodes/utils";
   import type { PerformanceStore } from "$lib/performance";
   import { AppSettings } from "$lib/settings/app-settings";
@@ -50,11 +55,42 @@
     );
     index = index + vertexCount * 3;
 
-    // Add data to geometry
-    geometry.setIndex([...indices]);
-    geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-    geometry.computeVertexNormals();
+    if (
+      geometry.userData?.faceCount !== faceCount ||
+      geometry.userData?.vertexCount !== vertexCount
+    ) {
+      // Add data to geometry
+      geometry.setIndex([...indices]);
+    }
+
+    let posAttribute = geometry.getAttribute(
+      "position",
+    ) as BufferAttribute | null;
+
+    if (posAttribute && posAttribute.count === vertexCount) {
+      posAttribute.set(vertices, 0);
+      posAttribute.needsUpdate = true;
+    } else {
+      geometry.setAttribute(
+        "position",
+        new Float32BufferAttribute(vertices, 3),
+      );
+    }
+
+    const normalsAttribute = geometry.getAttribute(
+      "normal",
+    ) as BufferAttribute | null;
+    if (normalsAttribute && normalsAttribute.count === vertexCount) {
+      normalsAttribute.set(normals, 0);
+      normalsAttribute.needsUpdate = true;
+    } else {
+      geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
+    }
+
+    geometry.userData = {
+      vertexCount,
+      faceCount,
+    };
 
     return geometry;
   }
@@ -151,6 +187,10 @@
       .filter(Boolean) as BufferGeometry[];
     b = performance.now();
     perf?.addPoint("create-geometries", b - a);
+
+    for (const geometry of geometries) {
+      geometry.needsUpdate = true;
+    }
 
     perf?.addPoint("total-vertices", totalVertices);
     perf?.addPoint("total-faces", totalFaces);
