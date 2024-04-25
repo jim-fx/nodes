@@ -108,6 +108,8 @@ importers:
 
   nodes/max/plantarium/float: {}
 
+  nodes/max/plantarium/gravity: {}
+
   nodes/max/plantarium/math: {}
 
   nodes/max/plantarium/noise: {}

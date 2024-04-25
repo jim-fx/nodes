@@ -109,7 +109,7 @@
             activeNodeId = node.id;
           }}
         >
-          {node.id}
+          {node.id.split("/").at(-1)}
         </div>
       {/each}
     </div>

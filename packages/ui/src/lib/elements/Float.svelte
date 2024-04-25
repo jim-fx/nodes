@@ -64,6 +64,14 @@
       inputEl.focus();
     }
 
+    if (value > max) {
+      max = value;
+    }
+
+    if (value < min) {
+      min = value;
+    }
+
     // setTimeout(() => {
     //   if (value >= 0) {
     //     max = getBoundingValue(value);

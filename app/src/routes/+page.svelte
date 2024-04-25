@@ -183,7 +183,7 @@
             id="graph-settings"
             title="Graph Settings"
             classes="text-blue-400"
-            icon="i-tabler-brand-git"
+            icon="i-custom-graph"
           >
             {#if Object.keys(graphSettingTypes).length > 0}
               <GraphSettings type={graphSettingTypes} store={graphSettings} />

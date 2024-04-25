@@ -54,9 +54,7 @@ export function encodeNestedArray(array: SparseArray): number[] {
         encoded.push(0, 1, 1, 1);
       } else {
         // Recursively encode non-empty arrays
-        console.log("recursing", item);
         const child = encodeNestedArray(item);
-        console.log("recursed", child);
         encoded.push(...child);
       }
       // Update missingBracketIndex to the position of the newly added bracket
@@ -67,7 +65,6 @@ export function encodeNestedArray(array: SparseArray): number[] {
       // Update the distance for the last opened bracket
       if (missingBracketIndex) encoded[missingBracketIndex] = index + 2;
     }
-    console.log(encoded, item);
   }
 
   return [...encoded, 1, 1];

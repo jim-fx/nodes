@@ -6,7 +6,7 @@
   export let icon: string = "";
   export let title = "";
   export let classes = "";
-  export let hidden: boolean;
+  export let hidden: boolean | undefined = undefined;
 
   const setVisibility =
     getContext<(id: string, visible: boolean) => void>("setVisibility");
@@ -21,7 +21,6 @@
     >("registerPanel");
 
   let visible = registerPanel(id, icon, classes);
-  console.log(id, $visible, hidden);
 </script>
 
 {#if $visible}
