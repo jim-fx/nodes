@@ -213,15 +213,22 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         let cachedValue = this.cache?.get(inputHash);
         if (cachedValue !== undefined) {
           log.log(`Using cached value for ${node_type.id || node.id}`);
+          this.perf?.addPoint("cache-hit", 1);
           results[node.id] = cachedValue as Int32Array;
           continue;
         }
+        this.perf?.addPoint("cache-hit", 0);
 
         log.group(`executing ${node_type.id || node.id}`);
         log.log(`Inputs:`, inputs);
         a = performance.now();
         results[node.id] = node_type.execute(encoded_inputs);
         b = performance.now();
+
+        if (this.cache) {
+          this.cache.set(inputHash, results[node.id]);
+        }
+
         this.perf?.addPoint("node/" + node_type.id, b - a);
         log.log("Result:", results[node.id]);
         log.groupEnd();
@@ -237,7 +244,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // return the result of the parent of the output node
     const res = results[outputNode.id];
 
-    this.perf?.addPoint("total", performance.now() - a0);
+    this.perf?.addPoint("runtime", performance.now() - a0);
 
     this.perf?.stopRun();
 

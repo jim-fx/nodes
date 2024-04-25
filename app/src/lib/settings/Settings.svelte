@@ -8,6 +8,8 @@
     {
       icon: string;
       id: string;
+      classes: string;
+      visible?: boolean;
     }
   > = {};
 
@@ -22,8 +24,13 @@
       )
     : [];
 
-  setContext("registerPanel", (id: string, icon: string) => {
-    panels[id] = { id, icon };
+  setContext("setVisibility", (id: string, visible: boolean) => {
+    panels[id].visible = visible;
+    panels = { ...panels };
+  });
+
+  setContext("registerPanel", (id: string, icon: string, classes: string) => {
+    panels[id] = { id, icon, classes };
     return derived(activePanel, ($activePanel) => {
       return $activePanel === id;
     });
@@ -50,13 +57,15 @@
       <span class="absolute i-tabler-chevron-left w-6 h-6 block"></span>
     </button>
     {#each keys as panel (panels[panel].id)}
-      <button
-        class="tab"
-        class:active={panel === $activePanel}
-        on:click={() => setActivePanel(panel)}
-      >
-        <i class={`block w-6 h-6 ${panels[panel].icon}`} />
-      </button>
+      {#if panels[panel].visible !== false}
+        <button
+          class="tab {panels[panel].classes}"
+          class:active={panel === $activePanel}
+          on:click={() => setActivePanel(panel)}
+        >
+          <span class={`block w-6 h-6 ${panels[panel].icon}`} />
+        </button>
+      {/if}
     {/each}
   </div>
   <div class="content">
@@ -81,12 +90,6 @@
     min-width: 350px;
   }
 
-  h1 {
-    border-bottom: solid thin var(--outline);
-    box-sizing: border-box;
-    height: 70px;
-  }
-
   .content {
     background: var(--layer-1);
     position: relative;
@@ -103,35 +106,35 @@
     padding: 5px;
     border-radius: 0px;
     background: none;
-    color: var(--outline);
     border: none;
     display: flex;
     align-items: center;
     border-bottom: solid thin var(--outline);
     border-left: solid thin var(--outline);
+    background: var(--layer-0);
+  }
+
+  .tabs > button > span {
+    opacity: 0.5;
   }
 
   .tabs > button.active {
-    color: var(--layer-3);
     background: var(--layer-1);
   }
 
-  .visible .tabs > button {
-    border-left: none;
+  .tabs > button.active span {
+    opacity: 1;
   }
 
   .visible .tabs {
     margin-left: -1px;
-    border-left: solid thin var(--outline);
   }
 
-  .visible > .tabs button:first-child {
+  .visible > .tabs button:first-child > span {
     transform: scaleX(-1);
   }
 
   .visible {
     transform: translateX(0);
-    border-left: solid thin var(--outline);
-    background: var(--layer-0);
   }
 </style>

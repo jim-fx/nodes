@@ -17,9 +17,6 @@
 
 <div class="wrapper">
   {#if !activeUser}
-    <div class="header">
-      <h3>Users</h3>
-    </div>
     {#await registry.fetchUsers()}
       <div>Loading...</div>
     {:then users}
@@ -37,15 +34,6 @@
     {#await registry.fetchUser(activeUser)}
       <div>Loading...</div>
     {:then user}
-      <div class="header">
-        <button
-          on:click={() => {
-            $activeId = "";
-          }}
-          class="i-tabler-arrow-back"
-        ></button>
-        <h3>Collections</h3>
-      </div>
       {#each user.collections as collection}
         <button
           on:click={() => {
@@ -59,15 +47,6 @@
       <div>{error.message}</div>
     {/await}
   {:else if !activeNode}
-    <div class="header">
-      <button
-        on:click={() => {
-          $activeId = activeUser;
-        }}
-        class="i-tabler-arrow-back"
-      ></button>
-      <h3>Nodes</h3>
-    </div>
     {#await registry.fetchCollection(`${activeUser}/${activeCollection}`)}
       <div>Loading...</div>
     {:then collection}

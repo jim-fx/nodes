@@ -42,6 +42,7 @@ export function createPerformanceStore(): PerformanceStore {
       });
 
       data.runs.push(currentRun);
+      data.runs = data.runs.slice(-100);
       currentRun = undefined;
       if (set) set(data);
     }

@@ -5,17 +5,27 @@
   export let id: string;
   export let icon: string = "";
   export let title = "";
+  export let classes = "";
+  export let hidden: boolean;
+
+  const setVisibility =
+    getContext<(id: string, visible: boolean) => void>("setVisibility");
+
+  $: if (typeof hidden === "boolean") {
+    setVisibility(id, !hidden);
+  }
 
   const registerPanel =
-    getContext<(id: string, icon: string) => Readable<boolean>>(
-      "registerPanel",
-    );
+    getContext<
+      (id: string, icon: string, classes: string) => Readable<boolean>
+    >("registerPanel");
 
-  let visible = registerPanel(id, icon);
+  let visible = registerPanel(id, icon, classes);
+  console.log(id, $visible, hidden);
 </script>
 
 {#if $visible}
-  <div class="wrapper">
+  <div class="wrapper" class:hidden>
     {#if title}
       <header>
         <h3>{title}</h3>

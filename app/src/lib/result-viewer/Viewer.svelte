@@ -154,8 +154,6 @@
   }
 
   $: if (result) {
-    perf?.startRun();
-
     let a = performance.now();
     const inputs = parse_args(result);
     let b = performance.now();
@@ -194,8 +192,6 @@
 
     perf?.addPoint("total-vertices", totalVertices);
     perf?.addPoint("total-faces", totalFaces);
-
-    perf?.stopRun();
   }
 </script>
 

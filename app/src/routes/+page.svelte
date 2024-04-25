@@ -74,12 +74,23 @@
     }
     isWorking = true;
     try {
+      let a = performance.now();
       res = await workerRuntime.execute(_graph, _settings);
-      performanceData = await workerRuntime.getPerformanceData();
+      let b = performance.now();
+      let perfData = await workerRuntime.getPerformanceData();
+      let lastRun = perfData.runs?.at(-1);
+      if (lastRun) {
+        perfData.total["worker-transfer"] = b - a - lastRun.runtime[0];
+        lastRun["worker-transfer"] = [b - a - lastRun.runtime[0]];
+      }
+      performanceData = perfData;
       isWorking = false;
     } catch (error) {
       console.log("errors", error);
     }
+
+    viewerPerformance.stopRun();
+    viewerPerformance.startRun();
 
     if (unfinished) {
       let d = unfinished;
@@ -137,21 +148,6 @@
               settings={AppSettingTypes}
             />
           </Panel>
-          <Panel id="node-store" title="Node Store" icon="i-tabler-database">
-            <NodeStore registry={nodeRegistry} />
-          </Panel>
-          <Panel
-            id="performance"
-            title="Performance"
-            icon="i-tabler-brand-speedtest"
-          >
-            {#if performanceData}
-              <PerformanceViewer
-                data={performanceData}
-                viewer={$viewerPerformance}
-              />
-            {/if}
-          </Panel>
           <Panel
             id="shortcuts"
             title="Keyboard Shortcuts"
@@ -162,8 +158,31 @@
             {/if}
           </Panel>
           <Panel
+            id="node-store"
+            classes="text-green-400"
+            title="Node Store"
+            icon="i-tabler-database"
+          >
+            <NodeStore registry={nodeRegistry} />
+          </Panel>
+          <Panel
+            id="performance"
+            title="Performance"
+            classes="text-red-400"
+            hidden={!$AppSettings.showPerformancePanel}
+            icon="i-tabler-brand-speedtest"
+          >
+            {#if performanceData}
+              <PerformanceViewer
+                data={performanceData}
+                viewer={$viewerPerformance}
+              />
+            {/if}
+          </Panel>
+          <Panel
             id="graph-settings"
             title="Graph Settings"
+            classes="text-blue-400"
             icon="i-tabler-brand-git"
           >
             {#if Object.keys(graphSettingTypes).length > 0}
@@ -173,6 +192,7 @@
           <Panel
             id="active-node"
             title="Node Settings"
+            classes="text-blue-400"
             icon="i-tabler-adjustments"
           >
             <ActiveNodeSettings {manager} node={activeNode} />
@@ -182,6 +202,8 @@
     </Grid.Cell>
   </Grid.Row>
 </div>
+
+<span class="font-red" />
 
 <style>
   header {

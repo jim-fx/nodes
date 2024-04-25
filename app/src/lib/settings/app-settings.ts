@@ -8,6 +8,7 @@ export const AppSettings = localStore("node-settings", {
   wireframe: false,
   showIndices: false,
   showVertices: false,
+  showPerformancePanel: false,
   centerCamera: true,
   showStemLines: false,
   amount: 5
@@ -65,6 +66,11 @@ export const AppSettingTypes = {
     showIndices: {
       type: "boolean",
       label: "Show Indices",
+      value: false,
+    },
+    showPerformancePanel: {
+      type: "boolean",
+      label: "Show Performance Panel",
       value: false,
     },
     showVertices: {
