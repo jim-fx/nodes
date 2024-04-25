@@ -4,6 +4,7 @@
   import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
   import { decodeFloat } from "@nodes/utils";
   import type { PerformanceStore } from "$lib/performance";
+  import { AppSettings } from "$lib/settings/app-settings";
 
   export let result: Int32Array;
 
@@ -107,9 +108,9 @@
     const amount = (encodedData.length - 1) / 4;
 
     for (let i = 0; i < amount; i++) {
-      const x = decodeFloat(encodedData[1 + i * 4 + 0]);
-      const y = decodeFloat(encodedData[1 + i * 4 + 1]);
-      const z = decodeFloat(encodedData[1 + i * 4 + 2]);
+      const x = decodeFloat(encodedData[2 + i * 4 + 0]);
+      const y = decodeFloat(encodedData[2 + i * 4 + 1]);
+      const z = decodeFloat(encodedData[2 + i * 4 + 2]);
       positions.push(new Vector3(x, y, z));
     }
 
@@ -127,16 +128,18 @@
     totalVertices = 0;
     totalFaces = 0;
 
-    a = performance.now();
-    lines = inputs
-      .map((input) => {
-        if (input[0] === 0) {
-          return createLineGeometryFromEncodedData(input);
-        }
-      })
-      .filter(Boolean) as Vector3[][];
-    b = performance.now();
-    perf?.addPoint("create-lines", b - a);
+    if ($AppSettings.showStemLines) {
+      a = performance.now();
+      lines = inputs
+        .map((input) => {
+          if (input[0] === 0) {
+            return createLineGeometryFromEncodedData(input);
+          }
+        })
+        .filter(Boolean) as Vector3[][];
+      b = performance.now();
+      perf?.addPoint("create-lines", b - a);
+    }
 
     a = performance.now();
     geometries = inputs

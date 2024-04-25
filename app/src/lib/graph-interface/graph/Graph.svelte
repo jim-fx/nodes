@@ -778,6 +778,10 @@
 
   let isDragging = false;
 
+  function handleMouseLeave() {
+    isDragging = false;
+  }
+
   function handleDrop(event: DragEvent) {
     event.preventDefault();
     isDragging = false;
@@ -865,17 +869,21 @@
   on:mouseup={handleMouseUp}
   on:dragenter={handleDragEnter}
   on:dragover={handlerDragOver}
+  on:dragexit={handleDragEnd}
   on:drop={handleDrop}
+  on:mouseleave={handleMouseLeave}
   on:keydown={keymap.handleKeyboardEvent}
   on:mousedown={handleMouseDown}
 >
   <input
     type="file"
     accept="application/wasm"
+    id="drop-zone"
     disabled={!isDragging}
     on:dragend={handleDragEnd}
     on:dragleave={handleDragEnd}
   />
+  <label for="drop-zone" />
 
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
@@ -928,10 +936,28 @@
     z-index: 1;
     width: 100%;
     height: 100%;
-    background: red;
-    opacity: 0.5;
+    background: var(--layer-2);
+    opacity: 0;
   }
   input:disabled {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+  }
+  input:disabled + label {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  label {
+    position: absolute;
+    z-index: 1;
+    top: 10px;
+    left: 10px;
+    border-radius: 5px;
+    width: calc(100% - 20px);
+    height: calc(100% - 25px);
+    border: dashed 4px var(--layer-2);
+    background: var(--layer-1);
+    opacity: 0.5;
   }
 </style>
