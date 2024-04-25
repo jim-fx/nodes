@@ -1,3 +1,5 @@
+use glam::{vec3, vec4, Vec3, Vec4, Vec4Swizzles};
+
 // 0: node-type, stem: 0
 // 1: depth
 static PATH_HEADER_SIZE: usize = 2;
@@ -206,4 +208,113 @@ pub fn get_direction_at_path(path: &[f32], alpha: f32) -> [f32; 3] {
     }
 
     [dx / norm, dy / norm, dz / norm]
+}
+
+/// A function that interpolates a position along a path given by `points_data` at a position
+/// specified by `alpha` (ranging from 0.0 to 1.0), calculates an orthogonal vector to the path,
+/// and returns the direction of the path at that point.
+///
+/// Arguments:
+///     * `points_data` - A slice of `f32` containing x, y, z coordinates and thickness for each point defining the path.
+///     * `alpha` - A float from 0.0 to 1.0 indicating the relative position along the path.
+///
+/// Returns:
+///     * A tuple containing the interpolated position along the path as Vec4 (including thickness),
+///       a vector orthogonal to the path, and the direction of the path at that position.
+pub fn interpolate_along_path(points_data: &[f32], _alpha: f32) -> (Vec4, Vec3, Vec3) {
+    let alpha = _alpha.min(0.999999).max(0.000001);
+    assert!(
+        points_data.len() % 4 == 0,
+        "The points data must be a multiple of 4."
+    );
+
+    let num_points = points_data.len() / 4;
+    assert!(
+        num_points > 1,
+        "There must be at least two points to define a path."
+    );
+
+    // Calculate the total length of the path and the lengths of each segment.
+    let mut segment_lengths = Vec::with_capacity(num_points - 1);
+    let mut total_length = 0.0;
+    for i in 0..num_points - 1 {
+        let start_index = i * 4;
+        let end_index = (i + 1) * 4;
+        let start_point = vec3(
+            points_data[start_index],
+            points_data[start_index + 1],
+            points_data[start_index + 2],
+        );
+        let end_point = vec3(
+            points_data[end_index],
+            points_data[end_index + 1],
+            points_data[end_index + 2],
+        );
+        let length = (end_point - start_point).length();
+        segment_lengths.push(length);
+        total_length += length;
+    }
+
+    // Find the target length along the path corresponding to `alpha`.
+    let target_length = alpha * total_length;
+    let mut accumulated_length = 0.0;
+
+    // Find the segment that contains the point at `target_length`.
+    for (i, &length) in segment_lengths.iter().enumerate() {
+        if accumulated_length + length >= target_length {
+            // Calculate the position within this segment.
+            let segment_alpha = (target_length - accumulated_length) / length;
+            let start_index = i * 4;
+            let end_index = (i + 1) * 4;
+            let start_point = vec4(
+                points_data[start_index],
+                points_data[start_index + 1],
+                points_data[start_index + 2],
+                points_data[start_index + 3],
+            );
+            let end_point = vec4(
+                points_data[end_index],
+                points_data[end_index + 1],
+                points_data[end_index + 2],
+                points_data[end_index + 3],
+            );
+            let position = start_point + (end_point - start_point) * segment_alpha;
+
+            // Calculate the tangent vector to the path at this segment.
+            let tangent = (end_point.xyz() - start_point.xyz()).normalize();
+
+            // Calculate an orthogonal vector. Assume using the global up vector (0, 1, 0)
+            let global_up = vec3(0.0, 1.0, 0.0);
+            let orthogonal = tangent.cross(global_up).normalize();
+
+            // If the orthogonal vector is zero, choose another axis.
+            let orthogonal = if orthogonal.length_squared() == 0.0 {
+                tangent.cross(vec3(1.0, 0.0, 0.0)).normalize()
+            } else {
+                orthogonal
+            };
+
+            return (position, orthogonal, tangent);
+        }
+        accumulated_length += length;
+    }
+
+    // As a fallback for numerical precision issues, use the last point and a default orthogonal vector.
+    let last_start_index = (num_points - 2) * 4;
+    let last_end_index = (num_points - 1) * 4;
+    let last_start_point = vec4(
+        points_data[last_start_index],
+        points_data[last_start_index + 1],
+        points_data[last_start_index + 2],
+        points_data[last_start_index + 3],
+    );
+    let last_end_point = vec4(
+        points_data[last_end_index],
+        points_data[last_end_index + 1],
+        points_data[last_end_index + 2],
+        points_data[last_end_index + 3],
+    );
+    let last_tangent = (last_end_point.xyz() - last_start_point.xyz()).normalize();
+    let last_orthogonal = last_tangent.cross(vec3(0.0, 1.0, 0.0)).normalize();
+    (last_end_point, last_orthogonal, last_tangent)
 }

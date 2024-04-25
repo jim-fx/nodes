@@ -1,10 +1,10 @@
-use std::f32::consts::PI;
-
-use glam::Vec3;
 use macros::include_definition_file;
+use std::f32::consts::PI;
 use utils::{
     concat_arg_vecs, evaluate_float, evaluate_int,
-    geometry::{create_path, get_direction_at_path, get_point_at_path, wrap_path, wrap_path_mut},
+    geometry::{
+        create_path, interpolate_along_path, rotate_vector_by_angle, wrap_path, wrap_path_mut,
+    },
     log, set_panic_hook, split_args,
 };
 use wasm_bindgen::prelude::*;
@@ -51,42 +51,35 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
             let length = evaluate_float(args[1]);
             let thickness = evaluate_float(args[2]);
-            let offset_single = evaluate_float(args[3]);
+            let offset_single = if i % 2 == 0 {
+                evaluate_float(args[3])
+            } else {
+                0.0
+            };
 
-            // log!("a: {}, length: {}, thickness: {}, offset_single: {}, lowest_branch: {}, highest_branch: {}", a, length, thickness, offset_single, lowest_branch, highest_branch);
-
-            // log!("a: {}, length: {}, thickness: {}, offset_single: {}, lowest_branch: {}, highest_branch: {}", a, length, thickness, offset_single, lowest_branch, highest_branch);
             let root_alpha = (a * (highest_branch - lowest_branch) + lowest_branch)
                 .min(1.0)
                 .max(0.0);
 
-            let is_left = i % 2 == 0;
+            let (branch_origin, orthogonal, direction) = interpolate_along_path(
+                path.points,
+                root_alpha + (offset_single - 0.5) * 6.0 / resolution as f32,
+            );
 
-            let branch_origin = get_point_at_path(path.points, root_alpha);
-            //const [_vx, , _vz] = interpolateSkeletonVec(stem.skeleton, a);
-            let direction_slice = get_direction_at_path(path.points, root_alpha);
-            let direction = Vec3::from_slice(&direction_slice).normalize();
-
-            let rotation_angle = if is_left { PI } else { -PI };
+            let rotation_angle = (evaluate_float(args[9]) * PI / 180.0) * i as f32;
 
             // check if diration contains NaN
-            if direction[0].is_nan() || direction[1].is_nan() || direction[2].is_nan() {
+            if orthogonal[0].is_nan() || orthogonal[1].is_nan() || orthogonal[2].is_nan() {
                 log!(
-                    "BRANCH direction contains NaN: {:?}, slice: {:?} branch_origin: {:?}, branch: {}",
+                    "BRANCH direction contains NaN: {:?}, branch_origin: {:?}, branch: {}",
                     direction,
-                    direction_slice,
                     branch_origin,
                     i
                 );
                 continue;
             }
 
-            let branch_direction = Vec3::from_slice(&[
-                direction[0] * rotation_angle.cos() - direction[2] * rotation_angle.sin(),
-                0.0,
-                direction[0] * rotation_angle.sin() + direction[2] * rotation_angle.cos(),
-            ])
-            .normalize();
+            let branch_direction = rotate_vector_by_angle(orthogonal, direction, rotation_angle);
 
             log!(
                 "BRANCH depth: {}, branch_origin: {:?}, direction_at: {:?}, branch_direction: {:?}",

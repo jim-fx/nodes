@@ -33,7 +33,7 @@ pub fn extrude_path(input_path: PathData, res_x: usize) -> Vec<i32> {
         let position_offset = i * res_x;
 
         let pos = Vec3::new(path[i * 4], path[i * 4 + 1], path[i * 4 + 2]);
-        let thickness = path[i * 4 + 3];
+        let thickness = path[i * 4 + 3].max(0.000001);
 
         // Get direction of the current segment
         let segment_dir = (if i == 0 {
