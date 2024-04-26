@@ -7,11 +7,9 @@
     Float32BufferAttribute,
     Vector3,
   } from "three";
-  import { decodeFloat } from "@nodes/utils";
+  import { decodeFloat, fastHashArrayBuffer } from "@nodes/utils";
   import type { PerformanceStore } from "$lib/performance";
   import { AppSettings } from "$lib/settings/app-settings";
-
-  export let result: Int32Array;
 
   export let centerCamera: boolean = true;
   export let perf: PerformanceStore;
@@ -21,6 +19,22 @@
 
   let totalVertices = 0;
   let totalFaces = 0;
+
+  function fastArrayHash(arr: ArrayBuffer) {
+    let ints = new Uint8Array(arr);
+
+    const sampleDistance = Math.max(Math.floor(ints.length / 100), 1);
+    const sampleCount = Math.floor(ints.length / sampleDistance);
+
+    let hash = new Uint8Array(sampleCount);
+
+    for (let i = 0; i < sampleCount; i++) {
+      const index = i * sampleDistance;
+      hash[i] = ints[index];
+    }
+
+    return fastHashArrayBuffer(hash.buffer);
+  }
 
   function createGeometryFromEncodedData(
     encodedData: Int32Array,
@@ -47,6 +61,10 @@
       vertexCount * 3,
     );
     index = index + vertexCount * 3;
+    let hash = fastArrayHash(vertices);
+    if (geometry.userData?.hash === hash) {
+      return geometry;
+    }
 
     const normals = new Float32Array(
       encodedData.buffer,
@@ -90,6 +108,7 @@
     geometry.userData = {
       vertexCount,
       faceCount,
+      hash,
     };
 
     return geometry;
@@ -153,11 +172,11 @@
     return positions;
   }
 
-  $: if (result) {
+  export const update = function updateGeometries(result: Int32Array) {
     let a = performance.now();
     const inputs = parse_args(result);
     let b = performance.now();
-    perf?.addPoint("parse-args", b - a);
+    perf?.addPoint("split-result", b - a);
 
     totalVertices = 0;
     totalFaces = 0;
@@ -185,14 +204,9 @@
       .filter(Boolean) as BufferGeometry[];
     b = performance.now();
     perf?.addPoint("create-geometries", b - a);
-
-    for (const geometry of geometries) {
-      geometry.needsUpdate = true;
-    }
-
     perf?.addPoint("total-vertices", totalVertices);
     perf?.addPoint("total-faces", totalFaces);
-  }
+  };
 </script>
 
 <Canvas>

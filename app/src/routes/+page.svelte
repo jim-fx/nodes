@@ -14,11 +14,6 @@
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
-  import {
-    decodeFloat,
-    decodeNestedArray,
-    encodeNestedArray,
-  } from "@nodes/utils";
   import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
   import Panel from "$lib/settings/Panel.svelte";
@@ -26,27 +21,21 @@
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
   import { createPerformanceStore } from "$lib/performance";
   import { type PerformanceData } from "$lib/performance/store";
-  import { RemoteRuntimeExecutor } from "$lib/remote-runtime-executor";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const workerRuntime = new WorkerRuntimeExecutor();
-  // const remoteRuntime = new RemoteRuntimeExecutor("/runtime");
 
   let performanceData: PerformanceData;
   let viewerPerformance = createPerformanceStore();
 
-  globalThis.decode = decodeNestedArray;
-  globalThis.encode = encodeNestedArray;
-  globalThis.decodeFloat = decodeFloat;
-
   let res: Int32Array;
   let activeNode: Node | undefined;
+
+  let updateViewer: (arg: Int32Array) => void;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.plant;
-
-  console.log({ graph });
 
   let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
@@ -80,8 +69,9 @@
     try {
       let a = performance.now();
       // res = await remoteRuntime.execute(_graph, _settings);
-      res = await workerRuntime.execute(_graph, _settings);
+      let res = await workerRuntime.execute(_graph, _settings);
       let b = performance.now();
+      updateViewer(res);
       let perfData = await workerRuntime.getPerformanceData();
       let lastRun = perfData.runs?.at(-1);
       if (lastRun) {
@@ -125,7 +115,7 @@
   <Grid.Row>
     <Grid.Cell>
       <Viewer
-        result={res}
+        bind:update={updateViewer}
         perf={viewerPerformance}
         centerCamera={$AppSettings.centerCamera}
       />

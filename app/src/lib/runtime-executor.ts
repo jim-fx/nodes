@@ -1,5 +1,5 @@
 import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor, NodeInput } from "@nodes/types";
-import { concatEncodedArrays, encodeFloat, fastHashArray } from "@nodes/utils"
+import { concatEncodedArrays, encodeFloat, fastHashArrayBuffer } from "@nodes/utils"
 import { createLogger } from "./helpers";
 import type { RuntimeCache } from "@nodes/types";
 import type { PerformanceStore } from "./performance";
@@ -138,7 +138,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     const [outputNode, nodes] = await this.addMetaData(graph);
     let b = performance.now();
 
-    this.perf?.addPoint("metadata", b - a);
+    this.perf?.addPoint("collect-metadata", b - a);
 
     /*
     * Here we sort the nodes into buckets, which we then execute one by one
@@ -211,7 +211,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         b = performance.now();
         this.perf?.addPoint("encoded-inputs", b - a);
 
-        let inputHash = `node-${node.id}-${fastHashArray(encoded_inputs)}`;
+        a = performance.now();
+        let inputHash = `node-${node.id}-${fastHashArrayBuffer(encoded_inputs)}`;
+        b = performance.now();
+        this.perf?.addPoint("hash-inputs", b - a);
         let cachedValue = this.cache?.get(inputHash);
         if (cachedValue !== undefined) {
           log.log(`Using cached value for ${node_type.id || node.id}`);

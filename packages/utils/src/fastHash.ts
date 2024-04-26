@@ -83,8 +83,8 @@ function sha256(data?: string | Uint8Array) {
   return { add, digest };
 }
 
-export function fastHashArray(arr: Int32Array): string {
-  return sha256(new Uint8Array(arr.buffer)).digest();
+export function fastHashArrayBuffer(buffer: ArrayBuffer): string {
+  return sha256(new Uint8Array(buffer)).digest();
 }
 
 // Shamelessly copied from

@@ -13,7 +13,7 @@ export interface NodeRegistry {
   * @throws An error if the nodes could not be loaded
   * @remarks This method should be called before calling getNode or getAllNodes
   */
-  load: (nodeIds: (NodeId | string)[]) => Promise<NodeDefinition[]>;
+  load: (nodeIds: NodeId[]) => Promise<NodeDefinition[]>;
   /**
    * Get a node by id
    * @param id - The id of the node to get
