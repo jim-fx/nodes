@@ -1,9 +1,32 @@
 <script lang="ts">
   export let points: number[];
 
-  $: max = Math.max(...points);
-  $: min = Math.min(...points);
+  export let type = "ms";
+  export let title = "Performance";
+  export let max: number | undefined = undefined;
+  export let min: number | undefined = undefined;
+
+  function getMax(m?: number) {
+    if (type === "%") {
+      return 100;
+    }
+
+    if (m !== undefined) {
+      if (m < 1) {
+        return Math.floor(m * 100) / 100;
+      }
+      if (m < 10) {
+        return Math.floor(m * 10) / 10;
+      }
+      return Math.floor(m);
+    }
+
+    return 1;
+  }
+
   function constructPath() {
+    max = max !== undefined ? max : Math.max(...points);
+    min = min !== undefined ? min : Math.min(...points);
     return points
       .map((point, i) => {
         const x = (i / (points.length - 1)) * 100;
@@ -15,11 +38,13 @@
 </script>
 
 <div class="wrapper">
-  <p>Runtime Execution</p>
-  <span class="min">{min}ms</span>
-  <span class="max">{max}ms</span>
+  <p>{title}</p>
+  <span class="min">{Math.floor(min || 0)}{type}</span>
+  <span class="max">{getMax(max)}{type}</span>
   <svg preserveAspectRatio="none" viewBox="0 0 100 100">
-    <polyline vector-effect="non-scaling-stroke" points={constructPath()} />
+    {#key points}
+      <polyline vector-effect="non-scaling-stroke" points={constructPath()} />
+    {/key}
   </svg>
 </div>
 

@@ -17,9 +17,6 @@
   let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];
 
-  let totalVertices = 0;
-  let totalFaces = 0;
-
   function fastArrayHash(arr: ArrayBuffer) {
     let ints = new Uint8Array(arr);
 
@@ -41,13 +38,10 @@
     geometry = new BufferGeometry(),
   ): BufferGeometry {
     // Extract data from the encoded array
-    let index = 0;
-    const geometryType = encodedData[index++];
+    let index = 1;
+    // const geometryType = encodedData[index++];
     const vertexCount = encodedData[index++];
     const faceCount = encodedData[index++];
-
-    totalVertices += vertexCount;
-    totalFaces += faceCount;
 
     // Indices
     const indicesEnd = index + faceCount * 3;
@@ -62,8 +56,22 @@
     );
     index = index + vertexCount * 3;
     let hash = fastArrayHash(vertices);
+    let posAttribute = geometry.getAttribute(
+      "position",
+    ) as BufferAttribute | null;
+
     if (geometry.userData?.hash === hash) {
       return geometry;
+    }
+
+    if (posAttribute && posAttribute.count === vertexCount) {
+      posAttribute.set(vertices, 0);
+      posAttribute.needsUpdate = true;
+    } else {
+      geometry.setAttribute(
+        "position",
+        new Float32BufferAttribute(vertices, 3),
+      );
     }
 
     const normals = new Float32Array(
@@ -79,20 +87,6 @@
     ) {
       // Add data to geometry
       geometry.setIndex([...indices]);
-    }
-
-    let posAttribute = geometry.getAttribute(
-      "position",
-    ) as BufferAttribute | null;
-
-    if (posAttribute && posAttribute.count === vertexCount) {
-      posAttribute.set(vertices, 0);
-      posAttribute.needsUpdate = true;
-    } else {
-      geometry.setAttribute(
-        "position",
-        new Float32BufferAttribute(vertices, 3),
-      );
     }
 
     const normalsAttribute = geometry.getAttribute(
@@ -172,14 +166,13 @@
     return positions;
   }
 
-  export const update = function updateGeometries(result: Int32Array) {
+  export let result: Int32Array;
+  $: result && updateGeometries();
+  function updateGeometries() {
     let a = performance.now();
     const inputs = parse_args(result);
     let b = performance.now();
     perf?.addPoint("split-result", b - a);
-
-    totalVertices = 0;
-    totalFaces = 0;
 
     if ($AppSettings.showStemLines) {
       a = performance.now();
@@ -194,11 +187,17 @@
       perf?.addPoint("create-lines", b - a);
     }
 
+    let totalVertices = 0;
+    let totalFaces = 0;
+
     a = performance.now();
     geometries = inputs
       .map((input, i) => {
         if (input[0] === 1) {
-          return createGeometryFromEncodedData(input, geometries[i]);
+          let geo = createGeometryFromEncodedData(input);
+          totalVertices += geo.userData.vertexCount;
+          totalFaces += geo.userData.faceCount;
+          return geo;
         }
       })
       .filter(Boolean) as BufferGeometry[];
@@ -206,7 +205,7 @@
     perf?.addPoint("create-geometries", b - a);
     perf?.addPoint("total-vertices", totalVertices);
     perf?.addPoint("total-faces", totalFaces);
-  };
+  }
 </script>
 
 <Canvas>

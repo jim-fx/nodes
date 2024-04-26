@@ -45,7 +45,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   perf?: PerformanceStore;
 
-  constructor(private registry: NodeRegistry, private cache?: RuntimeCache) { }
+  constructor(private registry: NodeRegistry, private cache?: RuntimeCache<Int32Array>) { }
 
   private async getNodeDefinitions(graph: Graph) {
 
@@ -215,6 +215,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         let inputHash = `node-${node.id}-${fastHashArrayBuffer(encoded_inputs)}`;
         b = performance.now();
         this.perf?.addPoint("hash-inputs", b - a);
+
         let cachedValue = this.cache?.get(inputHash);
         if (cachedValue !== undefined) {
           log.log(`Using cached value for ${node_type.id || node.id}`);
@@ -253,6 +254,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     this.perf?.stopRun();
 
+    if (this.cache) {
+      this.cache.size = sortedNodes.length * 2;
+    }
+
     return res as unknown as Int32Array;
 
   }
@@ -261,15 +266,18 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
 export class MemoryRuntimeCache implements RuntimeCache {
 
-  private cache: Record<string, unknown> = {};
+  private cache: [string, unknown][] = [];
+  size = 50;
+
   get<T>(key: string): T | undefined {
-    return this.cache[key] as T;
+    return this.cache.find(([k]) => k === key)?.[1] as T;
   }
   set<T>(key: string, value: T): void {
-    this.cache[key] = value;
+    this.cache.push([key, value]);
+    this.cache = this.cache.slice(-this.size);
   }
   clear(): void {
-    this.cache = {};
+    this.cache = [];
   }
 
 }

@@ -1,26 +1,24 @@
 import { readable, type Readable } from "svelte/store";
 
-export type PerformanceData = {
-  total: Record<string, number>;
-  runs: Record<string, number[]>[];
-}
+export type PerformanceData = Record<string, number[]>[];
 
 export interface PerformanceStore extends Readable<PerformanceData> {
   startRun(): void;
   stopRun(): void;
   addPoint(name: string, value?: number): void;
+  mergeData(data: PerformanceData[number]): void;
   get: () => PerformanceData;
 }
 
 export function createPerformanceStore(): PerformanceStore {
 
-  let data: PerformanceData = { total: {}, runs: [] };
+  let data: PerformanceData = [];
 
   let currentRun: Record<string, number[]> | undefined;
 
   let set: (v: PerformanceData) => void;
 
-  const { subscribe } = readable<PerformanceData>({ total: {}, runs: [] }, (_set) => {
+  const { subscribe } = readable<PerformanceData>([], (_set) => {
     set = _set;
   });
 
@@ -30,19 +28,8 @@ export function createPerformanceStore(): PerformanceStore {
 
   function stopRun() {
     if (currentRun) {
-      // Calculate total
-      Object.keys(currentRun).forEach((name) => {
-        if (!currentRun?.[name]?.length) return;
-        let runTotal = currentRun[name].reduce((a, b) => a + b, 0) / currentRun[name].length;
-        if (!data.total[name]) {
-          data.total[name] = runTotal;
-        } else {
-          data.total[name] = (data.total[name] + runTotal) / 2;
-        }
-      });
-
-      data.runs.push(currentRun);
-      data.runs = data.runs.slice(-100);
+      data.push(currentRun);
+      data = data.slice(-100);
       currentRun = undefined;
       if (set) set(data);
     }
@@ -58,11 +45,26 @@ export function createPerformanceStore(): PerformanceStore {
     return data;
   }
 
+  function mergeData(newData: PerformanceData[number]) {
+
+    let r = currentRun;
+    if (!r) return;
+
+    Object.keys(newData).forEach((name) => {
+      if (name in r) {
+        r[name].push(...newData[name]);
+      } else {
+        r[name] = newData[name];
+      }
+    });
+  }
+
   return {
     subscribe,
     startRun,
     stopRun,
     addPoint,
+    mergeData,
     get
   }
 }

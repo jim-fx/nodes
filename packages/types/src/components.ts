@@ -36,19 +36,26 @@ export interface RuntimeExecutor {
   execute: (graph: Graph, settings: Record<string, unknown>) => Promise<Int32Array>;
 }
 
-export interface RuntimeCache {
+export interface RuntimeCache<T = unknown> {
+
+  /**
+  * The maximum number of items that can be stored in the cache
+  * @remarks When the cache size exceeds this value, the oldest items should be removed
+  */
+  size: number;
+
   /**
    * Get the value for the given key
    * @param key - The key to get the value for
    * @returns The value for the given key, or undefined if no such value exists
    */
-  get: (key: string) => unknown | undefined;
+  get: (key: string) => T | undefined;
   /**
    * Set the value for the given key
    * @param key - The key to set the value for
    * @param value - The value to set
    */
-  set: (key: string, value: unknown) => void;
+  set: (key: string, value: T) => void;
   /**
    * Clear the cache
    */

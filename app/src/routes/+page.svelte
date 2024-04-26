@@ -20,18 +20,15 @@
   import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
   import { createPerformanceStore } from "$lib/performance";
-  import { type PerformanceData } from "$lib/performance/store";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const workerRuntime = new WorkerRuntimeExecutor();
 
-  let performanceData: PerformanceData;
-  let viewerPerformance = createPerformanceStore();
+  let performanceStore = createPerformanceStore();
 
-  let res: Int32Array;
   let activeNode: Node | undefined;
 
-  let updateViewer: (arg: Int32Array) => void;
+  let graphResult: Int32Array;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
@@ -69,23 +66,21 @@
     try {
       let a = performance.now();
       // res = await remoteRuntime.execute(_graph, _settings);
-      let res = await workerRuntime.execute(_graph, _settings);
+      graphResult = await workerRuntime.execute(_graph, _settings);
       let b = performance.now();
-      updateViewer(res);
       let perfData = await workerRuntime.getPerformanceData();
-      let lastRun = perfData.runs?.at(-1);
+      let lastRun = perfData.at(-1);
       if (lastRun) {
-        perfData.total["worker-transfer"] = b - a - lastRun.runtime[0];
         lastRun["worker-transfer"] = [b - a - lastRun.runtime[0]];
+        performanceStore.mergeData(lastRun);
       }
-      performanceData = perfData;
       isWorking = false;
     } catch (error) {
       console.log("errors", error);
     }
 
-    viewerPerformance.stopRun();
-    viewerPerformance.startRun();
+    performanceStore.stopRun();
+    performanceStore.startRun();
 
     if (unfinished) {
       let d = unfinished;
@@ -115,8 +110,8 @@
   <Grid.Row>
     <Grid.Cell>
       <Viewer
-        bind:update={updateViewer}
-        perf={viewerPerformance}
+        result={graphResult}
+        perf={performanceStore}
         centerCamera={$AppSettings.centerCamera}
       />
     </Grid.Cell>
@@ -168,11 +163,8 @@
             hidden={!$AppSettings.showPerformancePanel}
             icon="i-tabler-brand-speedtest"
           >
-            {#if performanceData}
-              <PerformanceViewer
-                data={performanceData}
-                viewer={$viewerPerformance}
-              />
+            {#if $performanceStore}
+              <PerformanceViewer data={$performanceStore} />
             {/if}
           </Panel>
           <Panel
