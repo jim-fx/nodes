@@ -14,6 +14,10 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
   const { graph, settings } = await request.json();
 
+  if (!graph || !settings) {
+    return new Response("Invalid request", { status: 400 });
+  }
+
   registry.fetch = fetch;
 
   await registry.load(graph.nodes.map(node => node.type))
