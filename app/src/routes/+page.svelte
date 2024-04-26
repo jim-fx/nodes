@@ -65,7 +65,6 @@
     isWorking = true;
     try {
       let a = performance.now();
-      // res = await remoteRuntime.execute(_graph, _settings);
       graphResult = await workerRuntime.execute(_graph, _settings);
       let b = performance.now();
       let perfData = await workerRuntime.getPerformanceData();
