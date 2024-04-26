@@ -1,16 +1,17 @@
 <script lang="ts">
-  import type { Node, NodeRegistry } from "@nodes/types";
+  import type { NodeDefinition, NodeRegistry } from "@nodes/types";
   import { onMount } from "svelte";
 
   let mx = 0;
   let my = 0;
 
-  let node: Node | undefined = undefined;
+  let node: NodeDefinition | undefined = undefined;
   let input: string | undefined = undefined;
 
   let wrapper: HTMLDivElement;
 
   export let registry: NodeRegistry;
+  let width = 0;
 
   function handleMouseOver(ev: MouseEvent) {
     let target = ev.target as HTMLElement | null;
@@ -18,7 +19,7 @@
     my = ev.clientY;
     if (!target) return;
 
-    const closest = target.closest("[data-node-type]");
+    const closest = target?.closest?.("[data-node-type]");
 
     if (!closest) {
       node = undefined;
@@ -33,7 +34,7 @@
       return;
     }
     node = registry.getNode(nodeType);
-    input = nodeInput;
+    input = nodeInput || undefined;
   }
 
   onMount(() => {
@@ -47,16 +48,35 @@
 <svelte:window on:mousemove={handleMouseOver} />
 
 <div
-  class="help-wrapper"
+  class="help-wrapper p-4"
   class:visible={node}
-  style="--my:{my}px; --mx:{mx}px;"
+  bind:clientWidth={width}
+  style="--my:{my}px; --mx:{Math.min(mx, window.innerWidth - width - 20)}px;"
   bind:this={wrapper}
 >
-  {#if node}
+  <p class="m-0 text-light opacity-40 flex items-center gap-3 mb-4">
+    <span class="i-tabler-help block w-4 h-4"></span>
+    {node?.id.split("/").at(-1) || "Help"}
     {#if input}
-      {input}
-    {:else}
-      {node.id}
+      <span>> {input}</span>
+    {/if}
+  </p>
+  {#if node}
+    <div class="mb-4">
+      {#if input}
+        {node?.inputs?.[input]?.description || input}
+      {:else if node?.meta?.description}
+        {node?.meta?.description}
+      {:else}
+        <div class="text-xs opacity-30 mb-4">{node.id}</div>
+      {/if}
+    </div>
+
+    {#if !input}
+      <div>
+        <span class="i-tabler-arrow-right opacity-30">-></span>
+        {node?.outputs?.map((o) => o).join(", ") ?? "nothing"}
+      </div>
     {/if}
   {/if}
 </div>
@@ -66,13 +86,11 @@
     position: fixed;
     pointer-events: none;
     transform: translate(var(--mx), var(--my));
-    background: red;
-    padding: 10px;
-    top: 0px;
-    left: 0px;
-    width: 50px;
-    height: 50px;
-    border: 1px solid black;
+    background: var(--layer-1);
+    border-radius: 5px;
+    top: 10px;
+    left: 10px;
+    border: 1px solid var(--outline);
     z-index: 1000;
     display: none;
   }

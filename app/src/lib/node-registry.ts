@@ -36,12 +36,7 @@ export async function getNode(id: `${string}/${string}/${string}`) {
 
   if (!definition) return null;
 
-  const { inputs, outputs } = definition;
-  try {
-    return { id, inputs, outputs }
-  } catch (e) {
-    console.log("Failed to parse input types for node", { id });
-  }
+  return definition;
 
 }
 

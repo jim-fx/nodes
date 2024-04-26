@@ -1,11 +1,15 @@
 {
   "id": "max/plantarium/stem",
+  "meta": {
+    "description": "Creates a stem"
+  },
   "outputs": [
     "path"
   ],
   "inputs": {
     "origin": {
       "type": "vec3",
+      "description": "The origin of the stem",
       "value": [
         0,
         0,
@@ -15,20 +19,24 @@
     },
     "amount": {
       "type": "integer",
+      "description": "The amount of stems to produce",
       "min": 1,
       "max": 64,
       "value": 1
     },
     "length": {
       "type": "float",
+      "description": "How long the stem should be",
       "value": 5
     },
     "thickness": {
       "type": "float",
+      "description": "How thick the stem should be",
       "value": 0.2
     },
     "resolution_curve": {
       "type": "integer",
+      "description": "How many points along the length of the stem should be created",
       "value": 32,
       "min": 3,
       "max": 64,

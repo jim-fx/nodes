@@ -27,7 +27,6 @@
   function isNodeInput(v: Input | Nested): v is Input {
     return v && "type" in v;
   }
-  console.log({ settings, store });
 </script>
 
 {#if $store}
@@ -35,7 +34,11 @@
     {@const value = settings[key]}
     <div class="wrapper" class:first-level={depth === 0}>
       {#if value !== undefined && isNodeInput(value)}
-        <div class="input input-{settings[key].type}">
+        <div
+          class="input input-{settings[key].type}"
+          data-node-type={value?.__node_type || null}
+          data-node-input={value?.__node_input || null}
+        >
           {#if value.type === "button"}
             <button on:click={() => value?.callback?.()}
               >{value.label || key}</button

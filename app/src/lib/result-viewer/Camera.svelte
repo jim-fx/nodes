@@ -36,7 +36,7 @@
   let isRunning = false;
   const task = useTask(() => {
     let length = center.clone().sub(controls.target).length();
-    if (length < 0.01) {
+    if (length < 0.01 || !centerCamera) {
       isRunning = false;
       task.stop();
       return;

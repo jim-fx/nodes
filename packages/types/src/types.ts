@@ -50,6 +50,7 @@ export type Socket = {
   position: [number, number];
 };
 
+
 export type Edge = [Node, number, Node, string];
 
 export type Graph = {

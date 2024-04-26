@@ -8,6 +8,13 @@
   export let max = 1;
   export let id = "";
 
+  if (min > max) {
+    [min, max] = [max, min];
+  }
+  if (value > max) {
+    max = value;
+  }
+
   function strip(input: number) {
     return +parseFloat(input + "").toPrecision(2);
   }

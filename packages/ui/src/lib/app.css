@@ -52,7 +52,7 @@ body {
   /* Secondary color */
   --secondary-color: #6c757d;
 
-  --layer-0: var(--neutral-900);
+  --layer-0: var(--neutral-800);
   --layer-1: var(--neutral-500);
   --layer-2: var(--neutral-400);
   --layer-3: var(--neutral-200);

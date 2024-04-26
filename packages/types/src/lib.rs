@@ -130,8 +130,20 @@ pub enum NodeInput {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct NodeDefinitionMeta {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct NodeDefinition {
     pub id: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub meta: Option<NodeDefinitionMeta>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inputs: Option<HashMap<String, NodeInput>>,

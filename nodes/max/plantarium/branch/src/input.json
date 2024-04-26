@@ -1,15 +1,20 @@
 {
   "id": "max/plantarium/branch",
+  "meta": {
+    "description": "Generates branches on a path"
+  },
   "outputs": [
     "path"
   ],
   "inputs": {
     "plant": {
       "type": "path",
+      "description": "The path to place the branches on.",
       "external": true
     },
     "length": {
       "type": "float",
+      "description": "The length of the branches.",
       "min": 0,
       "max": 3,
       "step": 0.05,
@@ -17,6 +22,7 @@
     },
     "thickness": {
       "type": "float",
+      "description": "The thickness of the branches.",
       "min": 0,
       "max": 1,
       "step": 0.01,
@@ -24,6 +30,7 @@
     },
     "offsetSingle": {
       "type": "float",
+      "description": "Used to offset every second branch",
       "min": 0,
       "hidden": true,
       "max": 1,
@@ -33,6 +40,7 @@
     "lowestBranch": {
       "type": "float",
       "hidden": true,
+      "description": "How low should the branches start. 0 is the bottom, 1 is the top.",
       "min": 0,
       "max": 1,
       "step": 0.01,
@@ -40,6 +48,7 @@
     },
     "highestBranch": {
       "type": "float",
+      "description": "How high should the branches start. 0 is the bottom, 1 is the top.",
       "hidden": true,
       "min": 0,
       "max": 1,
@@ -55,12 +64,14 @@
     },
     "amount": {
       "type": "integer",
+      "description": "The amount of branches to generate.",
       "min": 0,
       "max": 64,
       "value": 10
     },
     "resolution_curve": {
       "type": "integer",
+      "description": "The resolution of the curve.",
       "value": 32,
       "min": 3,
       "max": 64,
@@ -68,6 +79,7 @@
     },
     "rotation": {
       "type": "float",
+      "description": "The rotation of the branches.",
       "hidden": true,
       "min": 0,
       "max": 360,

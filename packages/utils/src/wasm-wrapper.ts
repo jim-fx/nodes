@@ -116,8 +116,8 @@ function createWrapper() {
       var r1 = getInt32Memory0()[retptr / 4 + 1];
       deferred1_0 = r0;
       deferred1_1 = r1;
-      const string = getStringFromWasm0(r0, r1);
-      return JSON.parse(string) as NodeDefinition;
+      const rawDefinition = getStringFromWasm0(r0, r1);
+      return JSON.parse(rawDefinition) as NodeDefinition;
     } finally {
       wasm.__wbindgen_add_to_stack_pointer(16);
       wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);

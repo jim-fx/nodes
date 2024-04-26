@@ -2,13 +2,25 @@
   import type { Node, NodeInput } from "@nodes/types";
   import NestedSettings from "./NestedSettings.svelte";
   import { writable } from "svelte/store";
+
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
+
+  export let manager: GraphManager;
+  export let node: Node | undefined;
 
   function filterInputs(inputs: Record<string, NodeInput>) {
     return Object.fromEntries(
-      Object.entries(inputs).filter(([key, value]) => {
-        return value.hidden === true;
-      }),
+      Object.entries(inputs)
+        .filter(([key, value]) => {
+          return value.hidden === true;
+        })
+        .map(([key, value]) => {
+          //@ts-ignore
+          value.__node_type = node?.tmp?.type.id;
+          //@ts-ignore
+          value.__node_input = key;
+          return [key, value];
+        }),
     );
   }
 
@@ -26,14 +38,12 @@
     return writable(store);
   }
 
-  export let manager: GraphManager;
-
-  export let node: Node | undefined;
   let nodeDefinition: Record<string, NodeInput> | undefined;
   $: nodeDefinition = node?.tmp?.type
     ? filterInputs(node.tmp.type.inputs)
     : undefined;
   $: store = node ? createStore(node.props, nodeDefinition) : undefined;
+  $: console.log(nodeDefinition, store);
 
   let lastPropsHash = "";
   function updateNode() {

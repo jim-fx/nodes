@@ -673,6 +673,8 @@
   });
 
   function handleMouseUp(event: MouseEvent) {
+    if (!mouseDown) return;
+
     const activeNode = manager.getNode($activeNodeId);
 
     const clickedNodeId = getNodeIdFromEvent(event);
@@ -870,7 +872,7 @@
   });
 </script>
 
-<svelte:window on:mousemove={handleMouseMove} />
+<svelte:window on:mousemove={handleMouseMove} on:mouseup={handleMouseUp} />
 
 <div
   on:wheel={handleMouseScroll}
@@ -881,7 +883,6 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
-  on:mouseup={handleMouseUp}
   on:dragenter={handleDragEnter}
   on:dragover={handlerDragOver}
   on:dragexit={handleDragEnd}
