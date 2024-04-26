@@ -8,6 +8,7 @@ const runtime = new MemoryRuntimeExecutor(registry);
 const performanceStore = createPerformanceStore();
 runtime.perf = performanceStore;
 
+export const prerender = false;
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 
