@@ -16,7 +16,7 @@ jobs:
         run: pnpm install
 
       - name: build
-        run: pnpm run build
+        run: pnpm run build:deploy
 
       - name: 🔑 Configure rclone
         run: |
