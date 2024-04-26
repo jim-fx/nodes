@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { animate, lerp, snapToGrid } from "../helpers/index.js";
+  import {
+    animate,
+    lerp,
+    snapToGrid as snapPointToGrid,
+  } from "../helpers/index.js";
   import { Canvas } from "@threlte/core";
   import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
@@ -23,20 +27,21 @@
   import AddMenu from "../AddMenu.svelte";
   import { createWasmWrapper } from "@nodes/utils";
 
-  export let graph: GraphManager;
+  import HelpView from "../HelpView.svelte";
 
-  export let settings = {
-    snapToGrid: true,
-    showGrid: true,
-  };
+  export let manager: GraphManager;
+
+  export let snapToGrid = true;
+  export let showGrid = true;
+  export let showHelp = false;
 
   let keymap =
     getContext<ReturnType<typeof createKeyMap>>("keymap") || createKeyMap([]);
 
-  setContext("graphManager", graph);
-  const status = graph.status;
-  const nodes = graph.nodes;
-  const edges = graph.edges;
+  setContext("graphManager", manager);
+  const status = manager.status;
+  const nodes = manager.nodes;
+  const edges = manager.edges;
 
   let wrapper: HTMLDivElement;
   let rect: DOMRect;
@@ -114,7 +119,7 @@
     if (nodeTypeId in nodeHeightCache) {
       return nodeHeightCache[nodeTypeId];
     }
-    const node = graph.getNodeType(nodeTypeId);
+    const node = manager.getNodeType(nodeTypeId);
     if (!node?.inputs) {
       return 5;
     }
@@ -185,13 +190,13 @@
 
     // remove existing edge
     if (typeof index === "string") {
-      const edges = graph.getEdgesToNode(node);
+      const edges = manager.getEdgesToNode(node);
       for (const edge of edges) {
         if (edge[3] === index) {
           node = edge[0];
           index = edge[1];
           position = getSocketPosition(node, index);
-          graph.removeEdge(edge);
+          manager.removeEdge(edge);
           break;
         }
       }
@@ -204,7 +209,7 @@
       position,
     };
 
-    $possibleSockets = graph
+    $possibleSockets = manager
       .getPossibleSockets($activeSocket)
       .map(([node, index]) => {
         return {
@@ -315,7 +320,7 @@
 
     // here we are handling dragging of nodes
     if ($activeNodeId !== -1 && mouseDownId !== -1) {
-      const node = graph.getNode($activeNodeId);
+      const node = manager.getNode($activeNodeId);
       if (!node || event.buttons !== 1) return;
 
       node.tmp = node.tmp || {};
@@ -328,9 +333,9 @@
 
       if (event.ctrlKey) {
         const snapLevel = getSnapLevel();
-        if (settings.snapToGrid) {
-          newX = snapToGrid(newX, 5 / snapLevel);
-          newY = snapToGrid(newY, 5 / snapLevel);
+        if (snapToGrid) {
+          newX = snapPointToGrid(newX, 5 / snapLevel);
+          newY = snapPointToGrid(newY, 5 / snapLevel);
         }
       }
 
@@ -346,7 +351,7 @@
 
       if ($selectedNodes?.size) {
         for (const nodeId of $selectedNodes) {
-          const n = graph.getNode(nodeId);
+          const n = manager.getNode(nodeId);
           if (!n?.tmp) continue;
           n.tmp.x = (n?.tmp?.downX || 0) - vecX;
           n.tmp.y = (n?.tmp?.downY || 0) - vecY;
@@ -441,10 +446,10 @@
         $activeNodeId = clickedNodeId;
         // select the node
       } else if (event.shiftKey) {
-        const activeNode = graph.getNode($activeNodeId);
-        const newNode = graph.getNode(clickedNodeId);
+        const activeNode = manager.getNode($activeNodeId);
+        const newNode = manager.getNode(clickedNodeId);
         if (activeNode && newNode) {
-          const edge = graph.getNodesBetween(activeNode, newNode);
+          const edge = manager.getNodesBetween(activeNode, newNode);
           if (edge) {
             const selected = new Set(edge.map((n) => n.id));
             selected.add(clickedNodeId);
@@ -459,14 +464,14 @@
     } else if (event.ctrlKey) {
       boxSelection = true;
     }
-    const node = graph.getNode($activeNodeId);
+    const node = manager.getNode($activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
     node.tmp.downX = node.position[0];
     node.tmp.downY = node.position[1];
     if ($selectedNodes) {
       for (const nodeId of $selectedNodes) {
-        const n = graph.getNode(nodeId);
+        const n = manager.getNode(nodeId);
         if (!n) continue;
         n.tmp = n.tmp || {};
         n.tmp.downX = n.position[0];
@@ -478,10 +483,10 @@
   function copyNodes() {
     if ($activeNodeId === -1 && !$selectedNodes?.size) return;
     let _nodes = [$activeNodeId, ...($selectedNodes?.values() || [])]
-      .map((id) => graph.getNode(id))
+      .map((id) => manager.getNode(id))
       .filter(Boolean) as Node[];
 
-    const _edges = graph.getEdgesBetweenNodes(_nodes);
+    const _edges = manager.getEdgesBetweenNodes(_nodes);
 
     _nodes = _nodes.map((_node) => {
       const node = globalThis.structuredClone({
@@ -512,7 +517,7 @@
       })
       .filter(Boolean) as Node[];
 
-    const newNodes = graph.createGraph(_nodes, clipboard.edges);
+    const newNodes = manager.createGraph(_nodes, clipboard.edges);
     $selectedNodes = new Set(newNodes.map((n) => n.id));
   }
 
@@ -522,12 +527,20 @@
     key: "l",
     description: "Select linked nodes",
     callback: () => {
-      const activeNode = graph.getNode($activeNodeId);
+      const activeNode = manager.getNode($activeNodeId);
       if (activeNode) {
-        const nodes = graph.getLinkedNodes(activeNode);
+        const nodes = manager.getLinkedNodes(activeNode);
         $selectedNodes = new Set(nodes.map((n) => n.id));
       }
       console.log(activeNode);
+    },
+  });
+
+  keymap.addShortcut({
+    key: "?",
+    description: "Toggle Help",
+    callback: () => {
+      showHelp = !showHelp;
     },
   });
 
@@ -612,7 +625,7 @@
     description: "Undo",
     callback: () => {
       if (!isBodyFocused()) return;
-      graph.undo();
+      manager.undo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
@@ -625,7 +638,7 @@
     description: "Redo",
     callback: () => {
       if (!isBodyFocused()) return;
-      graph.redo();
+      manager.redo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
@@ -637,30 +650,30 @@
     description: "Delete selected nodes",
     callback: (event) => {
       if (!isBodyFocused()) return;
-      graph.startUndoGroup();
+      manager.startUndoGroup();
       if ($activeNodeId !== -1) {
-        const node = graph.getNode($activeNodeId);
+        const node = manager.getNode($activeNodeId);
         if (node) {
-          graph.removeNode(node, { restoreEdges: event.ctrlKey });
+          manager.removeNode(node, { restoreEdges: event.ctrlKey });
           $activeNodeId = -1;
         }
       }
       if ($selectedNodes) {
         for (const nodeId of $selectedNodes) {
-          const node = graph.getNode(nodeId);
+          const node = manager.getNode(nodeId);
           if (node) {
-            graph.removeNode(node, { restoreEdges: event.ctrlKey });
+            manager.removeNode(node, { restoreEdges: event.ctrlKey });
           }
         }
         $selectedNodes.clear();
         $selectedNodes = $selectedNodes;
       }
-      graph.saveUndoGroup();
+      manager.saveUndoGroup();
     },
   });
 
   function handleMouseUp(event: MouseEvent) {
-    const activeNode = graph.getNode($activeNodeId);
+    const activeNode = manager.getNode($activeNodeId);
 
     const clickedNodeId = getNodeIdFromEvent(event);
 
@@ -677,13 +690,13 @@
     if (activeNode?.tmp?.isMoving) {
       activeNode.tmp = activeNode.tmp || {};
       activeNode.tmp.isMoving = false;
-      if (settings.snapToGrid) {
+      if (snapToGrid) {
         const snapLevel = getSnapLevel();
-        activeNode.position[0] = snapToGrid(
+        activeNode.position[0] = snapPointToGrid(
           activeNode?.tmp?.x ?? activeNode.position[0],
           5 / snapLevel,
         );
-        activeNode.position[1] = snapToGrid(
+        activeNode.position[1] = snapPointToGrid(
           activeNode?.tmp?.y ?? activeNode.position[1],
           5 / snapLevel,
         );
@@ -692,7 +705,9 @@
         activeNode.position[1] = activeNode?.tmp?.y ?? activeNode.position[1];
       }
       const nodes = [
-        ...[...($selectedNodes?.values() || [])].map((id) => graph.getNode(id)),
+        ...[...($selectedNodes?.values() || [])].map((id) =>
+          manager.getNode(id),
+        ),
       ] as NodeType[];
 
       const vec = [
@@ -728,13 +743,13 @@
 
         $edges = $edges;
       });
-      graph.save();
+      manager.save();
     } else if ($hoveredSocket && $activeSocket) {
       if (
         typeof $hoveredSocket.index === "number" &&
         typeof $activeSocket.index === "string"
       ) {
-        graph.createEdge(
+        manager.createEdge(
           $hoveredSocket.node,
           $hoveredSocket.index || 0,
           $activeSocket.node,
@@ -744,14 +759,14 @@
         typeof $activeSocket.index == "number" &&
         typeof $hoveredSocket.index === "string"
       ) {
-        graph.createEdge(
+        manager.createEdge(
           $activeSocket.node,
           $activeSocket.index || 0,
           $hoveredSocket.node,
           $hoveredSocket.index,
         );
       }
-      graph.save();
+      manager.save();
     }
 
     // check if camera moved
@@ -808,8 +823,8 @@
       }
 
       const pos = projectScreenToWorld(mx, my);
-      graph.registry.load([nodeId]).then(() => {
-        graph.createNode({
+      manager.registry.load([nodeId]).then(() => {
+        manager.createNode({
           type: nodeId,
           props,
           position: pos,
@@ -819,7 +834,7 @@
       const files = event.dataTransfer.files;
       const reader = new FileReader();
       reader.onload = (e) => {
-        const buffer = e.target?.result;
+        const buffer = e.target?.result as Buffer;
         if (buffer) {
           const wrapper = createWasmWrapper(buffer);
           const definition = wrapper.get_definition();
@@ -885,10 +900,13 @@
   />
   <label for="drop-zone" />
 
+  {#if showHelp}
+    <HelpView registry={manager.registry} />
+  {/if}
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
 
-    {#if settings?.showGrid !== false}
+    {#if showGrid !== false}
       <Background {cameraPosition} {maxZoom} {minZoom} {width} {height} />
     {/if}
 
@@ -906,7 +924,7 @@
 
     {#if $status === "idle"}
       {#if addMenuPosition}
-        <AddMenu bind:position={addMenuPosition} {graph} />
+        <AddMenu bind:position={addMenuPosition} graph={manager} />
       {/if}
 
       {#if $activeSocket}

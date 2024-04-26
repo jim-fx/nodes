@@ -73,6 +73,8 @@
 
 <div
   class="wrapper"
+  data-node-type={node.type}
+  data-node-input={id}
   class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
@@ -87,12 +89,14 @@
 
     {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}
       <div
+        data-node-socket
         class="large target"
         on:mousedown={handleMouseDown}
         role="button"
         tabindex="0"
       />
       <div
+        data-node-socket
         class="small target"
         on:mousedown={handleMouseDown}
         role="button"
@@ -187,6 +191,8 @@
 
   .content.disabled {
     opacity: 0.2;
+  }
+  .content.disabled > * {
     pointer-events: none;
   }
 

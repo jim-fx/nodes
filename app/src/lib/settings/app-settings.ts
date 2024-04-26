@@ -5,6 +5,7 @@ export const AppSettings = localStore("node-settings", {
   showGrid: true,
   showNodeGrid: true,
   snapToGrid: true,
+  showHelp: false,
   wireframe: false,
   showIndices: false,
   showVertices: false,
@@ -55,6 +56,11 @@ export const AppSettingTypes = {
       type: "boolean",
       label: "Snap to Grid",
       value: true
+    },
+    showHelp: {
+      type: "boolean",
+      label: "Show Help",
+      value: false
     }
   },
   debug: {

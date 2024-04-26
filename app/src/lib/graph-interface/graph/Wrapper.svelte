@@ -26,6 +26,7 @@
 
   export let showGrid = false;
   export let snapToGrid = false;
+  export let showHelp = false;
 
   export let settingTypes = {};
 
@@ -55,4 +56,4 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<GraphEl graph={manager} settings={{ showGrid, snapToGrid }} />
+<GraphEl {manager} bind:showGrid bind:snapToGrid bind:showHelp />

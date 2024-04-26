@@ -47,11 +47,13 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   constructor(private registry: NodeRegistry, private cache?: RuntimeCache) { }
 
-  private getNodeDefinitions(graph: Graph) {
+  private async getNodeDefinitions(graph: Graph) {
 
     if (this.registry.status !== "ready") {
       throw new Error("Node registry is not ready");
     }
+
+    await this.registry.load(graph.nodes.map(node => node.type));
 
     const typeMap = new Map<string, NodeDefinition>();
     for (const node of graph.nodes) {
@@ -65,10 +67,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     return typeMap;
   }
 
-  private addMetaData(graph: Graph) {
+  private async addMetaData(graph: Graph) {
 
     // First, lets check if all nodes have a definition
-    this.definitionMap = this.getNodeDefinitions(graph);
+    this.definitionMap = await this.getNodeDefinitions(graph);
 
     const outputNode = graph.nodes.find(node => node.type.endsWith("/output"));
     if (!outputNode) {
@@ -124,7 +126,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     return [outputNode, nodes] as const;
   }
 
-  execute(graph: Graph, settings: Record<string, unknown>) {
+  async execute(graph: Graph, settings: Record<string, unknown>) {
 
     this.perf?.startRun();
 
@@ -133,7 +135,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     let a = performance.now();
 
     // Then we add some metadata to the graph
-    const [outputNode, nodes] = this.addMetaData(graph);
+    const [outputNode, nodes] = await this.addMetaData(graph);
     let b = performance.now();
 
     this.perf?.addPoint("metadata", b - a);

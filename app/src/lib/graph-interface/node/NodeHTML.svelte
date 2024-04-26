@@ -47,6 +47,7 @@
   class:selected={isSelected}
   class:out-of-view={!inView}
   data-node-id={node.id}
+  data-node-type={node.type}
   bind:this={ref}
 >
   <NodeHeader {node} />

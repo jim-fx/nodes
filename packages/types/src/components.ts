@@ -13,13 +13,13 @@ export interface NodeRegistry {
   * @throws An error if the nodes could not be loaded
   * @remarks This method should be called before calling getNode or getAllNodes
   */
-  load: (nodeIds: NodeId[]) => Promise<NodeDefinition[]>;
+  load: (nodeIds: (NodeId | string)[]) => Promise<NodeDefinition[]>;
   /**
    * Get a node by id
    * @param id - The id of the node to get
    * @returns The node with the given id, or undefined if no such node exists
    */
-  getNode: (id: NodeId) => NodeDefinition | undefined;
+  getNode: (id: NodeId | string) => NodeDefinition | undefined;
   /**
    * Get all nodes
    * @returns An array of all nodes
@@ -33,7 +33,7 @@ export interface RuntimeExecutor {
   * @param graph - The graph to execute
   * @returns The result of the execution
   */
-  execute: (graph: Graph, settings: Record<string, unknown>) => Int32Array;
+  execute: (graph: Graph, settings: Record<string, unknown>) => Promise<Int32Array>;
 }
 
 export interface RuntimeCache {

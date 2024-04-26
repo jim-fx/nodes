@@ -26,9 +26,11 @@
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
   import { createPerformanceStore } from "$lib/performance";
   import { type PerformanceData } from "$lib/performance/store";
+  import { RemoteRuntimeExecutor } from "$lib/remote-runtime-executor";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const workerRuntime = new WorkerRuntimeExecutor();
+  // const remoteRuntime = new RemoteRuntimeExecutor("/runtime");
 
   let performanceData: PerformanceData;
   let viewerPerformance = createPerformanceStore();
@@ -43,6 +45,8 @@
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.plant;
+
+  console.log({ graph });
 
   let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
@@ -75,6 +79,7 @@
     isWorking = true;
     try {
       let a = performance.now();
+      // res = await remoteRuntime.execute(_graph, _settings);
       res = await workerRuntime.execute(_graph, _settings);
       let b = performance.now();
       let perfData = await workerRuntime.getPerformanceData();
@@ -120,9 +125,9 @@
   <Grid.Row>
     <Grid.Cell>
       <Viewer
-        centerCamera={$AppSettings.centerCamera}
         result={res}
         perf={viewerPerformance}
+        centerCamera={$AppSettings.centerCamera}
       />
     </Grid.Cell>
     <Grid.Cell>
@@ -133,8 +138,9 @@
           bind:manager
           bind:activeNode
           bind:keymap
-          showGrid={$AppSettings?.showNodeGrid}
-          snapToGrid={$AppSettings?.snapToGrid}
+          showGrid={$AppSettings.showNodeGrid}
+          snapToGrid={$AppSettings.snapToGrid}
+          bind:showHelp={$AppSettings.showHelp}
           bind:settings={graphSettings}
           bind:settingTypes={graphSettingTypes}
           on:result={(ev) => handleResult(ev.detail, $graphSettings)}

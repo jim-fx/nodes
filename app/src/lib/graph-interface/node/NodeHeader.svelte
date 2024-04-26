@@ -51,7 +51,7 @@
   });
 </script>
 
-<div class="wrapper" data-node-id={node.id}>
+<div class="wrapper" data-node-id={node.id} data-node-type={node.type}>
   <div class="content">
     {node.type.split("/").pop()}
   </div>

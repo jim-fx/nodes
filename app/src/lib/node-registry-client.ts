@@ -10,10 +10,12 @@ export class RemoteNodeRegistry implements NodeRegistry {
   status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeDefinition> = new Map();
 
+  fetch: typeof fetch = globalThis.fetch.bind(globalThis);
+
   constructor(private url: string) { }
 
   async fetchUsers() {
-    const response = await fetch(`${this.url}/nodes/users.json`);
+    const response = await this.fetch(`${this.url}/nodes/users.json`);
     if (!response.ok) {
       throw new Error(`Failed to load users`);
     }
@@ -21,7 +23,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async fetchUser(userId: `${string}`) {
-    const response = await fetch(`${this.url}/nodes/${userId}.json`);
+    const response = await this.fetch(`${this.url}/nodes/${userId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load user ${userId}`);
     }
@@ -29,23 +31,15 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async fetchCollection(userCollectionId: `${string}/${string}`) {
-    const response = await fetch(`${this.url}/nodes/${userCollectionId}.json`);
+    const response = await this.fetch(`${this.url}/nodes/${userCollectionId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load collection ${userCollectionId}`);
     }
     return response.json();
   }
 
-  async fetchNode(nodeId: `${string}/${string}/${string}`) {
-    const response = await fetch(`${this.url}/nodes/${nodeId}.wasm`);
-    if (!response.ok) {
-      throw new Error(`Failed to load node wasm ${nodeId}`);
-    }
-    return response.arrayBuffer();
-  }
-
   async fetchNodeDefinition(nodeId: `${string}/${string}/${string}`) {
-    const response = await fetch(`${this.url}/nodes/${nodeId}.json`);
+    const response = await this.fetch(`${this.url}/nodes/${nodeId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load node definition ${nodeId}`);
     }
@@ -58,18 +52,22 @@ export class RemoteNodeRegistry implements NodeRegistry {
     const nodes = await Promise.all(nodeIds.map(async id => {
 
       if (this.nodes.has(id)) {
-        return this.nodes.get(id);
+        return this.nodes.get(id)!;
       }
 
-      const wasmResponse = await this.fetchNode(id);
+      const response = await this.fetch(`${this.url}/nodes/${id}.wasm`);
+      if (!response.ok) {
+        throw new Error(`Failed to load node wasm ${id}`);
+      }
 
-      const wrapper = createWasmWrapper(wasmResponse);
+      const wasmBuffer = await response.arrayBuffer();
+
+      const wrapper = createWasmWrapper(wasmBuffer);
 
       const definition = wrapper.get_definition();
 
       return {
         ...definition,
-        id,
         execute: wrapper.execute
       };
     }));
@@ -80,7 +78,10 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
     const duration = performance.now() - a;
 
-    log.log("loaded nodes in", duration, "ms");
+    log.group("loaded nodes in", duration, "ms");
+    log.info(nodeIds);
+    log.info(nodes);
+    log.groupEnd();
     this.status = "ready";
 
     return nodes
