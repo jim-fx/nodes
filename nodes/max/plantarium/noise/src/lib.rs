@@ -1,6 +1,6 @@
 use glam::Vec3;
 use macros::include_definition_file;
-use noise::{core::open_simplex::open_simplex_2d, permutationtable::PermutationTable, Vector2};
+use noise::{HybridMulti, MultiFractal, NoiseFn, OpenSimplex};
 use utils::{
     concat_args, evaluate_float, evaluate_int, evaluate_vec3, geometry::wrap_path_mut,
     reset_call_count, set_panic_hook, split_args,
@@ -32,7 +32,14 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let depth = evaluate_int(args[6]);
 
-    let hasher = PermutationTable::new(seed as u32);
+    let octaves = evaluate_int(args[7]);
+
+    let noise_x: HybridMulti<OpenSimplex> =
+        HybridMulti::new(seed as u32 + 1).set_octaves(octaves as usize);
+    let noise_y: HybridMulti<OpenSimplex> =
+        HybridMulti::new(seed as u32 + 2).set_octaves(octaves as usize);
+    let noise_z: HybridMulti<OpenSimplex> =
+        HybridMulti::new(seed as u32 + 3).set_octaves(octaves as usize);
 
     let mut max_depth = 0;
     for path_data in plants.iter() {
@@ -72,31 +79,21 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
             for i in 0..path.length {
                 let a = i as f64 / (path.length - 1) as f64;
 
-                let px = Vector2::new(1000.0 + j as f64 + a * length * scale, a * scale as f64);
-                let py = Vector2::new(2000.0 + j as f64 + a * length * scale, a * scale as f64);
-                let pz = Vector2::new(3000.0 + j as f64 + a * length * scale, a * scale as f64);
+                let px = j as f64 + a * length * scale;
+                let py = a * scale as f64;
 
-                let nx = open_simplex_2d(px, &hasher) as f32
-                    * strength
-                    * 0.1
+                path.points[i * 4] += noise_x.get([px, py]) as f32
                     * directional_strength[0]
-                    * lerp(1.0, a as f32, fix_bottom);
-
-                let ny = open_simplex_2d(py, &hasher) as f32
                     * strength
-                    * 0.1
+                    * lerp(1.0, a as f32, fix_bottom);
+                path.points[i * 4 + 1] += noise_y.get([px, py]) as f32
                     * directional_strength[1]
-                    * lerp(1.0, a as f32, fix_bottom);
-
-                let nz = open_simplex_2d(pz, &hasher) as f32
                     * strength
-                    * 0.1
-                    * directional_strength[2]
                     * lerp(1.0, a as f32, fix_bottom);
-
-                path.points[i * 4] += nx;
-                path.points[i * 4 + 1] += ny;
-                path.points[i * 4 + 2] += nz;
+                path.points[i * 4 + 2] += noise_z.get([px, py]) as f32
+                    * directional_strength[2]
+                    * strength
+                    * lerp(1.0, a as f32, fix_bottom);
             }
             path_data
         })

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import { getBoundingValue } from "../helpers/getBoundingValue.js";
 
   export let value = 0.5;
   export let step = 0.01;

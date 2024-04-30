@@ -19,7 +19,7 @@
     },
     "fixBottom": {
       "type": "float",
-      "label": "Fixate bottom of plant",
+      "label": "Fix bottom of plant",
       "hidden": true,
       "value": 1.0,
       "min": 0,
@@ -41,6 +41,13 @@
       "type": "integer",
       "min": 1,
       "max": 10,
+      "value": 1,
+      "hidden": true
+    },
+    "octaves": {
+      "type": "integer",
+      "min": 1,
+      "max": 5,
       "value": 1,
       "hidden": true
     }

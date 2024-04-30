@@ -1,19 +1,25 @@
 <script lang="ts">
   import localStore from "$lib/helpers/localStore";
   import type { RemoteNodeRegistry } from "$lib/node-registry-client";
+  import { writable } from "svelte/store";
   import BreadCrumbs from "./BreadCrumbs.svelte";
   import DraggableNode from "./DraggableNode.svelte";
 
   export let registry: RemoteNodeRegistry;
 
-  const activeId = localStore<
-    `${string}` | `${string}/${string}` | `${string}/${string}/${string}`
-  >("nodes.store.activeId", "");
+  const activeId = writable("max/plantarium");
+  let showBreadCrumbs = false;
+
+  // const activeId = localStore<
+  //   `${string}` | `${string}/${string}` | `${string}/${string}/${string}`
+  // >("nodes.store.activeId", "");
 
   $: [activeUser, activeCollection, activeNode] = $activeId.split(`/`);
 </script>
 
-<BreadCrumbs {activeId} />
+{#if showBreadCrumbs}
+  <BreadCrumbs {activeId} />
+{/if}
 
 <div class="wrapper">
   {#if !activeUser}
@@ -68,17 +74,7 @@
 <style>
   .wrapper {
     padding: 0.8em;
-    max-height: calc(100vh - 170px);
+    max-height: calc(100vh - 100px);
     overflow-y: auto;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    margin-bottom: 0.5em;
-  }
-  h3 {
-    margin: 0;
   }
 </style>

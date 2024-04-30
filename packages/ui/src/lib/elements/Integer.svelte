@@ -69,10 +69,10 @@
   function handleMouseMove(ev: MouseEvent) {
     if (!ev.ctrlKey && typeof min === "number" && typeof max === "number") {
       const vx = (ev.clientX - rect.left) / rect.width;
-      value = Math.max(Math.min(Math.floor(min + (max - min) * vx), max), min);
+      value = Math.max(Math.min(Math.round(min + (max - min) * vx), max), min);
     } else {
       const vx = ev.clientX - downX;
-      value = downV + Math.floor(vx / 10);
+      value = downV + Math.round(vx / 10);
     }
   }
 </script>

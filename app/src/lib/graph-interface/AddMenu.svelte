@@ -117,15 +117,20 @@
 </HTML>
 
 <style>
+  .header {
+    padding: 5px;
+  }
+
   input {
     background: var(--layer-0);
     font-family: var(--font-family);
     border: none;
+    border-radius: 5px;
     color: var(--text-color);
-    padding: 0.8em;
+    padding: 0.6em;
     width: calc(100% - 2px);
     box-sizing: border-box;
-    font-size: 1em;
+    font-size: 0.8em;
     margin-left: 1px;
     margin-top: 1px;
   }

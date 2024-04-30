@@ -33,8 +33,8 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     }
 
     for path_data in paths.iter() {
-        // if this is not a path don't modify it
-        if path_data[2] != 0 || path_data[3] < (max_depth - depth) {
+        // if this is not a path ignore it
+        if path_data[2] != 0 || path_data[3] < (max_depth - depth + 1) {
             output.push(path_data.to_vec());
             continue;
         }

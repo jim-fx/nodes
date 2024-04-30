@@ -8,7 +8,7 @@ Nodarium
     Nodarium is a WebAssembly based visual programming language. 
   </p>
 
-  <img src=".github/graphics/nodes.svg" width="50%"/>
+  <img src=".github/graphics/nodes.svg" width="80%"/>
 
 </div>
 

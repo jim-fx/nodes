@@ -50,37 +50,13 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
                 let start_point = Vec3::from_slice(&path.points[start_index..start_index + 3]);
                 let end_point = Vec3::from_slice(&path.points[end_index..end_index + 3]);
-                log!("--------------------------------");
-
-                log!(
-                    "start_index: {:?} end_index: {:?} length:{}",
-                    start_index,
-                    end_index,
-                    path.points.len()
-                );
-                if start_point[0].is_nan() {
-                    log!("start_point is nan {:?}", path.points);
-                    continue;
-                }
-                log!("start_point: {:?}", start_point);
-                log!("end_point: {:?}", end_point);
 
                 let length = (end_point - start_point).length();
 
                 let normalised = (end_point - start_point).normalize();
 
-                if normalised[0].is_nan() {
-                    log!("normalised is nan {:?}", normalised);
-                    continue;
-                }
-
                 let strength = evaluate_float(args[1]);
                 let down_point = Vec3::new(0.0, -length * strength, 0.0);
-
-                if down_point[0].is_nan() {
-                    log!("down_point is nan {:?}", down_point);
-                    continue;
-                }
 
                 let curviness = evaluate_float(args[2]);
 
@@ -89,13 +65,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                     down_point,
                     curviness * (i as f32 / path.length as f32).sqrt(),
                 );
-
-                if mid_point[0].is_nan() {
-                    log!("mid_point is nan {:?}", mid_point);
-                    log!("normalised: {:?}", normalised);
-                    log!("curviness: {:?}", curviness);
-                    continue;
-                }
 
                 if mid_point[0] == 0.0 && mid_point[2] == 0.0 {
                     mid_point[0] += 0.0001;
@@ -108,11 +77,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
                 let final_end_point = start_point + mid_point;
                 let offset_end_point = end_point + offset_vec;
-
-                if offset_end_point[0].is_nan() {
-                    log!("offset_end_point is nan {:?}", offset_end_point);
-                    continue;
-                }
 
                 path.points[end_index] = offset_end_point[0];
                 path.points[end_index + 1] = offset_end_point[1];
