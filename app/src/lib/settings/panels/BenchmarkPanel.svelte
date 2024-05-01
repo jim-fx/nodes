@@ -3,6 +3,14 @@
   import { Integer } from "@nodes/ui";
   import { writable } from "svelte/store";
 
+  function calculateStandardDeviation(array: number[]) {
+    const n = array.length;
+    const mean = array.reduce((a, b) => a + b) / n;
+    return Math.sqrt(
+      array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,
+    );
+  }
+
   export let run: () => Promise<any>;
 
   let isRunning = false;
@@ -11,7 +19,7 @@
   let warmUp = writable(0);
   let warmUpAmount = 10;
   let state = "";
-  let result = "";
+  let result: { stdev: number; avg: number } | undefined;
 
   const copyContent = async (text: string) => {
     try {
@@ -20,6 +28,11 @@
       console.error("Failed to copy: ", err);
     }
   };
+
+  function handleCopy(ev: MouseEvent) {
+    const text = (ev.target as HTMLTextAreaElement).value;
+    copyContent(text);
+  }
 
   async function benchmark() {
     if (isRunning) return;
@@ -44,10 +57,13 @@
       await run();
       samples = i;
       const b = performance.now();
+      await new Promise((r) => setTimeout(r, 50));
       results.push(b - a);
-      console.log(b - a);
     }
-    result = results.join(" ");
+    result = {
+      stdev: calculateStandardDeviation(results),
+      avg: results.reduce((a, b) => a + b) / results.length,
+    };
   }
 </script>
 
@@ -65,9 +81,16 @@
     >
 
     {#if result}
-      <textarea readonly>{result}</textarea>
+      <i>click to copy</i>
+      <label for="bench-avg">Average</label>
+      <textarea id="bench-avg" readonly on:click={handleCopy}
+        >{Math.floor(result.avg * 100) / 100}</textarea
+      >
+      <label for="bench-stdev">Standard Deviation</label>
+      <textarea id="bench-stdev" readonly on:click={handleCopy}
+        >{Math.floor(result.stdev * 100) / 100}</textarea
+      >
       <div>
-        <button on:click={() => copyContent(result)}>Copy</button>
         <button on:click={() => (isRunning = false)}>reset</button>
       </div>
     {/if}
@@ -84,5 +107,15 @@
     display: flex;
     flex-direction: column;
     gap: 1em;
+  }
+  textarea {
+    width: 100%;
+    height: 1em;
+    font-size: 1em;
+    padding: 0.5em;
+    border: solid thin var(--outline);
+    background: var(--layer-2);
+    box-sizing: border-box;
+    height: 2.5em;
   }
 </style>
