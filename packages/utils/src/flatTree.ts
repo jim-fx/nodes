@@ -102,3 +102,47 @@ function decode_recursive(dense: number[] | Int32Array, index = 0) {
 export function decodeNestedArray(dense: number[] | Int32Array) {
   return decode_recursive(dense, 0)[0];
 }
+
+
+export function splitNestedArray(input: Int32Array) {
+  let index = 0;
+  const length = input.length;
+  let res: Int32Array[] = [];
+
+  let nextBracketIndex = 0;
+  let argStartIndex = 0;
+  let depth = -1;
+
+  while (index < length) {
+    const value = input[index];
+
+    if (index === nextBracketIndex) {
+      nextBracketIndex = index + input[index + 1] + 1;
+      if (value === 0) {
+        depth++;
+      } else {
+        depth--;
+      }
+
+      if (depth === 1 && value === 0) {
+        // if opening bracket
+        argStartIndex = index + 2;
+      }
+
+      if (depth === 0 && value === 1) {
+        // if closing bracket
+        res.push(input.slice(argStartIndex, index));
+        argStartIndex = index + 2;
+      }
+
+      index = nextBracketIndex;
+      continue;
+    }
+
+    // we should not be here
+
+    index++;
+  }
+
+  return res;
+}

@@ -10,8 +10,10 @@ export const AppSettings = localStore("node-settings", {
   showIndices: false,
   showVertices: false,
   showPerformancePanel: false,
+  showBenchmarkPanel: false,
   centerCamera: true,
   showStemLines: false,
+  useWorker: true,
   amount: 5
 });
 
@@ -69,6 +71,11 @@ export const AppSettingTypes = {
       label: "Wireframe",
       value: false,
     },
+    useWorker: {
+      type: "boolean",
+      label: "Execute runtime in worker",
+      value: true,
+    },
     showIndices: {
       type: "boolean",
       label: "Show Indices",
@@ -77,6 +84,11 @@ export const AppSettingTypes = {
     showPerformancePanel: {
       type: "boolean",
       label: "Show Performance Panel",
+      value: false,
+    },
+    showBenchmarkPanel: {
+      type: "boolean",
+      label: "Show Benchmark Panel",
       value: false,
     },
     showVertices: {
@@ -104,6 +116,18 @@ export const AppSettingTypes = {
         type: "button",
         label: "Load Tree"
       },
+      lottaFaces: {
+        type: "button",
+        label: "Load 'lots of faces'"
+      },
+      lottaNodes: {
+        type: "button",
+        label: "Load 'lots of nodes'"
+      },
+      lottaNodesAndFaces: {
+        type: "button",
+        label: "Load 'lots of nodes and faces'"
+      }
     },
   }
 }

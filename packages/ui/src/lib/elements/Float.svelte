@@ -1,11 +1,19 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-
-	export let value = 0.5;
-	export let step = 0.01;
-	export let min = 0;
-	export let max = 1;
-	export let id = '';
+	let {
+		onchange,
+		value = $bindable(),
+		id,
+		step = 0.01,
+		min = 0,
+		max = 1
+	}: {
+		onchange?: (num: number) => void;
+		value?: number;
+		id?: string;
+		step?: number;
+		min?: number;
+		max?: number;
+	} = $props();
 
 	if (min > max) {
 		[min, max] = [max, min];
@@ -18,31 +26,32 @@
 		return +parseFloat(input + '').toPrecision(2);
 	}
 
-	const dispatch = createEventDispatcher();
-
 	let inputEl: HTMLInputElement;
 
-	$: if ((value || 0).toString().length > 5) {
-		value = strip(value || 0);
-	}
-	$: value !== undefined && handleChange();
+	$effect(() => {
+		if ((value || 0).toString().length > 5) {
+			value = strip(value || 0);
+		}
+	});
+
+	$effect(() => {
+		if (value !== undefined) handleChange();
+	});
+
 	let oldValue: number;
 	function handleChange() {
 		if (value === oldValue) return;
 		oldValue = value;
-		dispatch('change', parseFloat(value + ''));
+		onchange?.(value);
 	}
 
-	$: width = Number.isFinite(value)
-		? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px'
-		: '20px';
+	let width = $derived(
+		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px' : '20px'
+	);
 
-	let isMouseDown = false;
-	/* let downX = 0; */
-	/* let downY = 0; */
+	let isMouseDown = $state(false);
 	let downV = 0;
 	let vx = 0;
-	/* let vy = 0; */
 	let rect: DOMRect;
 
 	function handleMouseDown(ev: MouseEvent) {
@@ -53,8 +62,6 @@
 		isMouseDown = true;
 
 		downV = value;
-		/* downX = ev.clientX; */
-		/* downY = ev.clientY; */
 		rect = inputEl.getBoundingClientRect();
 
 		window.removeEventListener('mousemove', handleMouseMove);
@@ -77,16 +84,6 @@
 		if (value < min) {
 			min = value;
 		}
-
-		// setTimeout(() => {
-		//   if (value >= 0) {
-		//     max = getBoundingValue(value);
-		//     min = 0;
-		//   } else {
-		//     min = getBoundingValue(value);
-		//     max = 0;
-		//   }
-		// }, 500);
 
 		document.body.style.cursor = 'unset';
 		window.removeEventListener('mouseup', handleMouseUp);
@@ -122,9 +119,9 @@
 		{step}
 		{max}
 		{min}
-		on:keydown={handleKeyDown}
-		on:mousedown={handleMouseDown}
-		on:mouseup={handleMouseUp}
+		onkeydown={handleKeyDown}
+		onmousedown={handleMouseDown}
+		onmouseup={handleMouseUp}
 		type="number"
 		style={`width:${width};`}
 	/>

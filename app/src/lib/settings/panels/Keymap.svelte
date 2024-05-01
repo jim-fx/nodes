@@ -4,10 +4,11 @@
 
   export let keymap: ReturnType<typeof createKeyMap>;
   const keys = keymap?.keys;
+  export let title = "Keymap";
 </script>
 
 <div class="wrapper">
-  <h3>Editor</h3>
+  <h3>{title}</h3>
 
   <section>
     {#each $keys as key}

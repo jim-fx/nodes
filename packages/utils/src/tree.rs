@@ -162,7 +162,12 @@ pub fn evaluate_vec3(input_args: &[i32]) -> Vec<f32> {
 }
 
 pub fn evaluate_float(arg: &[i32]) -> f32 {
-    decode_float(evaluate_int(arg))
+    let res = decode_float(evaluate_int(arg));
+    if res.is_nan() {
+        0.0
+    } else {
+        res
+    }
 }
 
 pub fn evaluate_int(input_args: &[i32]) -> i32 {

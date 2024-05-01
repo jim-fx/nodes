@@ -1,11 +1,6 @@
 <script lang="ts">
-  import { T } from "@threlte/core";
-  import {
-    MeshLineGeometry,
-    MeshLineMaterial,
-    Text,
-    useTexture,
-  } from "@threlte/extras";
+  import { T, useThrelte } from "@threlte/core";
+  import { MeshLineGeometry, MeshLineMaterial, Text } from "@threlte/extras";
   import {
     type Group,
     type BufferGeometry,
@@ -16,14 +11,19 @@
   import { AppSettings } from "../settings/app-settings";
   import Camera from "./Camera.svelte";
 
+  const d = useThrelte();
+
+  export const invalidate = d.invalidate;
+
   export let geometries: BufferGeometry[];
   export let lines: Vector3[][];
+  export let scene;
   let geos: Group;
+  $: scene = geos;
+  export let geoGroup: Group;
 
   export let centerCamera: boolean = true;
   let center = new Vector3(0, 4, 0);
-
-  const matcap = useTexture("/matcap_green.jpg");
 
   function getPosition(geo: BufferGeometry, i: number) {
     return [
@@ -48,9 +48,6 @@
   <T.GridHelper args={[20, 20]} />
 {/if}
 
-<T.DirectionalLight position={[0, 10, 10]} />
-<T.AmbientLight intensity={2} />
-
 <T.Group bind:ref={geos}>
   {#each geometries as geo}
     {#if $AppSettings.showIndices}
@@ -67,15 +64,9 @@
         <T.PointsMaterial size={0.25} />
       </T.Points>
     {/if}
-    {#await matcap then value}
-      <T.Mesh geometry={geo}>
-        <T.MeshMatcapMaterial
-          matcap={value}
-          wireframe={$AppSettings.wireframe}
-        />
-      </T.Mesh>
-    {/await}
   {/each}
+
+  <T.Group bind:ref={geoGroup}></T.Group>
 </T.Group>
 
 {#if $AppSettings.showStemLines && lines}

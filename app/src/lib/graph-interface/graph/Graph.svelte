@@ -12,7 +12,7 @@
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
   import type { Node, NodeId, Node as NodeType, Socket } from "@nodes/types";
-  import { NodeDefinitionSchema } from "@nodes/types";
+  import { GraphSchema, NodeDefinitionSchema } from "@nodes/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
   import {
     activeNodeId,
@@ -28,6 +28,7 @@
   import { createWasmWrapper } from "@nodes/utils";
 
   import HelpView from "../HelpView.svelte";
+  import FileSaver from "file-saver";
 
   export let manager: GraphManager;
 
@@ -612,6 +613,7 @@
   keymap.addShortcut({
     key: "a",
     ctrl: true,
+    preventDefault: true,
     description: "Select all nodes",
     callback: () => {
       if (!isBodyFocused()) return;
@@ -637,11 +639,24 @@
     ctrl: true,
     description: "Redo",
     callback: () => {
-      if (!isBodyFocused()) return;
       manager.redo();
       for (const node of $nodes.values()) {
         updateNodePosition(node);
       }
+    },
+  });
+
+  keymap.addShortcut({
+    key: "s",
+    ctrl: true,
+    description: "Save",
+    preventDefault: true,
+    callback: () => {
+      const state = manager.serialize();
+      const blob = new Blob([JSON.stringify(state)], {
+        type: "application/json;charset=utf-8",
+      });
+      FileSaver.saveAs(blob, "nodarium-graph.json");
     },
   });
 
@@ -833,17 +848,31 @@
         });
       });
     } else if (event.dataTransfer.files.length) {
-      const files = event.dataTransfer.files;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const buffer = e.target?.result as Buffer;
-        if (buffer) {
-          const wrapper = createWasmWrapper(buffer);
-          const definition = wrapper.get_definition();
-          const res = NodeDefinitionSchema.parse(definition);
-        }
-      };
-      reader.readAsArrayBuffer(files[0]);
+      const file = event.dataTransfer.files[0];
+
+      if (file.type === "application/wasm") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const buffer = e.target?.result as Buffer;
+          if (buffer) {
+            const wrapper = createWasmWrapper(buffer);
+            const definition = wrapper.get_definition();
+            const res = NodeDefinitionSchema.parse(definition);
+            console.log(res);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (file.type === "application/json") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const buffer = e.target?.result as Buffer;
+          if (buffer) {
+            const state = GraphSchema.parse(JSON.parse(buffer.toString()));
+            manager.load(state);
+          }
+        };
+        reader.readAsText(file);
+      }
     }
   }
 
@@ -893,13 +922,13 @@
 >
   <input
     type="file"
-    accept="application/wasm"
+    accept="application/wasm,application/json"
     id="drop-zone"
     disabled={!isDragging}
     on:dragend={handleDragEnd}
     on:dragleave={handleDragEnd}
   />
-  <label for="drop-zone" />
+  <label for="drop-zone"></label>
 
   {#if showHelp}
     <HelpView registry={manager.registry} />

@@ -11,10 +11,50 @@ pub struct PathDataMut<'a> {
     pub points: &'a mut [f32],
 }
 
+impl PathDataMut<'_> {
+    pub fn get_length(&self) -> f32 {
+        let mut l = 0.0;
+        for i in 0..(self.length - 1) {
+            let a = vec3(
+                self.points[i * 4],
+                self.points[i * 4 + 1],
+                self.points[i * 4 + 2],
+            );
+            let b = vec3(
+                self.points[(i + 1) * 4],
+                self.points[(i + 1) * 4 + 1],
+                self.points[(i + 1) * 4 + 2],
+            );
+            l += (b - a).length();
+        }
+        l
+    }
+}
+
 pub struct PathData<'a> {
     pub depth: i32,
     pub length: usize,
     pub points: &'a [f32],
+}
+
+impl PathData<'_> {
+    pub fn get_length(&self) -> f32 {
+        let mut l = 0.0;
+        for i in 0..(self.length - 1) {
+            let a = vec3(
+                self.points[i * 4],
+                self.points[i * 4 + 1],
+                self.points[i * 4 + 2],
+            );
+            let b = vec3(
+                self.points[(i + 1) * 4],
+                self.points[(i + 1) * 4 + 1],
+                self.points[(i + 1) * 4 + 2],
+            );
+            l += (b - a).length();
+        }
+        l
+    }
 }
 
 pub fn create_multiple_paths(amount: usize, point_amount: usize, depth: i32) -> Vec<i32> {

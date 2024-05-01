@@ -1,4 +1,3 @@
-use glam::Vec3;
 use macros::include_definition_file;
 use noise::{HybridMulti, MultiFractal, NoiseFn, OpenSimplex};
 use utils::{
@@ -66,15 +65,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
             let path = wrap_path_mut(&mut path_data);
 
-            let p0 = Vec3::new(path.points[0], path.points[1], path.points[2]);
-
-            let p2 = Vec3::new(
-                path.points[path.length * 4 - 3],
-                path.points[path.length * 4 - 2],
-                path.points[path.length * 4 - 1],
-            );
-
-            let length = (p2 - p0).length() as f64;
+            let length = path.get_length() as f64;
 
             for i in 0..path.length {
                 let a = i as f64 / (path.length - 1) as f64;

@@ -4,6 +4,7 @@
   import { Checkbox } from "@nodes/ui";
   import localStore from "$lib/helpers/localStore";
   import { type PerformanceData } from "./store";
+  import BarSplit from "./BarSplit.svelte";
 
   export let data: PerformanceData;
 
@@ -42,7 +43,7 @@
   }
 
   function getLast(key: string) {
-    return data.at(-1)?.[key][0] || 0;
+    return data.at(-1)?.[key]?.[0] || 0;
   }
 
   function getLasts() {
@@ -53,13 +54,13 @@
     if (onlyLast) {
       return (
         getLast("runtime") +
-        getLast("create-geometries") +
+        getLast("update-geometries") +
         getLast("worker-transfer")
       );
     }
     return (
       getAverage("runtime") +
-      getAverage("create-geometries") +
+      getAverage("update-geometries") +
       getAverage("worker-transfer")
     );
   }
@@ -73,7 +74,7 @@
   const viewerKeys = [
     "total-vertices",
     "total-faces",
-    "create-geometries",
+    "update-geometries",
     "split-result",
   ];
 
@@ -116,8 +117,8 @@
       return data.map((run) => {
         return (
           run["runtime"].reduce((acc, v) => acc + v, 0) +
-          run["create-geometries"].reduce((acc, v) => acc + v, 0) +
-          run["worker-transfer"].reduce((acc, v) => acc + v, 0)
+          run["update-geometries"].reduce((acc, v) => acc + v, 0) +
+          (run["worker-transfer"]?.reduce((acc, v) => acc + v, 0) || 0)
         );
       });
     }
@@ -125,8 +126,8 @@
     return data.map((run) => {
       return (
         run["runtime"][0] +
-        run["create-geometries"][0] +
-        run["worker-transfer"][0]
+        run["update-geometries"][0] +
+        (run["worker-transfer"]?.[0] || 0)
       );
     });
   }
@@ -147,6 +148,22 @@
     });
   }
 
+  function getSplitValues(): number[] {
+    if (showAverage) {
+      return [
+        getAverage("worker-transfer"),
+        getAverage("runtime"),
+        getAverage("update-geometries"),
+      ];
+    }
+
+    return [
+      getLast("worker-transfer"),
+      getLast("runtime"),
+      getLast("update-geometries"),
+    ];
+  }
+
   function getTitle(t: string) {
     if (t.includes("/")) {
       return `Node ${t.split("/").slice(-1).join("/")}`;
@@ -159,7 +176,7 @@
   }
 </script>
 
-{#key $activeType && data}
+{#key $activeType}
   {#if $activeType === "cache-hit"}
     <Monitor
       title="Cache Hits"
@@ -174,116 +191,121 @@
       points={constructPoints($activeType)}
     />
   {/if}
-
-  <div class="p-4">
-    <div class="flex items-center gap-2">
-      <Checkbox id="show-total" bind:value={showAverage} />
-      <label for="show-total">Show Average</label>
-    </div>
-    {#if data.length !== 0}
-      <h3>General</h3>
-      <table>
-        <tbody>
-          <tr>
-            <td>
-              {round(getTotalPerformance(!showAverage))}<span>ms</span>
-            </td>
-            <td
-              class:active={$activeType === "total"}
-              on:click={() => ($activeType = "total")}
-            >
-              total<span
-                >({Math.floor(
-                  1000 / getTotalPerformance(showAverage),
-                )}fps)</span
-              >
-            </td>
-          </tr>
-          {#each getPerformanceData(!showAverage) as [key, value]}
-            <tr>
-              <td>
-                {round(value)}<span>ms</span>
-              </td>
-              <td
-                class:active={$activeType === key}
-                on:click={() => ($activeType = key)}
-              >
-                {key}
-              </td>
-            </tr>
-          {/each}
-
-          <tr>
-            <td>{data.length}</td>
-            <td>Samples</td>
-          </tr>
-        </tbody>
-        <tbody>
-          <tr>
-            <td>
-              <h3>Nodes</h3>
-            </td>
-          </tr>
-        </tbody>
-        <tbody>
-          <tr>
-            <td> {getCacheRatio(!showAverage)}<span>%</span> </td>
-            <td
-              class:active={$activeType === "cache-hit"}
-              on:click={() => ($activeType = "cache-hit")}>cache hits</td
-            >
-          </tr>
-          {#each getNodePerformanceData(!showAverage) as [key, value]}
-            <tr>
-              <td>
-                {round(value)}<span>ms</span>
-              </td>
-
-              <td
-                class:active={$activeType === key}
-                on:click={() => ($activeType = key)}
-              >
-                {key.split("/").slice(-1).join("/")}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-        <tbody>
-          <tr>
-            <td>
-              <h3>Viewer</h3>
-            </td>
-          </tr>
-        </tbody>
-        <tbody>
-          <tr>
-            <td>{humanizeNumber(getLast("total-vertices"))}</td>
-            <td>Vertices</td>
-          </tr>
-          <tr>
-            <td>{humanizeNumber(getLast("total-faces"))}</td>
-            <td>Faces</td>
-          </tr>
-          {#each getViewerPerformanceData(!showAverage) as [key, value]}
-            <tr>
-              <td>
-                {round(value)}<span>ms</span>
-              </td>
-              <td
-                class:active={$activeType === key}
-                on:click={() => ($activeType = key)}
-              >
-                {key.split("/").slice(-1).join("/")}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    {:else}
-      <p>No runs available</p>
-    {/if}
-  </div>
 {/key}
+
+<div class="p-4 performance-tabler">
+  <div class="flex items-center gap-2">
+    <Checkbox id="show-total" bind:value={showAverage} />
+    <label for="show-total">Show Average</label>
+  </div>
+
+  {#if data.length !== 0}
+    <BarSplit
+      labels={["worker-transfer", "runtime", "update-geometries"]}
+      values={getSplitValues()}
+    />
+
+    <h3>General</h3>
+
+    <table>
+      <tbody>
+        <tr>
+          <td>
+            {round(getTotalPerformance(!showAverage))}<span>ms</span>
+          </td>
+          <td
+            class:active={$activeType === "total"}
+            on:click={() => ($activeType = "total")}
+          >
+            total<span
+              >({Math.floor(1000 / getTotalPerformance(showAverage))}fps)</span
+            >
+          </td>
+        </tr>
+        {#each getPerformanceData(!showAverage) as [key, value]}
+          <tr>
+            <td>
+              {round(value)}<span>ms</span>
+            </td>
+            <td
+              class:active={$activeType === key}
+              on:click={() => ($activeType = key)}
+            >
+              {key}
+            </td>
+          </tr>
+        {/each}
+
+        <tr>
+          <td>{data.length}</td>
+          <td>Samples</td>
+        </tr>
+      </tbody>
+      <tbody>
+        <tr>
+          <td>
+            <h3>Nodes</h3>
+          </td>
+        </tr>
+      </tbody>
+      <tbody>
+        <tr>
+          <td> {getCacheRatio(!showAverage)}<span>%</span> </td>
+          <td
+            class:active={$activeType === "cache-hit"}
+            on:click={() => ($activeType = "cache-hit")}>cache hits</td
+          >
+        </tr>
+        {#each getNodePerformanceData(!showAverage) as [key, value]}
+          <tr>
+            <td>
+              {round(value)}<span>ms</span>
+            </td>
+
+            <td
+              class:active={$activeType === key}
+              on:click={() => ($activeType = key)}
+            >
+              {key.split("/").slice(-1).join("/")}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+      <tbody>
+        <tr>
+          <td>
+            <h3>Viewer</h3>
+          </td>
+        </tr>
+      </tbody>
+      <tbody>
+        <tr>
+          <td>{humanizeNumber(getLast("total-vertices"))}</td>
+          <td>Vertices</td>
+        </tr>
+        <tr>
+          <td>{humanizeNumber(getLast("total-faces"))}</td>
+          <td>Faces</td>
+        </tr>
+        {#each getViewerPerformanceData(!showAverage) as [key, value]}
+          <tr>
+            <td>
+              {round(value)}<span>ms</span>
+            </td>
+            <td
+              class:active={$activeType === key}
+              on:click={() => ($activeType = key)}
+            >
+              {key.split("/").slice(-1).join("/")}
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  {:else}
+    <p>No runs available</p>
+  {/if}
+</div>
 
 <style>
   h3 {
@@ -295,6 +317,9 @@
   span {
     opacity: 0.3;
     margin-left: 4px;
+  }
+  table {
+    margin-bottom: 70px;
   }
   td {
     padding-right: 10px;

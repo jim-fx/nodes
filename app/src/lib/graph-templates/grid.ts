@@ -20,7 +20,7 @@ export function grid(width: number, height: number) {
         visible: false,
       },
       position: [x * 30, y * 40],
-      props: i == 0 ? { value: 0 } : { op_type: 2, a: 2, b: 2 },
+      props: i == 0 ? { value: 0 } : { op_type: 0, a: 1, b: 0.05 },
       type: i == 0 ? "max/plantarium/float" : "max/plantarium/math",
     });
 

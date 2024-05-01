@@ -10,7 +10,7 @@
   import { AppSettingTypes, AppSettings } from "$lib/settings/app-settings";
   import { writable, type Writable } from "svelte/store";
   import Keymap from "$lib/settings/panels/Keymap.svelte";
-  import type { createKeyMap } from "$lib/helpers/createKeyMap";
+  import { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import { setContext } from "svelte";
@@ -20,15 +20,28 @@
   import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
   import { createPerformanceStore } from "$lib/performance";
+  import type { Scene } from "three";
+  import ExportSettings from "$lib/settings/panels/ExportSettings.svelte";
+  import {
+    MemoryRuntimeCache,
+    MemoryRuntimeExecutor,
+  } from "$lib/runtime-executor";
+  import { fastHashString } from "@nodes/utils";
+  import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
+
+  let performanceStore = createPerformanceStore("page");
 
   const nodeRegistry = new RemoteNodeRegistry("");
   const workerRuntime = new WorkerRuntimeExecutor();
+  const runtimeCache = new MemoryRuntimeCache();
+  const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
+  memoryRuntime.perf = performanceStore;
 
-  let performanceStore = createPerformanceStore();
+  $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
 
   let activeNode: Node | undefined;
-
-  let graphResult: Int32Array;
+  let scene: Scene;
+  let updateViewerResult: (result: Int32Array) => void;
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
@@ -36,11 +49,22 @@
 
   let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
-  $: if (manager) {
-    setContext("graphManager", manager);
+
+  async function randomGenerate() {
+    const g = manager.serialize();
+    const s = { ...$graphSettings, randomSeed: true };
+    const res = await handleResult(g, s);
+    return res;
   }
 
   let keymap: ReturnType<typeof createKeyMap>;
+  let applicationKeymap = createKeyMap([
+    {
+      key: "r",
+      description: "Regenerate the plant model",
+      callback: randomGenerate,
+    },
+  ]);
   let graphSettings = writable<Record<string, any>>({});
   let graphSettingTypes = {};
 
@@ -50,42 +74,59 @@
     | {
         graph: Graph;
         settings: Record<string, any>;
+        hash: number;
       }
     | undefined;
 
   async function handleResult(_graph: Graph, _settings: Record<string, any>) {
     if (!_settings) return;
+    const inputHash = fastHashString(
+      JSON.stringify(_graph) + JSON.stringify(_settings),
+    );
     if (isWorking) {
       unfinished = {
         graph: _graph,
         settings: _settings,
+        hash: inputHash,
       };
-      return;
+      return false;
     }
     isWorking = true;
+    performanceStore.startRun();
     try {
       let a = performance.now();
-      graphResult = await workerRuntime.execute(_graph, _settings);
+      const graphResult = await runtime.execute(_graph, _settings);
       let b = performance.now();
-      let perfData = await workerRuntime.getPerformanceData();
-      let lastRun = perfData.at(-1);
-      if (lastRun) {
-        lastRun["worker-transfer"] = [b - a - lastRun.runtime[0]];
-        performanceStore.mergeData(lastRun);
+
+      if ($AppSettings.useWorker) {
+        let perfData = await runtime.getPerformanceData();
+        let lastRun = perfData?.at(-1);
+        if (lastRun?.total) {
+          lastRun.runtime = lastRun.total;
+          delete lastRun.total;
+          performanceStore.mergeData(lastRun);
+          performanceStore.addPoint(
+            "worker-transfer",
+            b - a - lastRun.runtime[0],
+          );
+        }
       }
-      isWorking = false;
+
+      updateViewerResult(graphResult);
     } catch (error) {
       console.log("errors", error);
+    } finally {
+      performanceStore.stopRun();
+      isWorking = false;
     }
 
-    performanceStore.stopRun();
-    performanceStore.startRun();
-
-    if (unfinished) {
+    if (unfinished && unfinished.hash === inputHash) {
       let d = unfinished;
       unfinished = undefined;
-      handleResult(d.graph, d.settings);
+      await handleResult(d.graph, d.settings);
     }
+
+    return true;
   }
 
   $: if (AppSettings) {
@@ -97,6 +138,18 @@
     AppSettingTypes.debug.stressTest.loadTree.callback = () => {
       graph = templates.tree($AppSettings.amount);
     };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
+      graph = templates.lottaFaces;
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
+      graph = templates.lottaNodes;
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
+      graph = templates.lottaNodesAndFaces;
+    };
   }
 
   function handleSave(event: CustomEvent<Graph>) {
@@ -104,13 +157,15 @@
   }
 </script>
 
+<svelte:document on:keydown={applicationKeymap.handleKeyboardEvent} />
 <div class="wrapper manager-{$managerStatus}">
   <header></header>
   <Grid.Row>
     <Grid.Cell>
       <Viewer
-        result={graphResult}
         perf={performanceStore}
+        bind:scene
+        bind:update={updateViewerResult}
         centerCamera={$AppSettings.centerCamera}
       />
     </Grid.Cell>
@@ -143,9 +198,13 @@
             title="Keyboard Shortcuts"
             icon="i-tabler-keyboard"
           >
+            <Keymap title="Application" keymap={applicationKeymap} />
             {#if keymap}
-              <Keymap {keymap} />
+              <Keymap title="Node-Editor" {keymap} />
             {/if}
+          </Panel>
+          <Panel id="exports" title="Exporter" icon="i-tabler-package-export">
+            <ExportSettings {scene} />
           </Panel>
           <Panel
             id="node-store"
@@ -165,6 +224,15 @@
             {#if $performanceStore}
               <PerformanceViewer data={$performanceStore} />
             {/if}
+          </Panel>
+          <Panel
+            id="benchmark"
+            title="Benchmark"
+            classes="text-red-400"
+            hidden={!$AppSettings.showBenchmarkPanel}
+            icon="i-tabler-graph"
+          >
+            <BenchmarkPanel run={randomGenerate} />
           </Panel>
           <Panel
             id="graph-settings"
@@ -189,8 +257,6 @@
     </Grid.Cell>
   </Grid.Row>
 </div>
-
-<span class="font-red" />
 
 <style>
   header {

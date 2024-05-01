@@ -93,6 +93,8 @@
   .content {
     background: var(--layer-1);
     position: relative;
+    max-height: 100vh;
+    overflow-y: auto;
   }
 
   .tabs {

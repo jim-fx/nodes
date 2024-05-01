@@ -1,155 +1,23 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import {
-    BufferAttribute,
-    BufferGeometry,
-    Float32BufferAttribute,
-    Vector3,
-  } from "three";
-  import { decodeFloat, fastHashArrayBuffer } from "@nodes/utils";
+  import { BufferGeometry, Group, Vector3 } from "three";
+
+  import { updateGeometries } from "./updateGeometries";
+  import { decodeFloat, splitNestedArray } from "@nodes/utils";
   import type { PerformanceStore } from "$lib/performance";
   import { AppSettings } from "$lib/settings/app-settings";
 
   export let centerCamera: boolean = true;
   export let perf: PerformanceStore;
+  export let scene: Group;
+
+  let geoGroup: Group;
 
   let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];
 
-  function fastArrayHash(arr: ArrayBuffer) {
-    let ints = new Uint8Array(arr);
-
-    const sampleDistance = Math.max(Math.floor(ints.length / 100), 1);
-    const sampleCount = Math.floor(ints.length / sampleDistance);
-
-    let hash = new Uint8Array(sampleCount);
-
-    for (let i = 0; i < sampleCount; i++) {
-      const index = i * sampleDistance;
-      hash[i] = ints[index];
-    }
-
-    return fastHashArrayBuffer(hash.buffer);
-  }
-
-  function createGeometryFromEncodedData(
-    encodedData: Int32Array,
-    geometry = new BufferGeometry(),
-  ): BufferGeometry {
-    // Extract data from the encoded array
-    let index = 1;
-    // const geometryType = encodedData[index++];
-    const vertexCount = encodedData[index++];
-    const faceCount = encodedData[index++];
-
-    // Indices
-    const indicesEnd = index + faceCount * 3;
-    const indices = encodedData.subarray(index, indicesEnd);
-    index = indicesEnd;
-
-    // Vertices
-    const vertices = new Float32Array(
-      encodedData.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
-    index = index + vertexCount * 3;
-    let hash = fastArrayHash(vertices);
-    let posAttribute = geometry.getAttribute(
-      "position",
-    ) as BufferAttribute | null;
-
-    if (geometry.userData?.hash === hash) {
-      return geometry;
-    }
-
-    if (posAttribute && posAttribute.count === vertexCount) {
-      posAttribute.set(vertices, 0);
-      posAttribute.needsUpdate = true;
-    } else {
-      geometry.setAttribute(
-        "position",
-        new Float32BufferAttribute(vertices, 3),
-      );
-    }
-
-    const normals = new Float32Array(
-      encodedData.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
-    index = index + vertexCount * 3;
-
-    if (
-      geometry.userData?.faceCount !== faceCount ||
-      geometry.userData?.vertexCount !== vertexCount
-    ) {
-      // Add data to geometry
-      geometry.setIndex([...indices]);
-    }
-
-    const normalsAttribute = geometry.getAttribute(
-      "normal",
-    ) as BufferAttribute | null;
-    if (normalsAttribute && normalsAttribute.count === vertexCount) {
-      normalsAttribute.set(normals, 0);
-      normalsAttribute.needsUpdate = true;
-    } else {
-      geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
-    }
-
-    geometry.userData = {
-      vertexCount,
-      faceCount,
-      hash,
-    };
-
-    return geometry;
-  }
-
-  function parse_args(input: Int32Array) {
-    let index = 0;
-    const length = input.length;
-    let res: Int32Array[] = [];
-
-    let nextBracketIndex = 0;
-    let argStartIndex = 0;
-    let depth = -1;
-
-    while (index < length) {
-      const value = input[index];
-
-      if (index === nextBracketIndex) {
-        nextBracketIndex = index + input[index + 1] + 1;
-        if (value === 0) {
-          depth++;
-        } else {
-          depth--;
-        }
-
-        if (depth === 1 && value === 0) {
-          // if opening bracket
-          argStartIndex = index + 2;
-        }
-
-        if (depth === 0 && value === 1) {
-          // if closing bracket
-          res.push(input.slice(argStartIndex, index));
-          argStartIndex = index + 2;
-        }
-
-        index = nextBracketIndex;
-        continue;
-      }
-
-      // we should not be here
-
-      index++;
-    }
-
-    return res;
-  }
+  let invalidate: () => void;
 
   function createLineGeometryFromEncodedData(encodedData: Int32Array) {
     const positions: Vector3[] = [];
@@ -166,16 +34,13 @@
     return positions;
   }
 
-  export let result: Int32Array;
-  $: result && updateGeometries();
-  function updateGeometries() {
-    let a = performance.now();
-    const inputs = parse_args(result);
-    let b = performance.now();
-    perf?.addPoint("split-result", b - a);
+  export const update = function update(result: Int32Array) {
+    perf?.addPoint("split-result");
+    const inputs = splitNestedArray(result);
+    perf?.endPoint();
 
     if ($AppSettings.showStemLines) {
-      a = performance.now();
+      perf?.addPoint("create-lines");
       lines = inputs
         .map((input) => {
           if (input[0] === 0) {
@@ -183,31 +48,27 @@
           }
         })
         .filter(Boolean) as Vector3[][];
-      b = performance.now();
-      perf?.addPoint("create-lines", b - a);
+      perf.endPoint();
     }
 
-    let totalVertices = 0;
-    let totalFaces = 0;
+    perf?.addPoint("update-geometries");
 
-    a = performance.now();
-    geometries = inputs
-      .map((input, i) => {
-        if (input[0] === 1) {
-          let geo = createGeometryFromEncodedData(input);
-          totalVertices += geo.userData.vertexCount;
-          totalFaces += geo.userData.faceCount;
-          return geo;
-        }
-      })
-      .filter(Boolean) as BufferGeometry[];
-    b = performance.now();
-    perf?.addPoint("create-geometries", b - a);
+    const { totalVertices, totalFaces } = updateGeometries(inputs, geoGroup);
+    perf?.endPoint();
+
     perf?.addPoint("total-vertices", totalVertices);
     perf?.addPoint("total-faces", totalFaces);
-  }
+    invalidate();
+  };
 </script>
 
 <Canvas>
-  <Scene {geometries} {lines} {centerCamera} />
+  <Scene
+    bind:scene
+    bind:geoGroup
+    bind:invalidate
+    {geometries}
+    {lines}
+    {centerCamera}
+  />
 </Canvas>

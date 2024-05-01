@@ -128,9 +128,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   async execute(graph: Graph, settings: Record<string, unknown>) {
 
-    this.perf?.startRun();
-
-    let a0 = performance.now();
+    this.perf?.addPoint("runtime");
 
     let a = performance.now();
 
@@ -250,16 +248,18 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // return the result of the parent of the output node
     const res = results[outputNode.id];
 
-    this.perf?.addPoint("runtime", performance.now() - a0);
-
-    this.perf?.stopRun();
-
     if (this.cache) {
       this.cache.size = sortedNodes.length * 2;
     }
 
+    this.perf?.endPoint("runtime");
+
     return res as unknown as Int32Array;
 
+  }
+
+  getPerformanceData() {
+    return this.perf?.get();
   }
 
 }

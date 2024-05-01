@@ -43,7 +43,6 @@
     ? filterInputs(node.tmp.type.inputs)
     : undefined;
   $: store = node ? createStore(node.props, nodeDefinition) : undefined;
-  $: console.log(nodeDefinition, store);
 
   let lastPropsHash = "";
   function updateNode() {
