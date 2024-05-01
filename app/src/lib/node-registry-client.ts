@@ -49,7 +49,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   async load(nodeIds: `${string}/${string}/${string}`[]) {
     const a = performance.now();
 
-    const nodes = await Promise.all(nodeIds.map(async id => {
+    const nodes = await Promise.all([...new Set(nodeIds).values()].map(async id => {
 
       if (this.nodes.has(id)) {
         return this.nodes.get(id)!;
