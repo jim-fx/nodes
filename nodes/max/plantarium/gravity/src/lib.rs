@@ -46,8 +46,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
             let mut offset_vec = Vec3::ZERO;
 
-            let original_length = path.get_length();
-
             for i in 0..path.length - 1 {
                 let alpha = i as f32 / (path.length - 1) as f32;
                 let start_index = i * 4;
@@ -91,7 +89,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
                 offset_vec += final_end_point - end_point;
             }
-            log!("length: {} final: {}", original_length, output.get_length());
             output_data
         })
         .collect();

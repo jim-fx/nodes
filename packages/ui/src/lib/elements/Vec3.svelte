@@ -3,7 +3,6 @@
 
 	export let value = [0, 0, 0];
 	export let id = '';
-	$: console.log(value);
 </script>
 
 <div>
