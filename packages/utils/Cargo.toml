@@ -2,6 +2,9 @@
 name = "nodarium_utils"
 version = "0.1.0"
 edition = "2021"
+description = "A collection of utilities for Nodarium"
+license = "MIT"
+repository = "https://github.com/jim-fx/nodes"
 
 [features]
 default = ["console_error_panic_hook"]
