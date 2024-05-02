@@ -1,6 +1,6 @@
 use nodarium_macros::include_definition_file;
 use nodarium_utils::{
-    concat_args, evaluate_float, evaluate_int, evaluate_vec3, geometry::wrap_path_mut,
+    concat_args, evaluate_float, evaluate_int, evaluate_vec3, geometry::wrap_path_mut, log,
     reset_call_count, set_panic_hook, split_args,
 };
 use noise::{HybridMulti, MultiFractal, NoiseFn, OpenSimplex};
@@ -73,7 +73,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                 let px = j as f64 + a * length * scale;
                 let py = a * scale as f64;
 
-                path.points[i * 4] = noise_x.get([px, py]) as f32
+                path.points[i * 4] += noise_x.get([px, py]) as f32
                     * directional_strength[0]
                     * strength
                     * lerp(1.0, a as f32, fix_bottom);
