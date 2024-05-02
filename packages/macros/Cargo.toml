@@ -1,7 +1,11 @@
 [package]
-name = "macros"
+name = "nodarium_macros"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Procedural macros for the nodarium crate"
+homepage = "https://nodes.max-richter.dev/docs"
+repository = "https://github.com/jim-fx/nodes"
 
 [lib]
 proc-macro = true
