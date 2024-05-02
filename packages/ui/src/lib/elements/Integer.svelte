@@ -1,19 +1,13 @@
 <script lang="ts">
-	let {
-		min = 0,
-		max = 10,
-		step = 1,
-		value = $bindable(0),
-		id,
-		onchange
-	}: {
-		min?: number;
-		max?: number;
-		step?: number;
-		value?: number;
-		id?: string;
-		onchange?: (num: number) => void;
-	} = $props();
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
+
+	// Styling
+	export let min: number | undefined = undefined;
+	export let max: number | undefined = undefined;
+	export let step = 1;
+	export let value = 0;
+	export let id = '';
 
 	if (!value) {
 		value = 0;
@@ -21,22 +15,18 @@
 
 	let inputEl: HTMLInputElement;
 	let wrapper: HTMLDivElement;
-	$effect(() => {
-		if (value !== undefined) {
-			update();
-		}
-	});
+	$: value !== undefined && update();
 
 	let prev = -1;
 	function update() {
 		if (prev === value) return;
 		prev = value;
-		onchange?.(value);
+		dispatch('change', parseFloat(value + ''));
 	}
 
-	let width = $derived(
-		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 30) + 'px' : '20px'
-	);
+	$: width = Number.isFinite(value)
+		? Math.max((value?.toString().length ?? 1) * 8, 30) + 'px'
+		: '20px';
 
 	function handleChange(change: number) {
 		value = Math.max(min ?? -Infinity, Math.min(+value + change, max ?? Infinity));
@@ -88,14 +78,13 @@
 	role="slider"
 	tabindex="0"
 	aria-valuenow={value}
-	onmousedown={handleMouseDown}
-	onmouseup={handleMouseUp}
+	on:mousedown={handleMouseDown}
+	on:mouseup={handleMouseUp}
 >
 	{#if typeof min !== 'undefined' && typeof max !== 'undefined'}
-		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`}
-		></span>
+		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`} />
 	{/if}
-	<button onclick={() => handleChange(-step)}>-</button>
+	<button on:click={() => handleChange(-step)}>-</button>
 	<input
 		bind:value
 		bind:this={inputEl}
@@ -107,7 +96,7 @@
 		style={`width:${width};`}
 	/>
 
-	<button onclick={() => handleChange(+step)}>+</button>
+	<button on:click={() => handleChange(+step)}>+</button>
 </div>
 
 <style>
@@ -170,3 +159,4 @@
 		border-style: none;
 	}
 </style>
+

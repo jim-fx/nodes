@@ -80,7 +80,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
                 }
 
                 // Correct midpoint length
-                mid_point *= mid_point.length() / length;
+                mid_point *= length / mid_point.length();
 
                 let final_end_point = start_point + mid_point;
                 let offset_end_point = end_point + offset_vec;

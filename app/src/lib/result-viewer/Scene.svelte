@@ -11,19 +11,42 @@
   import { AppSettings } from "../settings/app-settings";
   import Camera from "./Camera.svelte";
 
-  const d = useThrelte();
+  const threlte = useThrelte();
 
-  export const invalidate = d.invalidate;
+  export const invalidate = function () {
+    if (scene) {
+      geometries = scene.children
+        .filter(
+          (child) => "geometry" in child && child.isObject3D && child.geometry,
+        )
+        .map((child) => {
+          return child.geometry;
+        });
+    }
 
-  export let geometries: BufferGeometry[];
+    if (geometries && scene && centerCamera) {
+      const aabb = new Box3().setFromObject(scene);
+      center = aabb
+        .getCenter(new Vector3())
+        .max(new Vector3(-4, -4, -4))
+        .min(new Vector3(4, 4, 4));
+    }
+    threlte.invalidate();
+  };
+
+  let geometries: BufferGeometry[] = [];
   export let lines: Vector3[][];
-  export let scene;
-  let geos: Group;
-  $: scene = geos;
-  export let geoGroup: Group;
+  export let scene: Group;
 
   export let centerCamera: boolean = true;
   let center = new Vector3(0, 4, 0);
+
+  $: if ($AppSettings && scene) {
+    scene.children.forEach((child) => {
+      child.material.wireframe = $AppSettings.wireframe;
+      threlte.invalidate();
+    });
+  }
 
   function getPosition(geo: BufferGeometry, i: number) {
     return [
@@ -31,14 +54,6 @@
       geo.attributes.position.array[i + 1],
       geo.attributes.position.array[i + 2],
     ] as Vector3Tuple;
-  }
-
-  $: if (geometries && geos && centerCamera) {
-    const aabb = new Box3().setFromObject(geos);
-    center = aabb
-      .getCenter(new Vector3())
-      .max(new Vector3(-4, -4, -4))
-      .min(new Vector3(4, 4, 4));
   }
 </script>
 
@@ -48,7 +63,7 @@
   <T.GridHelper args={[20, 20]} />
 {/if}
 
-<T.Group bind:ref={geos}>
+<T.Group>
   {#each geometries as geo}
     {#if $AppSettings.showIndices}
       {#each geo.attributes.position.array as _, i}
@@ -66,7 +81,7 @@
     {/if}
   {/each}
 
-  <T.Group bind:ref={geoGroup}></T.Group>
+  <T.Group bind:ref={scene}></T.Group>
 </T.Group>
 
 {#if $AppSettings.showStemLines && lines}

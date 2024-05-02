@@ -1,9 +1,9 @@
 use nodarium_macros::include_definition_file;
 use nodarium_utils::{
-    encode_float, evaluate_float, geometry::calculate_normals, set_panic_hook, split_args, wrap_arg,
+    encode_float, evaluate_float, geometry::calculate_normals, log, set_panic_hook, split_args,
+    wrap_arg,
 };
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 include_definition_file!("src/input.json");
 
@@ -15,7 +15,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let args = split_args(input);
 
-    console::log_1(&format!("WASM(cube): input: {:?} -> {:?}", input, args ).into());
+    log!("WASM(cube): input: {:?} -> {:?}", input, args);
 
     let size = evaluate_float(args[0]);
 
@@ -79,6 +79,10 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
     
     calculate_normals(&mut cube_geometry);
 
-    wrap_arg(&cube_geometry)
+    let res = wrap_arg(&cube_geometry);
+
+    log!("WASM(cube): output: {:?}", res);
+
+    res
 
 }

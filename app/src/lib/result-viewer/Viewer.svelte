@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { BufferGeometry, Group, Vector3 } from "three";
+  import { Group, Vector3 } from "three";
 
   import { updateGeometries } from "./updateGeometries";
   import { decodeFloat, splitNestedArray } from "@nodes/utils";
@@ -12,9 +12,6 @@
   export let perf: PerformanceStore;
   export let scene: Group;
 
-  let geoGroup: Group;
-
-  let geometries: BufferGeometry[] = [];
   let lines: Vector3[][] = [];
 
   let invalidate: () => void;
@@ -53,7 +50,7 @@
 
     perf?.addPoint("update-geometries");
 
-    const { totalVertices, totalFaces } = updateGeometries(inputs, geoGroup);
+    const { totalVertices, totalFaces } = updateGeometries(inputs, scene);
     perf?.endPoint();
 
     perf?.addPoint("total-vertices", totalVertices);
@@ -63,12 +60,5 @@
 </script>
 
 <Canvas>
-  <Scene
-    bind:scene
-    bind:geoGroup
-    bind:invalidate
-    {geometries}
-    {lines}
-    {centerCamera}
-  />
+  <Scene bind:scene bind:invalidate {lines} {centerCamera} />
 </Canvas>

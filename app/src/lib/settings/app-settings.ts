@@ -1,6 +1,6 @@
 import localStore from "$lib/helpers/localStore";
 
-export const AppSettings = localStore("node-settings", {
+export const AppSettings = localStore("node.settings", {
   theme: 0,
   showGrid: true,
   showNodeGrid: true,

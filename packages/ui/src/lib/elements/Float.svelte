@@ -1,19 +1,9 @@
 <script lang="ts">
-	let {
-		onchange,
-		value = $bindable(0),
-		id,
-		step = 0.01,
-		min = 0,
-		max = 1
-	}: {
-		onchange?: (num: number) => void;
-		value?: number;
-		id?: string;
-		step?: number;
-		min?: number;
-		max?: number;
-	} = $props();
+	export let value = 0.5;
+	export let step = 0.01;
+	export let min = 0;
+	export let max = 1;
+	export let id = '';
 
 	if (min > max) {
 		[min, max] = [max, min];
@@ -28,34 +18,29 @@
 
 	let inputEl: HTMLInputElement;
 
-	$effect(() => {
-		if ((value || 0).toString().length > 5) {
-			value = strip(value || 0);
-		}
-	});
-
-	$effect(() => {
-		if (value !== undefined) handleChange();
-	});
-
+	$: if ((value || 0).toString().length > 5) {
+		value = strip(value || 0);
+	}
+	$: value !== undefined && handleChange();
 	let oldValue: number;
 	function handleChange() {
 		if (value === oldValue) return;
 		oldValue = value;
-		onchange?.(value);
 	}
 
-	let width = $derived(
-		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px' : '20px'
-	);
+	$: width = Number.isFinite(value)
+		? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px'
+		: '20px';
 
-	let isMouseDown = $state(false);
+	let isMouseDown = false;
 	let downV = 0;
 	let vx = 0;
 	let rect: DOMRect;
 
 	function handleMouseDown(ev: MouseEvent) {
 		ev.preventDefault();
+
+		inputEl.focus();
 
 		isMouseDown = true;
 
@@ -97,7 +82,6 @@
 
 	function handleMouseMove(ev: MouseEvent) {
 		vx = (ev.clientX - rect.left) / rect.width;
-		/* vy = ev.clientY - downY; */
 
 		if (ev.ctrlKey) {
 			let v = min + (max - min) * vx;
@@ -117,9 +101,9 @@
 		{step}
 		{max}
 		{min}
-		onkeydown={handleKeyDown}
-		onmousedown={handleMouseDown}
-		onmouseup={handleMouseUp}
+		on:keydown={handleKeyDown}
+		on:mousedown={handleMouseDown}
+		on:mouseup={handleMouseUp}
 		type="number"
 		style={`width:${width};`}
 	/>

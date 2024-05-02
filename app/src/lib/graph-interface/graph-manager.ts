@@ -407,7 +407,10 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
     // check if socket types match
     const fromSocketType = from.tmp?.type?.outputs?.[fromSocket];
-    const toSocketType = to.tmp?.type?.inputs?.[toSocket]?.type;
+    const toSocketType = [to.tmp?.type?.inputs?.[toSocket]?.type];
+    if (to.tmp?.type?.inputs?.[toSocket]?.accepts) {
+      toSocketType.push(...(to?.tmp?.type?.inputs?.[toSocket]?.accepts || []));
+    }
 
     if (!areSocketsCompatible(fromSocketType, toSocketType)) {
       logger.error(`Socket types do not match: ${fromSocketType} !== ${toSocketType}`);
@@ -534,7 +537,11 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
         const inputs = node?.tmp?.type?.inputs;
         if (!inputs) continue;
         for (const key in inputs) {
-          if (areSocketsCompatible(ownType, inputs[key].type) && edges.get(node.id) !== key) {
+
+          const otherType = [inputs[key].type];
+          otherType.push(...(inputs[key].accepts || []));
+
+          if (areSocketsCompatible(ownType, otherType) && edges.get(node.id) !== key) {
             sockets.push([node, key]);
           }
         }

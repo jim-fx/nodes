@@ -1,9 +1,7 @@
 <script lang="ts">
-	let {
-		id,
-		value = $bindable(0),
-		options
-	}: { id: string; value: number; options: string[] } = $props();
+	export let options: string[] = [];
+	export let value: number = 0;
+	export let id = '';
 </script>
 
 <select {id} bind:value>
@@ -23,3 +21,4 @@
 		border: none;
 	}
 </style>
+

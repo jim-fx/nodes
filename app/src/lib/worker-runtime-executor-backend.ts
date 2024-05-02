@@ -2,9 +2,12 @@ import { MemoryRuntimeExecutor, MemoryRuntimeCache } from "./runtime-executor";
 import { RemoteNodeRegistry } from "./node-registry-client";
 import type { Graph } from "@nodes/types";
 import { createPerformanceStore } from "./performance/store";
+import { IndexDBCache } from "./node-registry-cache";
 
 const cache = new MemoryRuntimeCache();
+const indexDbCache = new IndexDBCache("node-registry");
 const nodeRegistry = new RemoteNodeRegistry("");
+nodeRegistry.cache = indexDbCache;
 const executor = new MemoryRuntimeExecutor(nodeRegistry, cache);
 
 const performanceStore = createPerformanceStore("worker");

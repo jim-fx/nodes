@@ -13,7 +13,6 @@
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
-  import { setContext } from "svelte";
   import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
   import Panel from "$lib/settings/Panel.svelte";
@@ -26,18 +25,30 @@
     MemoryRuntimeCache,
     MemoryRuntimeExecutor,
   } from "$lib/runtime-executor";
+  import { IndexDBCache } from "$lib/node-registry-cache";
   import { decodeNestedArray, fastHashString } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
 
   let performanceStore = createPerformanceStore("page");
 
+  const registryCache = new IndexDBCache("node-registry");
   const nodeRegistry = new RemoteNodeRegistry("");
+  nodeRegistry.cache = registryCache;
   const workerRuntime = new WorkerRuntimeExecutor();
   const runtimeCache = new MemoryRuntimeCache();
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
   memoryRuntime.perf = performanceStore;
 
   globalThis.decode = decodeNestedArray;
+
+  globalThis.clearCache = () => {
+    registryCache.clear();
+    runtimeCache.clear();
+    localStorage.clear();
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
 
   $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
 
@@ -51,6 +62,9 @@
 
   let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
+  $: if (manager) {
+    managerStatus = manager.status;
+  }
 
   async function randomGenerate() {
     const g = manager.serialize();
@@ -82,6 +96,7 @@
 
   async function handleResult(_graph: Graph, _settings: Record<string, any>) {
     if (!_settings) return;
+    if ($managerStatus !== "idle") return;
     const inputHash = fastHashString(
       JSON.stringify(_graph) + JSON.stringify(_settings),
     );
@@ -129,6 +144,10 @@
     }
 
     return true;
+  }
+
+  $: if ($managerStatus === "idle") {
+    handleResult(manager.serialize(), $graphSettings);
   }
 
   $: if (AppSettings) {

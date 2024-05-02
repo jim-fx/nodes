@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Float from './Float.svelte';
 
-	let { value = $bindable([0, 0, 0]), id }: { value: number[]; id: string } = $props();
+	export let value = [0, 0, 0];
+	export let id = '';
+	$: console.log(value);
 </script>
 
 <div>

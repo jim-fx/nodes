@@ -10,21 +10,6 @@
 	export let input: NodeInput;
 	export let value: any;
 	export let id: string;
-
-	$: if (value === undefined || value === null) {
-		switch (input.type) {
-			case 'float':
-				value = 0;
-			case 'integer':
-				value = 0;
-			case 'boolean':
-				value = false;
-			case 'select':
-				value = 0;
-			case 'vec3':
-				value = [0, 0, 0];
-		}
-	}
 </script>
 
 {#if input.type === 'float'}
@@ -34,7 +19,8 @@
 {:else if input.type === 'boolean'}
 	<Checkbox {id} bind:value />
 {:else if input.type === 'select'}
-	<Select {id} bind:value options={input?.options || []} />
+	<Select {id} bind:value options={input.options} />
 {:else if input.type === 'vec3'}
 	<Vec3 {id} bind:value />
 {/if}
+

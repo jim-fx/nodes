@@ -17,7 +17,7 @@
     camera: Vector3Tuple;
     target: Vector3Tuple;
   }>("nodes.camera.transform", {
-    camera: [0, 0, 10],
+    camera: [10, 10, 10],
     target: [0, 0, 0],
   });
 

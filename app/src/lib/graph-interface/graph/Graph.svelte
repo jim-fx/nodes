@@ -12,7 +12,7 @@
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
   import type { Node, NodeId, Node as NodeType, Socket } from "@nodes/types";
-  import { GraphSchema, NodeDefinitionSchema } from "@nodes/types";
+  import { GraphSchema } from "@nodes/types";
   import FloatingEdge from "../edges/FloatingEdge.svelte";
   import {
     activeNodeId,
@@ -25,7 +25,6 @@
   import { createKeyMap } from "../../helpers/createKeyMap";
   import BoxSelection from "../BoxSelection.svelte";
   import AddMenu from "../AddMenu.svelte";
-  import { createWasmWrapper } from "@nodes/utils";
 
   import HelpView from "../HelpView.svelte";
   import FileSaver from "file-saver";
@@ -819,11 +818,10 @@
     isDragging = false;
     if (!event.dataTransfer) return;
     const nodeId = event.dataTransfer.getData("data/node-id") as NodeId;
+    let mx = event.clientX - rect.x;
+    let my = event.clientY - rect.y;
 
     if (nodeId) {
-      let mx = event.clientX - rect.x;
-      let my = event.clientY - rect.y;
-
       let nodeOffsetX = event.dataTransfer.getData("data/node-offset-x");
       let nodeOffsetY = event.dataTransfer.getData("data/node-offset-y");
       if (nodeOffsetX && nodeOffsetY) {
@@ -852,13 +850,16 @@
 
       if (file.type === "application/wasm") {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          const buffer = e.target?.result as Buffer;
-          if (buffer) {
-            const wrapper = createWasmWrapper(buffer);
-            const definition = wrapper.get_definition();
-            const res = NodeDefinitionSchema.parse(definition);
-            console.log(res);
+        reader.onload = async (e) => {
+          const buffer = e.target?.result;
+          if (buffer?.constructor === ArrayBuffer) {
+            const nodeType = await manager.registry.register(buffer);
+
+            manager.createNode({
+              type: nodeType.id,
+              props: {},
+              position: projectScreenToWorld(mx, my),
+            });
           }
         };
         reader.readAsArrayBuffer(file);
