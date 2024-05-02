@@ -2,6 +2,10 @@
 name = "nodarium_types"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Types for Nodarium"
+website = "https://nodes.max-richter.dev"
+repository = "https://github.com/jim-fx/nodes"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
