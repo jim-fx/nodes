@@ -281,6 +281,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rotate"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "glam",
+ "macros",
+ "serde",
+ "serde-wasm-bindgen",
+ "utils",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,14 +1,16 @@
 <script lang="ts">
   import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
-  import type { NodeDefinitions } from "@nodes/types";
+  import type { NodeDefinition } from "@nodes/types";
 
-  export let node: NodeDefinitions;
+  export let node: NodeDefinition;
+
+  $: console.log({ node });
 
   let dragging = false;
 
   let nodeData = {
     id: 0,
-    type: node.id,
+    type: node?.id,
     position: [0, 0] as [number, number],
     props: {},
     tmp: {

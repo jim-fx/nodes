@@ -60,7 +60,9 @@
         {#await registry.fetchNodeDefinition(node.id)}
           <div>Loading...</div>
         {:then node}
-          <DraggableNode {node} />
+          {#if node}
+            <DraggableNode {node} />
+          {/if}
         {:catch error}
           <div>{error.message}</div>
         {/await}

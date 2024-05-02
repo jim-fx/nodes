@@ -127,3 +127,31 @@ export function humanizeNumber(number: number): string {
   return rounded + suffixes[baseIndex];
 }
 
+export function humanizeDuration(durationInMilliseconds: number) {
+  const millisecondsPerSecond = 1000;
+  const millisecondsPerMinute = 60000;
+  const millisecondsPerHour = 3600000;
+  const millisecondsPerDay = 86400000;
+
+  let days = Math.floor(durationInMilliseconds / millisecondsPerDay);
+  let hours = Math.floor((durationInMilliseconds % millisecondsPerDay) / millisecondsPerHour);
+  let minutes = Math.floor((durationInMilliseconds % millisecondsPerHour) / millisecondsPerMinute);
+  let seconds = Math.floor((durationInMilliseconds % millisecondsPerMinute) / millisecondsPerSecond);
+
+  let durationString = '';
+
+  if (days > 0) {
+    durationString += days + 'd ';
+  }
+  if (hours > 0) {
+    durationString += hours + 'h ';
+  }
+  if (minutes > 0) {
+    durationString += minutes + 'm ';
+  }
+  if (seconds > 0 || durationString === '') {
+    durationString += seconds + 's';
+  }
+
+  return durationString.trim();
+}

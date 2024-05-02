@@ -1,7 +1,7 @@
 <script lang="ts">
 	let {
 		onchange,
-		value = $bindable(),
+		value = $bindable(0),
 		id,
 		step = 0.01,
 		min = 0,
@@ -56,8 +56,6 @@
 
 	function handleMouseDown(ev: MouseEvent) {
 		ev.preventDefault();
-
-		inputEl.focus();
 
 		isMouseDown = true;
 

@@ -3,7 +3,7 @@
 		min = 0,
 		max = 10,
 		step = 1,
-		value = $bindable(),
+		value = $bindable(0),
 		id,
 		onchange
 	}: {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	let {
 		id,
-		value = $bindable(),
+		value = $bindable(0),
 		options
 	}: { id: string; value: number; options: string[] } = $props();
 </script>

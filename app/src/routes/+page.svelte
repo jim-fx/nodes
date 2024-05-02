@@ -26,7 +26,7 @@
     MemoryRuntimeCache,
     MemoryRuntimeExecutor,
   } from "$lib/runtime-executor";
-  import { fastHashString } from "@nodes/utils";
+  import { decodeNestedArray, fastHashString } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
 
   let performanceStore = createPerformanceStore("page");
@@ -36,6 +36,8 @@
   const runtimeCache = new MemoryRuntimeCache();
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
   memoryRuntime.perf = performanceStore;
+
+  globalThis.decode = decodeNestedArray;
 
   $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
 
