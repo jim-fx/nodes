@@ -1,5 +1,5 @@
-use macros::include_definition_file;
-use utils::{
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
     encode_float, evaluate_float, geometry::calculate_normals, set_panic_hook, split_args, wrap_arg,
 };
 use wasm_bindgen::prelude::*;

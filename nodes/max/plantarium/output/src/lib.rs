@@ -1,5 +1,5 @@
-use macros::include_definition_file;
-use utils::{
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
     concat_args, evaluate_int,
     geometry::{extrude_path, wrap_path},
     log, split_args,

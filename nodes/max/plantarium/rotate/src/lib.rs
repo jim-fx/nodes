@@ -1,6 +1,6 @@
 use glam::{Mat4, Vec3};
-use macros::include_definition_file;
-use utils::{
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
     concat_args, evaluate_float, evaluate_int, geometry::wrap_path_mut, log, set_panic_hook,
     split_args,
 };
@@ -69,4 +69,3 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     concat_args(output.iter().map(|x| x.as_slice()).collect())
 }
-

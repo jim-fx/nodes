@@ -1,11 +1,11 @@
 extern crate proc_macro;
+use nodarium_types::NodeDefinition;
 use proc_macro::TokenStream;
 use quote::quote;
 use std::env;
 use std::fs;
 use std::path::Path;
 use syn::{parse_macro_input, LitStr};
-use types::NodeDefinition;
 
 #[proc_macro]
 pub fn node_definition(input: TokenStream) -> TokenStream {

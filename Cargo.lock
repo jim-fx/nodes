@@ -13,10 +13,10 @@ name = "box"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -28,10 +28,10 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -64,10 +64,10 @@ name = "float"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -84,11 +84,11 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "noise",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -116,25 +116,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
-name = "macros"
-version = "0.1.0"
-dependencies = [
- "quote",
- "serde",
- "serde_json",
- "syn 1.0.109",
- "types",
-]
-
-[[package]]
 name = "math"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -145,10 +134,10 @@ name = "max-plantarium-triangle"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -159,12 +148,44 @@ name = "max-plantarium-vec3"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
+ "web-sys",
+]
+
+[[package]]
+name = "nodarium_macros"
+version = "0.1.0"
+dependencies = [
+ "nodarium_types",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "nodarium_types"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "nodarium_utils"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "glam",
+ "noise",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
  "web-sys",
 ]
 
@@ -174,11 +195,11 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "noise",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -216,10 +237,10 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde_json",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -272,10 +293,10 @@ name = "random"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]
@@ -286,10 +307,10 @@ version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
  "glam",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -354,10 +375,10 @@ name = "stem"
 version = "0.1.0"
 dependencies = [
  "console_error_panic_hook",
- "macros",
+ "nodarium_macros",
+ "nodarium_utils",
  "serde",
  "serde-wasm-bindgen",
- "utils",
  "wasm-bindgen",
  "wasm-bindgen-test",
  "web-sys",
@@ -386,31 +407,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "types"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
-
-[[package]]
-name = "utils"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook",
- "glam",
- "noise",
- "serde",
- "serde_json",
- "wasm-bindgen",
- "web-sys",
-]
 
 [[package]]
 name = "wasm-bindgen"

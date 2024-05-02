@@ -1,5 +1,7 @@
-use macros::include_definition_file;
-use utils::{decode_float, encode_float, evaluate_int, split_args, wrap_arg};
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
+    decode_float, encode_float, evaluate_int, set_panic_hook, split_args, wrap_arg,
+};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -9,7 +11,7 @@ include_definition_file!("src/input.json");
 #[wasm_bindgen]
 pub fn execute(input: &[i32]) -> Vec<i32> {
 
-    utils::set_panic_hook();
+    set_panic_hook();
 
     let args = split_args(input);
 

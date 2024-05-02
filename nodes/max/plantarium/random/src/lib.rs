@@ -1,5 +1,5 @@
-use macros::include_definition_file;
-use utils::{concat_args, set_panic_hook, split_args};
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{concat_args, set_panic_hook, split_args};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/definition.json");

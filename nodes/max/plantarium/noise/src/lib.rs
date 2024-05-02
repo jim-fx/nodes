@@ -1,9 +1,9 @@
-use macros::include_definition_file;
-use noise::{HybridMulti, MultiFractal, NoiseFn, OpenSimplex};
-use utils::{
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
     concat_args, evaluate_float, evaluate_int, evaluate_vec3, geometry::wrap_path_mut,
     reset_call_count, set_panic_hook, split_args,
 };
+use noise::{HybridMulti, MultiFractal, NoiseFn, OpenSimplex};
 use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/input.json");

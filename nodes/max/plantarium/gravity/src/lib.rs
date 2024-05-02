@@ -1,6 +1,6 @@
 use glam::Vec3;
-use macros::include_definition_file;
-use utils::{
+use nodarium_macros::include_definition_file;
+use nodarium_utils::{
     concat_args, evaluate_float, evaluate_int,
     geometry::{wrap_path, wrap_path_mut},
     log, reset_call_count, set_panic_hook, split_args,
