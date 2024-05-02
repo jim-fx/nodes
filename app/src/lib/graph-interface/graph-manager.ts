@@ -11,6 +11,8 @@ const logger = createLogger("graph-manager");
 
 logger.mute();
 
+const clone = "structuredClone" in self ? self.structuredClone : (args: any) => JSON.parse(JSON.stringify(args));
+
 function areSocketsCompatible(output: string | undefined, inputs: string | string[] | undefined) {
   if (Array.isArray(inputs) && output) {
     return inputs.includes(output);
@@ -67,7 +69,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     const serialized = { id: this.graph.id, settings: this.settings, nodes, edges };
     logger.groupEnd();
 
-    return serialized;
+    return clone(serialized);
   }
 
 

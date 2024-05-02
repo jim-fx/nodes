@@ -18,8 +18,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let plants = split_args(args[0]);
     let axis = evaluate_int(args[1]); // 0 =x, 1 = y, 2 = z
-    let spread = evaluate_int(args[2]);
-    let angle = evaluate_float(args[3]);
+    let spread = evaluate_int(args[3]);
 
     let output: Vec<Vec<i32>> = plants
         .iter()
@@ -34,7 +33,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
             let path = wrap_path_mut(&mut path_data);
 
-            let length = path.get_length() as f64;
+            let angle = evaluate_float(args[2]);
 
             let origin = [path.points[0], path.points[1], path.points[2]];
 

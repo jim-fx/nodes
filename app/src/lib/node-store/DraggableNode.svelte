@@ -4,8 +4,6 @@
 
   export let node: NodeDefinition;
 
-  $: console.log({ node });
-
   let dragging = false;
 
   let nodeData = {

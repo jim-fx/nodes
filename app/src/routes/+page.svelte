@@ -19,7 +19,7 @@
   import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
   import { createPerformanceStore } from "$lib/performance";
-  import type { Scene } from "three";
+  import type { Group, Scene } from "three";
   import ExportSettings from "$lib/settings/panels/ExportSettings.svelte";
   import {
     MemoryRuntimeCache,
@@ -28,6 +28,7 @@
   import { IndexDBCache } from "$lib/node-registry-cache";
   import { decodeNestedArray, fastHashString } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
+  import { debounceAsyncFunction, withArgsChangeOnly } from "$lib/helpers";
 
   let performanceStore = createPerformanceStore("page");
 
@@ -53,7 +54,7 @@
   $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
 
   let activeNode: Node | undefined;
-  let scene: Scene;
+  let scene: Group;
   let updateViewerResult: (result: Int32Array) => void;
 
   let graph = localStorage.getItem("graph")
@@ -69,8 +70,7 @@
   async function randomGenerate() {
     const g = manager.serialize();
     const s = { ...$graphSettings, randomSeed: true };
-    const res = await handleResult(g, s);
-    return res;
+    await handleUpdate(g, s);
   }
 
   let keymap: ReturnType<typeof createKeyMap>;
@@ -84,71 +84,36 @@
   let graphSettings = writable<Record<string, any>>({});
   let graphSettingTypes = {};
 
-  let isWorking = false;
+  const handleUpdate = debounceAsyncFunction(
+    async (g: Graph, s: Record<string, any>) => {
+      performanceStore.startRun();
+      try {
+        let a = performance.now();
+        const graphResult = await runtime.execute(g, s);
+        let b = performance.now();
 
-  let unfinished:
-    | {
-        graph: Graph;
-        settings: Record<string, any>;
-        hash: number;
-      }
-    | undefined;
-
-  async function handleResult(_graph: Graph, _settings: Record<string, any>) {
-    if (!_settings) return;
-    if ($managerStatus !== "idle") return;
-    const inputHash = fastHashString(
-      JSON.stringify(_graph) + JSON.stringify(_settings),
-    );
-    if (isWorking) {
-      unfinished = {
-        graph: _graph,
-        settings: _settings,
-        hash: inputHash,
-      };
-      return false;
-    }
-    isWorking = true;
-    performanceStore.startRun();
-    try {
-      let a = performance.now();
-      const graphResult = await runtime.execute(_graph, _settings);
-      let b = performance.now();
-
-      if ($AppSettings.useWorker) {
-        let perfData = await runtime.getPerformanceData();
-        let lastRun = perfData?.at(-1);
-        if (lastRun?.total) {
-          lastRun.runtime = lastRun.total;
-          delete lastRun.total;
-          performanceStore.mergeData(lastRun);
-          performanceStore.addPoint(
-            "worker-transfer",
-            b - a - lastRun.runtime[0],
-          );
+        if ($AppSettings.useWorker) {
+          let perfData = await runtime.getPerformanceData();
+          let lastRun = perfData?.at(-1);
+          if (lastRun?.total) {
+            lastRun.runtime = lastRun.total;
+            delete lastRun.total;
+            performanceStore.mergeData(lastRun);
+            performanceStore.addPoint(
+              "worker-transfer",
+              b - a - lastRun.runtime[0],
+            );
+          }
         }
+
+        updateViewerResult(graphResult);
+      } catch (error) {
+        console.log("errors", error);
+      } finally {
+        performanceStore.stopRun();
       }
-
-      updateViewerResult(graphResult);
-    } catch (error) {
-      console.log("errors", error);
-    } finally {
-      performanceStore.stopRun();
-      isWorking = false;
-    }
-
-    if (unfinished && unfinished.hash === inputHash) {
-      let d = unfinished;
-      unfinished = undefined;
-      await handleResult(d.graph, d.settings);
-    }
-
-    return true;
-  }
-
-  $: if ($managerStatus === "idle") {
-    handleResult(manager.serialize(), $graphSettings);
-  }
+    },
+  );
 
   $: if (AppSettings) {
     //@ts-ignore
@@ -203,7 +168,7 @@
           bind:showHelp={$AppSettings.showHelp}
           bind:settings={graphSettings}
           bind:settingTypes={graphSettingTypes}
-          on:result={(ev) => handleResult(ev.detail, $graphSettings)}
+          on:result={(ev) => handleUpdate(ev.detail, $graphSettings)}
           on:save={handleSave}
         />
         <Settings>

@@ -155,3 +155,55 @@ export function humanizeDuration(durationInMilliseconds: number) {
 
   return durationString.trim();
 }
+export function debounceAsyncFunction<T extends any[], R>(func: (...args: T) => Promise<R>): (...args: T) => Promise<R> {
+  let currentPromise: Promise<R> | null = null;
+  let nextArgs: T | null = null;
+  let resolveNext: ((result: R) => void) | null = null;
+
+  const debouncedFunction = async (...args: T): Promise<R> => {
+    if (currentPromise) {
+      // Store the latest arguments and create a new promise to resolve them later
+      nextArgs = args;
+      return new Promise<R>((resolve) => {
+        resolveNext = resolve;
+      });
+    } else {
+      // Execute the function immediately
+      try {
+        currentPromise = func(...args);
+        const result = await currentPromise;
+        return result;
+      } finally {
+        currentPromise = null;
+        // If there are stored arguments, call the function again with the latest arguments
+        if (nextArgs) {
+          const argsToUse = nextArgs;
+          const resolver = resolveNext;
+          nextArgs = null;
+          resolveNext = null;
+          resolver!(await debouncedFunction(...argsToUse));
+        }
+      }
+    }
+  };
+
+  return debouncedFunction;
+}
+
+export function withArgsChangeOnly<T extends any[], R>(func: (...args: T) => R): (...args: T) => R {
+  let lastArgs: T | undefined = undefined;
+  let lastResult: R;
+
+  return (...args: T): R => {
+    // Check if arguments are the same as last call
+    if (lastArgs && args.length === lastArgs.length && args.every((val, index) => val === lastArgs?.[index])) {
+      return lastResult; // Return cached result if arguments haven't changed
+    }
+
+    // Call the function with new arguments
+    lastResult = func(...args);
+    lastArgs = args; // Update stored arguments
+    return lastResult; // Return new result
+  };
+}
+
