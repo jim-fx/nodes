@@ -13,6 +13,16 @@
 
   const threlte = useThrelte();
 
+  export let fps: number[] = [];
+  let renderer = threlte.renderer;
+  let rendererRender = renderer.render;
+  renderer.render = function (scene, camera) {
+    const a = performance.now();
+    rendererRender.call(renderer, scene, camera);
+    fps.push(performance.now() - a);
+    fps = fps.slice(-100);
+  };
+
   export const invalidate = function () {
     if (scene) {
       geometries = scene.children

@@ -7,10 +7,12 @@
   import { decodeFloat, splitNestedArray } from "@nodes/utils";
   import type { PerformanceStore } from "$lib/performance";
   import { AppSettings } from "$lib/settings/app-settings";
+  import SmallPerformanceViewer from "$lib/performance/SmallPerformanceViewer.svelte";
 
   export let centerCamera: boolean = true;
   export let perf: PerformanceStore;
   export let scene: Group;
+  let fps: number[] = [];
 
   let lines: Vector3[][] = [];
 
@@ -59,6 +61,10 @@
   };
 </script>
 
+{#if $AppSettings.showPerformancePanel}
+  <SmallPerformanceViewer {fps} store={perf} />
+{/if}
+
 <Canvas>
-  <Scene bind:scene bind:invalidate {lines} {centerCamera} />
+  <Scene bind:scene bind:invalidate {lines} {centerCamera} bind:fps />
 </Canvas>

@@ -137,6 +137,7 @@ export function humanizeDuration(durationInMilliseconds: number) {
   let hours = Math.floor((durationInMilliseconds % millisecondsPerDay) / millisecondsPerHour);
   let minutes = Math.floor((durationInMilliseconds % millisecondsPerHour) / millisecondsPerMinute);
   let seconds = Math.floor((durationInMilliseconds % millisecondsPerMinute) / millisecondsPerSecond);
+  let millis = durationInMilliseconds % millisecondsPerSecond;
 
   let durationString = '';
 
@@ -149,8 +150,12 @@ export function humanizeDuration(durationInMilliseconds: number) {
   if (minutes > 0) {
     durationString += minutes + 'm ';
   }
-  if (seconds > 0 || durationString === '') {
+  if (seconds > 0) {
     durationString += seconds + 's';
+  }
+
+  if (millis > 0 || durationString === '') {
+    durationString += millis + 'ms';
   }
 
   return durationString.trim();

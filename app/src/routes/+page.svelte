@@ -59,7 +59,7 @@
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
-    : templates.plant;
+    : templates.defaultPlant;
 
   let manager: GraphManager;
   let managerStatus: Writable<"loading" | "error" | "idle">;
