@@ -136,16 +136,6 @@
     border: solid thin var(--outline);
     border-bottom: none;
   }
-  textarea {
-    width: 100%;
-    height: 1em;
-    font-size: 1em;
-    padding: 0.5em;
-    border: solid thin var(--outline);
-    background: var(--layer-2);
-    box-sizing: border-box;
-    height: 2.5em;
-  }
   i {
     opacity: 0.5;
     font-size: 0.8em;

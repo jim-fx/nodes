@@ -1,17 +1,16 @@
-import { readable, type Readable } from "svelte/store";
-
 export type PerformanceData = Record<string, number[]>[];
 
-export interface PerformanceStore extends Readable<PerformanceData> {
+export interface PerformanceStore {
   startRun(): void;
   stopRun(): void;
   addPoint(name: string, value?: number): void;
   endPoint(name?: string): void;
   mergeData(data: PerformanceData[number]): void;
   get: () => PerformanceData;
+  subscribe: (cb: (v: PerformanceData) => void) => () => void;
 }
 
-export function createPerformanceStore(id?: string): PerformanceStore {
+export function createPerformanceStore(): PerformanceStore {
 
   let data: PerformanceData = [];
 
@@ -19,11 +18,18 @@ export function createPerformanceStore(id?: string): PerformanceStore {
   let temp: Record<string, number> | undefined;
   let lastPoint: string | undefined;
 
-  let set: (v: PerformanceData) => void;
+  const listeners: ((v: PerformanceData) => void)[] = [];
+  function subscribe(cb: (v: PerformanceData) => void) {
+    listeners.push(cb);
+    return () => {
+      const i = listeners.indexOf(cb);
+      if (i > -1) listeners.splice(i, 1);
+    }
+  }
 
-  const { subscribe } = readable<PerformanceData>([], (_set) => {
-    set = _set;
-  });
+  function set(v: PerformanceData) {
+    listeners.forEach((l) => l(v));
+  }
 
   function startRun() {
     if (currentRun) return;

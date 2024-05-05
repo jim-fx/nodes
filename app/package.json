@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nodes/registry": "link:../packages/registry",
+    "@nodes/runtime": "link:../packages/runtime",
     "@nodes/ui": "link:../packages/ui",
     "@nodes/utils": "link:../packages/utils",
     "@sveltejs/kit": "^2.5.7",

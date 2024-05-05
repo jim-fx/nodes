@@ -1,8 +1,6 @@
 import { Graph, NodeDefinition, NodeId } from "./types";
 
 export interface NodeRegistry {
-
-
   /**
   * The status of the node registry
   * @remarks The status should be "loading" when the registry is loading, "ready" when the registry is ready, and "error" if an error occurred while loading the registry
@@ -36,7 +34,7 @@ export interface NodeRegistry {
   register: (wasmBuffer: ArrayBuffer) => Promise<NodeDefinition>;
 
 
-  cache?: RuntimeCache<ArrayBuffer>;
+  cache?: AsyncCache<ArrayBuffer>;
 }
 
 export interface RuntimeExecutor {
@@ -48,8 +46,7 @@ export interface RuntimeExecutor {
   execute: (graph: Graph, settings: Record<string, unknown>) => Promise<Int32Array>;
 }
 
-export interface RuntimeCache<T = unknown> {
-
+export interface SyncCache<T = unknown> {
   /**
   * The maximum number of items that can be stored in the cache
   * @remarks When the cache size exceeds this value, the oldest items should be removed
@@ -61,16 +58,41 @@ export interface RuntimeCache<T = unknown> {
    * @param key - The key to get the value for
    * @returns The value for the given key, or undefined if no such value exists
    */
-  get: (key: string) => T | Promise<T> | undefined;
+  get: (key: string) => T | undefined;
   /**
    * Set the value for the given key
    * @param key - The key to set the value for
    * @param value - The value to set
    */
-  set: (key: string, value: T) => void | Promise<void>;
+  set: (key: string, value: T) => void;
   /**
    * Clear the cache
    */
   clear: () => void;
 
+}
+
+export interface AsyncCache<T = unknown> {
+  /**
+  * The maximum number of items that can be stored in the cache
+  * @remarks When the cache size exceeds this value, the oldest items should be removed
+  */
+  size: number;
+
+  /**
+   * Get the value for the given key
+   * @param key - The key to get the value for
+   * @returns The value for the given key, or undefined if no such value exists
+   */
+  get: (key: string) => Promise<T | undefined>;
+  /**
+   * Set the value for the given key
+   * @param key - The key to set the value for
+   * @param value - The value to set
+   */
+  set: (key: string, value: T) => Promise<void>;
+  /**
+   * Clear the cache
+   */
+  clear: () => void;
 }

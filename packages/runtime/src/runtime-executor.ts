@@ -1,8 +1,6 @@
 import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor, NodeInput } from "@nodes/types";
-import { concatEncodedArrays, encodeFloat, fastHashArrayBuffer } from "@nodes/utils"
-import { createLogger } from "./helpers";
-import type { RuntimeCache } from "@nodes/types";
-import type { PerformanceStore } from "./performance";
+import { concatEncodedArrays, encodeFloat, fastHashArrayBuffer, createLogger, type PerformanceStore } from "@nodes/utils"
+import type { SyncCache } from "@nodes/types";
 
 const log = createLogger("runtime-executor");
 log.mute()
@@ -45,7 +43,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   perf?: PerformanceStore;
 
-  constructor(private registry: NodeRegistry, private cache?: RuntimeCache<Int32Array>) { }
+  constructor(private registry: NodeRegistry, private cache?: SyncCache<Int32Array>) { }
 
   private async getNodeDefinitions(graph: Graph) {
 
@@ -260,24 +258,6 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   getPerformanceData() {
     return this.perf?.get();
-  }
-
-}
-
-export class MemoryRuntimeCache implements RuntimeCache {
-
-  private cache: [string, unknown][] = [];
-  size = 50;
-
-  get<T>(key: string): T | undefined {
-    return this.cache.find(([k]) => k === key)?.[1] as T;
-  }
-  set<T>(key: string, value: T): void {
-    this.cache.push([key, value]);
-    this.cache = this.cache.slice(-this.size);
-  }
-  clear(): void {
-    this.cache = [];
   }
 
 }

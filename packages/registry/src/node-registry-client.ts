@@ -1,6 +1,5 @@
-import { type NodeRegistry, type NodeDefinition, NodeDefinitionSchema, type RuntimeCache } from "@nodes/types";
-import { createWasmWrapper } from "@nodes/utils";
-import { createLogger } from "./helpers";
+import { type NodeRegistry, type NodeDefinition, NodeDefinitionSchema, type AsyncCache } from "@nodes/types";
+import { createWasmWrapper, createLogger } from "@nodes/utils";
 
 const log = createLogger("node-registry");
 log.mute();
@@ -10,7 +9,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeDefinition> = new Map();
 
-  cache?: RuntimeCache<ArrayBuffer>;
+  cache?: AsyncCache<ArrayBuffer>;
 
   fetch: typeof fetch = globalThis.fetch.bind(globalThis);
 

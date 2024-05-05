@@ -1,7 +1,7 @@
-import type { RuntimeCache } from '@nodes/types';
+import type { AsyncCache } from '@nodes/types';
 import { openDB, type IDBPDatabase } from 'idb';
 
-export class IndexDBCache implements RuntimeCache<ArrayBuffer> {
+export class IndexDBCache implements AsyncCache<ArrayBuffer> {
 
   size: number = 100;
 

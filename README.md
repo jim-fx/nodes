@@ -12,6 +12,8 @@ Nodarium
 
 </div>
 
+Currently this visual programming language is used to develop https://nodes.max-richter.dev, a procedural modelling tool for 3d-plants.
+
 # Table of contents
 
 - [Architecture](./docs/ARCHITECTURE.md)

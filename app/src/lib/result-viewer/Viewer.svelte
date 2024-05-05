@@ -5,7 +5,7 @@
 
   import { updateGeometries } from "./updateGeometries";
   import { decodeFloat, splitNestedArray } from "@nodes/utils";
-  import type { PerformanceStore } from "$lib/performance";
+  import type { PerformanceStore } from "@nodes/utils";
   import { AppSettings } from "$lib/settings/app-settings";
   import SmallPerformanceViewer from "$lib/performance/SmallPerformanceViewer.svelte";
 

@@ -10,6 +10,12 @@ importers:
 
   app:
     dependencies:
+      '@nodes/registry':
+        specifier: link:../packages/registry
+        version: link:../packages/registry
+      '@nodes/runtime':
+        specifier: link:../packages/runtime
+        version: link:../packages/runtime
       '@nodes/ui':
         specifier: link:../packages/ui
         version: link:../packages/ui
@@ -125,6 +131,37 @@ importers:
   nodes/max/plantarium/triangle: {}
 
   nodes/max/plantarium/vec3: {}
+
+  packages/registry:
+    dependencies:
+      '@nodes/types':
+        specifier: link:../types
+        version: link:../types
+      '@nodes/utils':
+        specifier: link:../utils
+        version: link:../utils
+      idb:
+        specifier: ^8.0.0
+        version: 8.0.0
+
+  packages/runtime:
+    dependencies:
+      '@nodes/registry':
+        specifier: link:../registry
+        version: link:../registry
+      '@nodes/types':
+        specifier: link:../types
+        version: link:../types
+      '@nodes/utils':
+        specifier: link:../utils
+        version: link:../utils
+    devDependencies:
+      comlink:
+        specifier: ^4.4.1
+        version: 4.4.1
+      vite-plugin-comlink:
+        specifier: ^4.0.3
+        version: 4.0.3(comlink@4.4.1)(vite@5.2.10(@types/node@20.12.7)(sass@1.75.0))
 
   packages/types:
     dependencies:

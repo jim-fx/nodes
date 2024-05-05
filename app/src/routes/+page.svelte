@@ -1,8 +1,6 @@
 <script lang="ts">
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
-  import { WorkerRuntimeExecutor } from "$lib/worker-runtime-executor";
-  import { RemoteNodeRegistry } from "$lib/node-registry-client";
   import * as templates from "$lib/graph-templates";
   import type { Graph, Node } from "@nodes/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
@@ -18,17 +16,17 @@
   import Panel from "$lib/settings/Panel.svelte";
   import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
   import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
-  import { createPerformanceStore } from "$lib/performance";
-  import type { Group, Scene } from "three";
+  import type { Group } from "three";
   import ExportSettings from "$lib/settings/panels/ExportSettings.svelte";
   import {
     MemoryRuntimeCache,
+    WorkerRuntimeExecutor,
     MemoryRuntimeExecutor,
-  } from "$lib/runtime-executor";
-  import { IndexDBCache } from "$lib/node-registry-cache";
-  import { decodeNestedArray, fastHashString } from "@nodes/utils";
+  } from "@nodes/runtime";
+  import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
+  import { decodeNestedArray, createPerformanceStore } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
-  import { debounceAsyncFunction, withArgsChangeOnly } from "$lib/helpers";
+  import { debounceAsyncFunction } from "$lib/helpers";
 
   let performanceStore = createPerformanceStore("page");
 

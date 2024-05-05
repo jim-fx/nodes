@@ -2,15 +2,13 @@
   import { humanizeDuration, humanizeNumber } from "$lib/helpers";
   import localStore from "$lib/helpers/localStore";
   import SmallGraph from "./SmallGraph.svelte";
-  import type { PerformanceData, PerformanceStore } from "./store";
+  import type { PerformanceData, PerformanceStore } from "@nodes/utils";
 
   export let store: PerformanceStore;
 
   const open = localStore("node.performance.small.open", {
     runtime: false,
     fps: false,
-    vertices: false,
-    faces: false,
   });
 
   $: vertices = $store?.at(-1)?.["total-vertices"][0] || 0;
@@ -54,29 +52,15 @@
       </tr>
     {/if}
 
-    <tr on:click={() => ($open.vertices = !$open.vertices)}>
-      <td>{$open.vertices ? "-" : "+"} vertices </td>
+    <tr>
+      <td>vertices </td>
       <td>{humanizeNumber(vertices || 0)}</td>
     </tr>
-    {#if $open.vertices}
-      <tr>
-        <td colspan="2">
-          <SmallGraph points={getPoints($store, "total-vertices")} />
-        </td>
-      </tr>
-    {/if}
 
-    <tr on:click={() => ($open.faces = !$open.faces)}>
-      <td>{$open.faces ? "-" : "+"} faces </td>
+    <tr>
+      <td>faces </td>
       <td>{humanizeNumber(faces || 0)}</td>
     </tr>
-    {#if $open.faces}
-      <tr>
-        <td colspan="2">
-          <SmallGraph points={getPoints($store, "total-faces")} />
-        </td>
-      </tr>
-    {/if}
   </table>
 </div>
 

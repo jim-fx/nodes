@@ -3,7 +3,7 @@
   import { humanizeNumber } from "$lib/helpers";
   import { Checkbox } from "@nodes/ui";
   import localStore from "$lib/helpers/localStore";
-  import { type PerformanceData } from "./store";
+  import { type PerformanceData } from "@nodes/utils";
   import BarSplit from "./BarSplit.svelte";
 
   export let data: PerformanceData;
