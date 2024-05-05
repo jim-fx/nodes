@@ -24,6 +24,9 @@ export function createGeometryPool(parentScene: Group, material: Material) {
 
   let meshes: Mesh[] = [];
 
+  let totalVertices = 0;
+  let totalFaces = 0;
+
   function updateSingleGeometry(data: Int32Array, existingMesh: Mesh | null = null) {
 
     let hash = fastArrayHash(data);
@@ -34,7 +37,9 @@ export function createGeometryPool(parentScene: Group, material: Material) {
     // const geometryType = encodedData[index++];
     let index = 1;
     const vertexCount = data[index++];
+    totalVertices += vertexCount;
     const faceCount = data[index++];
+    totalFaces += faceCount;
 
     if (geometry.userData?.hash === hash) {
       return;
@@ -111,6 +116,8 @@ export function createGeometryPool(parentScene: Group, material: Material) {
     update(
       newData: Int32Array[],
     ) {
+      totalVertices = 0;
+      totalFaces = 0;
       for (let i = 0; i < Math.max(newData.length, meshes.length); i++) {
         const existingMesh = meshes[i];
         let input = newData[i];
@@ -121,6 +128,7 @@ export function createGeometryPool(parentScene: Group, material: Material) {
           scene.remove(existingMesh);
         }
       }
+      return { totalVertices, totalFaces };
     }
   }
 }
@@ -130,6 +138,8 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
   parentScene.add(scene);
 
   const instances: InstancedMesh[] = [];
+  let totalVertices = 0;
+  let totalFaces = 0;
 
   function updateSingleInstance(data: Int32Array, existingInstance: InstancedMesh | null = null) {
 
@@ -144,6 +154,8 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
     const faceCount = data[index++];
     const instanceCount = data[index++];
     const stemDepth = data[index++];
+    totalVertices += vertexCount * instanceCount;
+    totalFaces += faceCount * instanceCount;
 
     // Indices
     const indicesEnd = index + faceCount * 3;
@@ -237,6 +249,8 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
     update(
       newData: Int32Array[],
     ) {
+      totalVertices = 0;
+      totalFaces = 0;
       for (let i = 0; i < Math.max(newData.length, instances.length); i++) {
         const existingMesh = instances[i];
         let input = newData[i];
@@ -247,6 +261,7 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
           scene.remove(existingMesh);
         }
       }
+      return { totalVertices, totalFaces };
     }
   }
 }

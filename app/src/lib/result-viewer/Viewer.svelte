@@ -1,13 +1,42 @@
 <script lang="ts">
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
-  import { Group, Vector3 } from "three";
+  import { Vector3 } from "three";
 
-  import { updateGeometries } from "./updateGeometries";
   import { decodeFloat, splitNestedArray } from "@nodes/utils";
   import type { PerformanceStore } from "@nodes/utils";
   import { AppSettings } from "$lib/settings/app-settings";
   import SmallPerformanceViewer from "$lib/performance/SmallPerformanceViewer.svelte";
+
+  import { MeshMatcapMaterial, TextureLoader, type Group } from "three";
+  import {
+    createGeometryPool,
+    createInstancedGeometryPool,
+  } from "./geometryPool";
+
+  const loader = new TextureLoader();
+  const matcap = loader.load("/matcap_green.jpg");
+  matcap.colorSpace = "srgb";
+  const material = new MeshMatcapMaterial({
+    color: 0xffffff,
+    matcap,
+  });
+
+  let geometryPool: ReturnType<typeof createGeometryPool>;
+  let instancePool: ReturnType<typeof createInstancedGeometryPool>;
+
+  export function updateGeometries(inputs: Int32Array[], group: Group) {
+    geometryPool = geometryPool || createGeometryPool(group, material);
+    instancePool = instancePool || createInstancedGeometryPool(group, material);
+
+    let meshes = geometryPool.update(inputs.filter((i) => i[0] === 1));
+    let faces = instancePool.update(inputs.filter((i) => i[0] === 2));
+
+    return {
+      totalFaces: meshes.totalFaces + faces.totalFaces,
+      totalVertices: meshes.totalVertices + faces.totalVertices,
+    };
+  }
 
   export let centerCamera: boolean = true;
   export let perf: PerformanceStore;

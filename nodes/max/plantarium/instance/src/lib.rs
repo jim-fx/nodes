@@ -11,59 +11,6 @@ use wasm_bindgen::prelude::*;
 
 include_definition_file!("src/input.json");
 
-#[rustfmt::skip]
-fn create_geo() -> Vec<i32> {
-    let size = 5.0;
-
-    let p = encode_float(size);
-    let n = encode_float(-size);
-
-    // [[1,3, x, y, z, x, y,z,x,y,z]];
-    wrap_arg(calculate_normals(&mut [
-        1,  // 1: geometry
-        8,  // 8 vertices
-        12, // 12 faces
-        /*
-        Indeces:
-        5----6
-        | 4--+-7
-        0-|--1 |
-          3----2
-
-        */
-        // this are the indeces for the face
-        0, 1, 2, 
-        0, 2, 3, 
-        0, 3, 4, 
-        4, 5, 0, 
-        6, 1, 0, 
-        5, 6, 0, 
-        7, 2, 1, 
-        6, 7, 1, 
-        2, 7, 3, 
-        3, 7, 4, 
-        7, 6, 4, 
-        4, 6, 5, // Bottom plate
-        p, n, n, 
-        p, n, p, 
-        n, n, p, 
-        n, n, n, // Top Plate
-        n, p, n, 
-        p, p, n, 
-        p, p, p, 
-        n, p, p, // this is the normal for every single vert 1065353216 == 1.0f encoded is i32
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0, 
-        0, 0, 0,
-    ]))
-
-}
-
 #[wasm_bindgen]
 pub fn execute(input: &[i32]) -> Vec<i32> {
     set_panic_hook();
@@ -77,7 +24,21 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let mut transforms: Vec<Mat4> = Vec::new();
 
+    let mut max_depth = 0;
     for path_data in inputs.iter() {
+        if path_data[2] != 0 {
+            continue;
+        }
+        max_depth = max_depth.max(path_data[3]);
+    }
+
+    let depth = evaluate_int(args[5]);
+
+    for path_data in inputs.iter() {
+        if path_data[3] < (max_depth - depth + 1) {
+            continue;
+        }
+
         let amount = evaluate_int(args[2]);
 
         let lowest_instance = evaluate_float(args[3]);
@@ -93,7 +54,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
             let direction = path.get_direction_at(alpha);
 
             let transform = Mat4::from_scale_rotation_translation(
-                Vec3::new(0.1, 0.1, 0.1),
+                Vec3::new(point[3], point[3], point[3]),
                 Quat::from_xyzw(direction[0], direction[1], direction[2], 1.0).normalize(),
                 Vec3::from_slice(&point),
             );

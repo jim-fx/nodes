@@ -10,7 +10,7 @@ const nodeRegistry = new RemoteNodeRegistry("");
 nodeRegistry.cache = indexDbCache;
 const executor = new MemoryRuntimeExecutor(nodeRegistry, cache);
 
-const performanceStore = createPerformanceStore("worker");
+const performanceStore = createPerformanceStore();
 executor.perf = performanceStore;
 
 export async function executeGraph(graph: Graph, settings: Record<string, unknown>): Promise<Int32Array> {
