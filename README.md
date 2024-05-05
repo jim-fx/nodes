@@ -14,7 +14,7 @@ Nodarium
 
 # Table of contents
 
-- [Architecture](./ARCHITECTURE.md)
+- [Architecture](./docs/ARCHITECTURE.md)
 - [Developing](#developing)
 - [Roadmap](#roadmap)
 
@@ -45,6 +45,6 @@ cd app
 pnpm dev
 ```
 
-### [Now you can create your first node 🤓](./DEVELOPING_NODES.md)
+### [Now you can create your first node 🤓](./docs/DEVELOPING_NODES.md)
 
 # Roadmap

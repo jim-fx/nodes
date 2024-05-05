@@ -16,6 +16,30 @@ type Node = {
 }
 ```
 
+## How are the arguments defined?
+To define which arguments a nodes accepts we use JSON. This json is embeded into the `.wasm` file of our node. An example `definition.json` file could look like this:
+
+```json
+{
+  "id": "my-name/my-namespace/zylinder-node",
+  "outputs": [
+    "geometry"
+  ],
+  "inputs": {
+    "height": {
+      "type": "float",
+      "value": 2
+    },
+    "radius": {
+      "type": "float",
+      "value": 0.5
+    }
+  }
+}
+```
+
+For a more in-depth explanation have a look at [./NODE_DEFINITION.md](NODE_DEFINITION.md).
+
 ## How are the nodes executed?
 
 ## How are the nodes stored?

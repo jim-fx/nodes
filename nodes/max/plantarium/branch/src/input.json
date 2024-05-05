@@ -30,12 +30,11 @@
     },
     "offsetSingle": {
       "type": "float",
+      "hidden": true,
       "description": "Used to offset every second branch",
       "min": 0,
-      "hidden": true,
       "max": 1,
-      "step": 0.01,
-      "value": 0.5
+      "value": 0
     },
     "lowestBranch": {
       "type": "float",
