@@ -118,11 +118,12 @@ pub fn concat_args(mut data: Vec<&[i32]>) -> Vec<i32> {
 }
 
 pub fn wrap_arg(arg: &[i32]) -> Vec<i32> {
-    let mut out_args = Vec::with_capacity(arg.len() + 8);
-    out_args.extend_from_slice(&[0, 1, 0, arg.len() as i32 + 1]);
+    let mut out_args = Vec::with_capacity(arg.len() + 4);
+    out_args.push(0);
+    out_args.push(arg.len() as i32 + 1);
     out_args.extend_from_slice(arg);
-    out_args.extend_from_slice(&[1, 1]);
-    out_args.extend_from_slice(&[1, 1]);
+    out_args.push(1);
+    out_args.push(1);
     out_args
 }
 

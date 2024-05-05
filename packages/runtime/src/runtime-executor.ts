@@ -184,7 +184,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         const inputNode = node.tmp?.inputNodes?.[key];
         if (inputNode) {
           if (results[inputNode.id] === undefined) {
-            throw new Error("Input node has no result");
+            throw new Error(`Node ${node.type} is missing input from node ${inputNode.type}`);
           }
           return results[inputNode.id];
         }

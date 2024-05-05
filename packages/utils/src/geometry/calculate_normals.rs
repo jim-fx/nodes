@@ -1,7 +1,7 @@
 use crate::{decode_float, encode_float};
 use glam::Vec3;
 
-pub fn calculate_normals(geometry: &mut [i32]) {
+pub fn calculate_normals(geometry: &mut [i32]) -> &mut [i32] {
     let vertex_count = geometry[1] as usize;
     let face_count = geometry[2] as usize;
     let index_start = 3;
@@ -47,4 +47,5 @@ pub fn calculate_normals(geometry: &mut [i32]) {
             geometry[normals_start + idx + 2] = encode_float(normal.z);
         }
     }
+    geometry
 }

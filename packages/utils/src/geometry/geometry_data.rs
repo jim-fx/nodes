@@ -11,6 +11,30 @@ pub struct GeometryData<'a> {
     pub faces: &'a mut [i32],     // View into `data`
 }
 
+impl GeometryData<'_> {
+    pub fn set_position(&mut self, index: usize, x: f32, y: f32, z: f32) {
+        assert!(index < self.positions.len() / 3, "Index out of bounds.");
+        let i = index * 3;
+        self.positions[i] = x;
+        self.positions[i + 1] = y;
+        self.positions[i + 2] = z;
+    }
+    pub fn set_normal(&mut self, index: usize, x: f32, y: f32, z: f32) {
+        assert!(index < self.normals.len() / 3, "Index out of bounds.");
+        let i = index * 3;
+        self.normals[i] = x;
+        self.normals[i + 1] = y;
+        self.normals[i + 2] = z;
+    }
+    pub fn set_face(&mut self, index: usize, a: i32, b: i32, c: i32) {
+        assert!(index < self.faces.len() / 3, "Index out of bounds.");
+        let i = index * 3;
+        self.faces[i] = a;
+        self.faces[i + 1] = b;
+        self.faces[i + 2] = c;
+    }
+}
+
 pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32> {
     let amount = GEOMETRY_HEADER_SIZE // definition (type, vertex_amount, face_amount)
       + 4 // opening and closing brackets

@@ -7,6 +7,9 @@
     Vector3,
     type Vector3Tuple,
     Box3,
+    Mesh,
+    MeshMatcapMaterial,
+    MeshBasicMaterial,
   } from "three";
   import { AppSettings } from "../settings/app-settings";
   import Camera from "./Camera.svelte";
@@ -51,11 +54,21 @@
   export let centerCamera: boolean = true;
   let center = new Vector3(0, 4, 0);
 
+  function isMesh(child: Mesh | any): child is Mesh {
+    return child.isObject3D && "material" in child;
+  }
+
+  function isMatCapMaterial(material: any): material is MeshBasicMaterial {
+    return material.isMaterial && "matcap" in material;
+  }
+
   $: if ($AppSettings && scene) {
-    scene.children.forEach((child) => {
-      child.material.wireframe = $AppSettings.wireframe;
-      threlte.invalidate();
+    scene.traverse(function (child) {
+      if (isMesh(child) && isMatCapMaterial(child.material)) {
+        child.material.wireframe = $AppSettings.wireframe;
+      }
     });
+    threlte.invalidate();
   }
 
   function getPosition(geo: BufferGeometry, i: number) {

@@ -1,0 +1,32 @@
+{
+  "id": "max/plantarium/instance",
+  "outputs": [
+    "path"
+  ],
+  "inputs": {
+    "plant": {
+      "type": "path"
+    },
+    "geometry": {
+      "type": "geometry",
+      "value": [0,0,0]
+    },
+    "amount": {
+      "type": "integer"
+    },
+    "lowestInstance": {
+      "type": "float",
+      "min":0,
+      "max":1,
+      "value": 0.5,
+      "hidden": true
+    },
+    "highestInstance": {
+      "type": "float",
+      "min":0,
+      "max":1,
+      "value":1,
+      "hidden": true
+    }
+  }
+}

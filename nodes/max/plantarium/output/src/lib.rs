@@ -12,6 +12,8 @@ include_definition_file!("src/inputs.json");
 pub fn execute(input: &[i32]) -> Vec<i32> {
     set_panic_hook();
 
+    log!("WASM(output): input: {:?}", input);
+
     let args = split_args(input);
 
     log!("WASM(output) args: {:?}", args);
@@ -29,16 +31,15 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         log!("arg_type: {}, \n {:?}", arg_type, arg,);
 
         if arg_type == 0 {
-            // this is path
-            let vec = arg.to_vec();
-            output.push(vec.clone());
+            // if this is path we need to extrude it
+            output.push(arg.to_vec());
             let path_data = wrap_path(arg);
             let geometry = extrude_path(path_data, resolution);
             output.push(geometry);
-        } else if arg_type == 1 {
-            // this is geometry
-            output.push(arg.to_vec());
+            continue;
         }
+
+        output.push(arg.to_vec());
     }
 
     concat_args(output.iter().map(|v| v.as_slice()).collect())

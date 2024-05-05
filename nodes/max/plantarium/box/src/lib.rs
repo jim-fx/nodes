@@ -1,7 +1,7 @@
 use nodarium_macros::include_definition_file;
 use nodarium_utils::{
-    encode_float, evaluate_float, geometry::calculate_normals, log, set_panic_hook, split_args,
-    wrap_arg,
+    concat_args, encode_float, evaluate_float, geometry::calculate_normals, log, set_panic_hook,
+    split_args, wrap_arg,
 };
 use wasm_bindgen::prelude::*;
 
@@ -81,7 +81,7 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let res = wrap_arg(&cube_geometry);
 
-    log!("WASM(cube): output: {:?}", res);
+    log!("WASM(box): output: {:?}", res);
 
     res
 

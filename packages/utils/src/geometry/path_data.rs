@@ -31,6 +31,7 @@ impl PathDataMut<'_> {
     }
 }
 
+#[derive(Debug)]
 pub struct PathData<'a> {
     pub depth: i32,
     pub length: usize,
@@ -54,6 +55,15 @@ impl PathData<'_> {
             l += (b - a).length();
         }
         l
+    }
+    pub fn get_point_at(&self, alpha: f32) -> [f32; 4] {
+        get_point_at_path(self.points, alpha)
+    }
+    pub fn get_direction_at(&self, alpha: f32) -> [f32; 3] {
+        get_direction_at_path(self.points, alpha)
+    }
+    pub fn interpolate_along(&self, alpha: f32) -> (Vec4, Vec3, Vec3) {
+        interpolate_along_path(self.points, alpha)
     }
 }
 
