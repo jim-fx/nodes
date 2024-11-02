@@ -1,11 +1,10 @@
-import { writable, type Writable } from "svelte/store";
-import type { Graph, Node, Edge, Socket, NodeRegistry, } from "@nodes/types";
-import { HistoryManager } from "./history-manager.js"
-import EventEmitter from "./helpers/EventEmitter.js";
-import throttle from "./helpers/throttle.js";
-import { createLogger } from "./helpers/index.js";
-import type { NodeInput } from "@nodes/types";
+import type { Edge, Graph, Node, NodeInput, NodeRegistry, Socket, } from "@nodes/types";
 import { fastHashString } from "@nodes/utils";
+import { writable, type Writable } from "svelte/store";
+import EventEmitter from "./helpers/EventEmitter.js";
+import { createLogger } from "./helpers/index.js";
+import throttle from "./helpers/throttle.js";
+import { HistoryManager } from "./history-manager.js";
 
 const logger = createLogger("graph-manager");
 
@@ -68,6 +67,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     const serialized = { id: this.graph.id, settings: this.settings, nodes, edges };
     logger.groupEnd();
+    console.log({ serialized });
 
     return clone(serialized);
   }

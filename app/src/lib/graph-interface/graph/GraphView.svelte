@@ -5,12 +5,13 @@
   import Node from "../node/Node.svelte";
   import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
-  import { activeSocket } from "./stores.js";
+  import { getGraphState } from "./state.svelte";
 
   export let nodes: Writable<Map<number, NodeType>>;
   export let edges: Writable<EdgeType[]>;
-
   export let cameraPosition = [0, 0, 4];
+
+  const graphState = getGraphState();
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
 
@@ -58,7 +59,7 @@
     tabindex="0"
     class="wrapper"
     style:transform={`scale(${cameraPosition[2] * 0.1})`}
-    class:hovering-sockets={activeSocket}
+    class:hovering-sockets={graphState.activeSocket}
   >
     {#each $nodes.values() as node (node.id)}
       <Node

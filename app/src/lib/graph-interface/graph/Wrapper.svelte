@@ -2,58 +2,77 @@
   import type { Graph, Node, NodeRegistry } from "@nodes/types";
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.js";
-  import { createEventDispatcher, setContext } from "svelte";
+  import { setContext } from "svelte";
   import { type Writable } from "svelte/store";
   import { debounce } from "$lib/helpers";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { activeNodeId } from "./stores";
+  import { GraphState } from "./state.svelte";
 
-  export let registry: NodeRegistry;
-  export let graph: Graph;
-  export let settings: Writable<Record<string, any>> | undefined;
-  export const manager = new GraphManager(registry);
-  export let activeNode: Node | undefined;
-  $: if ($activeNodeId !== -1) {
-    activeNode = manager.getNode($activeNodeId);
-  } else {
-    activeNode = undefined;
-  }
+  type Props = {
+    graph: Graph;
+    registry: NodeRegistry;
 
-  export const status = manager.status;
+    settings?: Writable<Record<string, any>>;
+
+    activeNode?: Node;
+    showGrid?: boolean;
+    snapToGrid?: boolean;
+    showHelp?: boolean;
+    settingTypes?: Record<string, any>;
+
+    onsave?: (save: Graph) => void;
+    onresult?: (result: any) => void;
+  };
+
+  let {
+    graph,
+    registry,
+    settings = $bindable(),
+    activeNode = $bindable(),
+    showGrid,
+    snapToGrid,
+    showHelp = $bindable(false),
+    settingTypes = $bindable(),
+    onsave,
+    onresult,
+  }: Props = $props();
 
   export const keymap = createKeyMap([]);
+  export const manager = new GraphManager(registry);
+
+  const state = new GraphState();
+  setContext("graphState", state);
+
+  $effect(() => {
+    if (state.activeNodeId !== -1) {
+      activeNode = manager.getNode(state.activeNodeId);
+    } else {
+      activeNode = undefined;
+    }
+  });
+
   setContext("keymap", keymap);
-
-  export let showGrid = false;
-  export let snapToGrid = false;
-  export let showHelp = false;
-
-  export let settingTypes = {};
 
   const updateSettings = debounce((s) => {
     manager.setSettings(s);
   }, 200);
 
-  $: if (settings && $settings) {
-    updateSettings($settings);
-  }
+  $effect(() => {
+    if (settingTypes && settings) {
+      updateSettings($settings);
+    }
+  });
 
   manager.on("settings", (_settings) => {
     settingTypes = _settings.types;
-    settings.set(_settings.values);
+    settings?.set(_settings.values);
   });
 
-  manager.on("result", (result) => {
-    dispatch("result", result);
-  });
+  manager.on("result", (result) => onresult?.(result));
 
-  manager.on("save", (save) => {
-    dispatch("save", save);
-  });
+  manager.on("save", (save) => onsave?.(save));
 
   manager.load(graph);
-
-  const dispatch = createEventDispatcher();
 </script>
 
 <GraphEl {manager} bind:showGrid bind:snapToGrid bind:showHelp />

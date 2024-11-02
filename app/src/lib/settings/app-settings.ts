@@ -20,14 +20,16 @@ export const AppSettings = localStore("node.settings", {
 const themes = ["dark", "light", "catppuccin", "solarized", "high-contrast", "nord", "dracula"];
 
 AppSettings.subscribe((value) => {
-  const classes = document.body.classList;
+  const classes = document.body.parentElement?.classList;
   const newClassName = `theme-${themes[value.theme]}`;
-  for (const className of classes) {
-    if (className.startsWith("theme-") && className !== newClassName) {
-      classes.remove(className);
+  if (classes) {
+    for (const className of classes) {
+      if (className.startsWith("theme-") && className !== newClassName) {
+        classes.remove(className);
+      }
     }
   }
-  document.body.classList.add(newClassName);
+  document.body?.parentElement?.classList.add(newClassName);
 });
 
 export const AppSettingTypes = {

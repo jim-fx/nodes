@@ -3,24 +3,27 @@
 
   import BackgroundVert from "./Background.vert";
   import BackgroundFrag from "./Background.frag";
-  import { colors } from "../graph/stores.js";
+  import { colors } from "../graph/state.svelte";
   import { Color } from "three";
 
-  export let minZoom = 4;
-  export let maxZoom = 150;
+  type Props = {
+    minZoom: number;
+    maxZoom: number;
+    cameraPosition: [number, number, number];
+    width: number;
+    height: number;
+  };
 
-  export let cameraPosition: [number, number, number] = [0, 1, 0];
+  let {
+    minZoom = 4,
+    maxZoom = 150,
+    cameraPosition = [0, 1, 0],
+    width = globalThis?.innerWidth || 100,
+    height = globalThis?.innerHeight || 100,
+  }: Props = $props();
 
-  export let width = globalThis?.innerWidth || 100;
-  export let height = globalThis?.innerHeight || 100;
-
-  let bw = 2;
-  let bh = 2;
-
-  $: if (width && height) {
-    bw = width / cameraPosition[2];
-    bh = height / cameraPosition[2];
-  }
+  let bw = $derived(width / cameraPosition[2]);
+  let bh = $derived(height / cameraPosition[2]);
 </script>
 
 <T.Group

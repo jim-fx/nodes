@@ -1,5 +1,5 @@
-<script context="module" lang="ts">
-  import { colors } from "../graph/stores";
+<script module lang="ts">
+  import { colors } from "../graph/state.svelte";
 
   const circleMaterial = new MeshBasicMaterial({
     color: get(colors).edge,
@@ -29,19 +29,23 @@
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
   import { get } from "svelte/store";
 
-  export let from: { x: number; y: number };
-  export let to: { x: number; y: number };
+  type Props = {
+    from: { x: number; y: number };
+    to: { x: number; y: number };
+  };
+
+  const { from, to }: Props = $props();
 
   let samples = 5;
 
-  let geometry: BufferGeometry;
+  let geometry: BufferGeometry|null = $state(null);
 
   let lastId: number | null = null;
 
   const primeA = 31;
   const primeB = 37;
 
-  export const update = function () {
+  function update() {
     const new_x = to.x - from.x;
     const new_y = to.y - from.y;
     const curveId = new_x * primeA + new_y * primeB;
@@ -75,11 +79,13 @@
     lineCache.set(curveId, geometry);
   };
 
-  $: if (from || to) {
-    update();
-  }
+  $effect(() => {
+    if (from || to) {
+      update();
+    }
+  });
 
-  $: lineColor = $colors["edge"].clone().convertSRGBToLinear();
+  const lineColor = $derived($colors.edge.clone().convertSRGBToLinear());
 </script>
 
 <T.Mesh

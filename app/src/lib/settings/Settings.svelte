@@ -50,6 +50,7 @@
 <div class="wrapper" class:visible={$activePanel}>
   <div class="tabs">
     <button
+      aria-label="Close"
       on:click={() => {
         setActivePanel($activePanel ? false : keys[0]);
       }}
@@ -59,11 +60,12 @@
     {#each keys as panel (panels[panel].id)}
       {#if panels[panel].visible !== false}
         <button
+          aria-label={panel}
           class="tab {panels[panel].classes}"
           class:active={panel === $activePanel}
           on:click={() => setActivePanel(panel)}
         >
-          <span class={`block w-6 h-6 ${panels[panel].icon}`} />
+          <span class={`block w-6 h-6 ${panels[panel].icon}`}></span>
         </button>
       {/if}
     {/each}

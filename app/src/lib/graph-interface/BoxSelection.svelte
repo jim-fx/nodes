@@ -1,16 +1,23 @@
 <script lang="ts">
   import { HTML } from "@threlte/extras";
 
-  export let p1 = { x: 0, y: 0 };
-  export let p2 = { x: 0, y: 0 };
+  type Props = {
+    p1: { x: number; y: number };
+    p2: { x: number; y: number };
+    cameraPosition: [number, number, number];
+  };
 
-  export let cameraPosition = [0, 1, 0];
+  const {
+    p1 = { x: 0, y: 0 },
+    p2 = { x: 0, y: 0 },
+    cameraPosition = [0, 1, 0],
+  }: Props = $props();
 
-  $: width = Math.abs(p1.x - p2.x) * cameraPosition[2];
-  $: height = Math.abs(p1.y - p2.y) * cameraPosition[2];
+  const width = $derived(Math.abs(p1.x - p2.x) * cameraPosition[2]);
+  const height = $derived(Math.abs(p1.y - p2.y) * cameraPosition[2]);
 
-  $: x = Math.max(p1.x, p2.x) - width / cameraPosition[2];
-  $: y = Math.max(p1.y, p2.y) - height / cameraPosition[2];
+  const x = $derived(Math.max(p1.x, p2.x) - width / cameraPosition[2]);
+  const y = $derived(Math.max(p1.y, p2.y) - height / cameraPosition[2]);
 </script>
 
 <HTML position.x={x} position.z={y} transform={false}>

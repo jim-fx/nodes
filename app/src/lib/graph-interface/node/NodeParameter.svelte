@@ -6,20 +6,25 @@
   } from "@nodes/types";
   import { getContext } from "svelte";
   import { createNodePath } from "../helpers/index.js";
-  import { possibleSocketIds } from "../graph/stores.js";
   import { getGraphManager } from "../graph/context.js";
   import NodeInput from "./NodeInput.svelte";
+  import { getGraphState } from "../graph/state.svelte.js";
 
-  export let node: NodeType;
-  export let input: NodeInputType;
-  export let id: string;
-  export let isLast = false;
+  type Props = {
+    node: NodeType;
+    input: NodeInputType;
+    id: string;
+    isLast?: boolean;
+  };
+
+  const { node = $bindable(), input, id, isLast }: Props = $props();
 
   const inputType = node?.tmp?.type?.inputs?.[id]!;
 
   const socketId = `${node.id}-${id}`;
 
   const graph = getGraphManager();
+  const graphState = getGraphState();
   const graphId = graph?.id;
   const inputSockets = graph?.inputSockets;
 
@@ -75,7 +80,7 @@
   class="wrapper"
   data-node-type={node.type}
   data-node-input={id}
-  class:disabled={$possibleSocketIds && !$possibleSocketIds.has(socketId)}
+  class:disabled={!graphState.possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
     <div class="content" class:disabled={$inputSockets?.has(socketId)}>
@@ -91,17 +96,17 @@
       <div
         data-node-socket
         class="large target"
-        on:mousedown={handleMouseDown}
+        onmousedown={handleMouseDown}
         role="button"
         tabindex="0"
-      />
+      ></div>
       <div
         data-node-socket
         class="small target"
-        on:mousedown={handleMouseDown}
+        onmousedown={handleMouseDown}
         role="button"
         tabindex="0"
-      />
+      ></div>
     {/if}
   {/key}
 
@@ -185,8 +190,10 @@
     d: var(--path);
   }
 
-  :global(.hovering-sockets) .large:hover ~ svg path {
-    d: var(--hover-path);
+  :global {
+    .hovering-sockets .large:hover ~ svg path {
+      d: var(--hover-path);
+    }
   }
 
   .content.disabled {

@@ -2,16 +2,17 @@
   import type { NodeDefinition, NodeRegistry } from "@nodes/types";
   import { onMount } from "svelte";
 
-  let mx = 0;
-  let my = 0;
+  let mx = $state(0);
+  let my = $state(0);
 
-  let node: NodeDefinition | undefined = undefined;
-  let input: string | undefined = undefined;
+  let node: NodeDefinition | undefined = $state(undefined);
+  let input: string | undefined = $state(undefined);
 
   let wrapper: HTMLDivElement;
+  type Props = { registry: NodeRegistry };
+  const { registry }: Props = $props();
 
-  export let registry: NodeRegistry;
-  let width = 0;
+  let width = $state(0);
 
   function handleMouseOver(ev: MouseEvent) {
     let target = ev.target as HTMLElement | null;
@@ -45,7 +46,7 @@
   });
 </script>
 
-<svelte:window on:mousemove={handleMouseOver} />
+<svelte:window onmousemove={handleMouseOver} />
 
 <div
   class="help-wrapper p-4"

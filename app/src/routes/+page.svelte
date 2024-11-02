@@ -24,11 +24,12 @@
     MemoryRuntimeExecutor,
   } from "@nodes/runtime";
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
-  import { decodeNestedArray, createPerformanceStore } from "@nodes/utils";
+  import { createPerformanceStore } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
+  import type { Component } from "svelte";
 
-  let performanceStore = createPerformanceStore("page");
+  let performanceStore = createPerformanceStore();
 
   const registryCache = new IndexDBCache("node-registry");
   const nodeRegistry = new RemoteNodeRegistry("");
@@ -37,17 +38,6 @@
   const runtimeCache = new MemoryRuntimeCache();
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
   memoryRuntime.perf = performanceStore;
-
-  globalThis.decode = decodeNestedArray;
-
-  globalThis.clearCache = () => {
-    registryCache.clear();
-    runtimeCache.clear();
-    localStorage.clear();
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
-  };
 
   $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
 
@@ -59,11 +49,10 @@
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.defaultPlant;
 
-  let manager: GraphManager;
-  let managerStatus: Writable<"loading" | "error" | "idle">;
-  $: if (manager) {
-    managerStatus = manager.status;
-  }
+  let graphInterface: ReturnType<typeof GraphInterface>;
+  $: manager = graphInterface?.manager;
+  $: managerStatus = manager?.status;
+  $: keymap = graphInterface?.keymap;
 
   async function randomGenerate() {
     const g = manager.serialize();
@@ -71,7 +60,6 @@
     await handleUpdate(g, s);
   }
 
-  let keymap: ReturnType<typeof createKeyMap>;
   let applicationKeymap = createKeyMap([
     {
       key: "r",
@@ -136,8 +124,8 @@
     };
   }
 
-  function handleSave(event: CustomEvent<Graph>) {
-    localStorage.setItem("graph", JSON.stringify(event.detail));
+  function handleSave(graph: Graph) {
+    localStorage.setItem("graph", JSON.stringify(graph));
   }
 </script>
 
@@ -156,18 +144,17 @@
     <Grid.Cell>
       {#key graph}
         <GraphInterface
+          bind:this={graphInterface}
           {graph}
           registry={nodeRegistry}
-          bind:manager
           bind:activeNode
-          bind:keymap
           showGrid={$AppSettings.showNodeGrid}
           snapToGrid={$AppSettings.snapToGrid}
           bind:showHelp={$AppSettings.showHelp}
           bind:settings={graphSettings}
           bind:settingTypes={graphSettingTypes}
-          on:result={(ev) => handleUpdate(ev.detail, $graphSettings)}
-          on:save={handleSave}
+          onresult={(result) => handleUpdate(result, $graphSettings)}
+          onsave={(graph) => handleSave(graph)}
         />
         <Settings>
           <Panel id="general" title="General" icon="i-tabler-settings">

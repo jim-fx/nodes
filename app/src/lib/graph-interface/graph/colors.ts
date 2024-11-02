@@ -18,7 +18,8 @@ let lastStyle = "";
 
 function updateColors() {
   if (!("getComputedStyle" in globalThis)) return;
-  const style = getComputedStyle(document.body);
+  console.log("updateColors")
+  const style = getComputedStyle(document.body.parentElement!);
   let hash = "";
   for (const v of variables) {
     let color = style.getPropertyValue(`--${v}`);
