@@ -16,6 +16,6 @@
   },
   "devDependencies": {
     "comlink": "^4.4.1",
-    "vite-plugin-comlink": "^4.0.3"
+    "vite-plugin-comlink": "^5.1.0"
   }
 }

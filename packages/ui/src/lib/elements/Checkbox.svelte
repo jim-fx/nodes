@@ -1,15 +1,11 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-
-
 	interface Props {
 		value: boolean;
 		id?: string;
 	}
 
 	let { value = $bindable(), id = '' }: Props = $props();
-	run(() => {
+	$effect(() => {
 		if (typeof value === 'string') {
 			value = value === 'true';
 		} else if (typeof value === 'number') {

@@ -6,10 +6,10 @@
 
   type Button = { type: "button"; label?: string; callback: () => void };
 
-  type Input = NodeInput | Button;
+  type InputType = NodeInput | Button;
 
   interface Nested {
-    [key: string]: (Nested & { __title?: string }) | Input;
+    [key: string]: (Nested & { __title?: string }) | InputType;
   }
 
   export let id: string;
@@ -24,7 +24,7 @@
   export let depth = 0;
 
   const keys = Object.keys(settings).filter((key) => key !== "__title");
-  function isNodeInput(v: Input | Nested): v is Input {
+  function isNodeInput(v: InputType | Nested): v is InputType {
     return v && "type" in v;
   }
 </script>

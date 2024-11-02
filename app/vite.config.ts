@@ -1,9 +1,9 @@
-import { sveltekit } from '@sveltejs/kit/vite'
-import { defineConfig } from 'vite'
+import { sveltekit } from '@sveltejs/kit/vite';
+import UnoCSS from 'unocss/vite';
+import { defineConfig } from 'vite';
+import comlink from 'vite-plugin-comlink';
 import glsl from "vite-plugin-glsl";
 import wasm from "vite-plugin-wasm";
-import comlink from 'vite-plugin-comlink';
-import UnoCSS from 'unocss/vite'
 
 export default defineConfig({
   plugins: [

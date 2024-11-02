@@ -24,6 +24,7 @@
 
 <div class="wrapper">
   <table>
+    <tbody>
     <tr on:click={() => ($open.runtime = !$open.runtime)}>
       <td>{$open.runtime ? "-" : "+"} runtime </td>
       <td>{humanizeDuration(runtime || 1000)}</td>
@@ -61,6 +62,7 @@
       <td>faces </td>
       <td>{humanizeNumber(faces || 0)}</td>
     </tr>
+      </tbody>
   </table>
 </div>
 

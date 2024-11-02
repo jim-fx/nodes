@@ -38,9 +38,9 @@
     updateSettings($settings);
   }
 
-  manager.on("settings", (settings) => {
-    settingTypes = settings.types;
-    $settings = settings.values;
+  manager.on("settings", (_settings) => {
+    settingTypes = _settings.types;
+    settings.set(_settings.values);
   });
 
   manager.on("result", (result) => {
