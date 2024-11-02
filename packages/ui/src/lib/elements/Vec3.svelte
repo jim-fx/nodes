@@ -1,8 +1,12 @@
 <script lang="ts">
 	import Float from './Float.svelte';
 
-	export let value = [0, 0, 0];
-	export let id = '';
+	interface Props {
+		value?: any;
+		id?: string;
+	}
+
+	let { value = $bindable([0, 0, 0]), id = '' }: Props = $props();
 </script>
 
 <div>

@@ -38,9 +38,7 @@
 
 }
 
-body {
-  overflow: hidden;
-
+html {
   --neutral-100: #E7E7E7;
   --neutral-200: #CECECE;
   --neutral-300: #7C7C7C;
@@ -65,6 +63,11 @@ body {
   --edge: var(--connection, var(--outline));
 
   --text-color: var(--neutral-200);
+}
+
+body {
+  overflow: hidden;
+
 
   color: var(--text-color);
   background-color: var(--layer-0);
@@ -74,7 +77,7 @@ body * {
   color: var(--text-color);
 }
 
-body.theme-light {
+html.theme-light {
   --text-color: var(--neutral-800);
   --outline: var(--neutral-300);
   --layer-0: var(--neutral-100);
@@ -86,7 +89,7 @@ body.theme-light {
   --connection: #888;
 }
 
-body.theme-solarized {
+html.theme-solarized {
   --text-color: #425055;
   --outline: #93a1a1;
   --layer-0: #fdf6e3;
@@ -98,7 +101,7 @@ body.theme-solarized {
   --connection: #839496;
 }
 
-body.theme-catppuccin {
+html.theme-catppuccin {
   --text-color: #CDD6F4;
   --outline: #3e3e4f;
   --layer-3: #a8aac8;
@@ -108,7 +111,7 @@ body.theme-catppuccin {
   --connection: #444459;
 }
 
-body.theme-high-contrast {
+html.theme-high-contrast {
   --text-color: #FFFFFF;
   --outline: white;
   --layer-0: #000000;
@@ -118,7 +121,7 @@ body.theme-high-contrast {
   --connection: #FFF;
 }
 
-body.theme-nord {
+html.theme-nord {
   --text-color: #D8DEE9;
   --outline: #4C566A;
   --layer-0: #2E3440;
@@ -130,7 +133,7 @@ body.theme-nord {
   --connection: #4C566A;
 }
 
-body.theme-dracula {
+html.theme-dracula {
   --text-color: #F8F8F2;
   --outline: #6272A4;
   --layer-0: #282A36;

@@ -1,8 +1,17 @@
 <script lang="ts">
-  export let ctrl = false;
-  export let shift = false;
-  export let alt = false;
-  export let key: string;
+  interface Props {
+    ctrl?: boolean;
+    shift?: boolean;
+    alt?: boolean;
+    key: string;
+  }
+
+  let {
+    ctrl = false,
+    shift = false,
+    alt = false,
+    key
+  }: Props = $props();
 </script>
 
 <div class="command">

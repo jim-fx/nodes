@@ -1,9 +1,19 @@
 <script lang="ts">
-	export let value = 0.5;
-	export let step = 0.01;
-	export let min = 0;
-	export let max = 1;
-	export let id = '';
+	interface Props {
+		value?: number;
+		step?: number;
+		min?: number;
+		max?: number;
+		id?: string;
+	}
+
+	let {
+		value = $bindable(0.5),
+		step = 0.01,
+		min = $bindable(0),
+		max = $bindable(1),
+		id = ''
+	}: Props = $props();
 
 	if (min > max) {
 		[min, max] = [max, min];
@@ -16,29 +26,23 @@
 		return +parseFloat(input + '').toPrecision(2);
 	}
 
-	let inputEl: HTMLInputElement;
+	let inputEl: HTMLInputElement | undefined = $state();
 
-	$: if ((value || 0).toString().length > 5) {
-		value = strip(value || 0);
-	}
-	$: value !== undefined && handleChange();
 	let oldValue: number;
 	function handleChange() {
 		if (value === oldValue) return;
 		oldValue = value;
 	}
 
-	$: width = Number.isFinite(value)
-		? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px'
-		: '20px';
-
-	let isMouseDown = false;
+	let isMouseDown = $state(false);
 	let downV = 0;
 	let vx = 0;
 	let rect: DOMRect;
 
 	function handleMouseDown(ev: MouseEvent) {
 		ev.preventDefault();
+
+		if (!inputEl) return;
 
 		inputEl.focus();
 
@@ -57,7 +61,7 @@
 		isMouseDown = false;
 
 		if (downV === value) {
-			inputEl.focus();
+			inputEl?.focus();
 		}
 
 		if (value > max) {
@@ -76,7 +80,7 @@
 	function handleKeyDown(ev: KeyboardEvent) {
 		if (ev.key === 'Escape' || ev.key === 'Enter') {
 			handleMouseUp();
-			inputEl.blur();
+			inputEl?.blur();
 		}
 	}
 
@@ -90,6 +94,15 @@
 			value = Math.max(Math.min(min + (max - min) * vx, max), min);
 		}
 	}
+	$effect(() => {
+		if ((value || 0).toString().length > 5) {
+			value = strip(value || 0);
+		}
+		value !== undefined && handleChange();
+	});
+	let width = $derived(
+		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px' : '20px'
+	);
 </script>
 
 <div class="component-wrapper" class:is-down={isMouseDown}>
@@ -101,9 +114,9 @@
 		{step}
 		{max}
 		{min}
-		on:keydown={handleKeyDown}
-		on:mousedown={handleMouseDown}
-		on:mouseup={handleMouseUp}
+		onkeydown={handleKeyDown}
+		onmousedown={handleMouseDown}
+		onmouseup={handleMouseUp}
 		type="number"
 		style={`width:${width};`}
 	/>

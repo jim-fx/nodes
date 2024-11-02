@@ -1,13 +1,21 @@
 <script lang="ts">
-	export let value: boolean;
+	import { run } from 'svelte/legacy';
 
-	$: if (typeof value === 'string') {
-		value = value === 'true';
-	} else if (typeof value === 'number') {
-		value = value === 1;
+
+
+	interface Props {
+		value: boolean;
+		id?: string;
 	}
 
-	export let id = '';
+	let { value = $bindable(), id = '' }: Props = $props();
+	run(() => {
+		if (typeof value === 'string') {
+			value = value === 'true';
+		} else if (typeof value === 'number') {
+			value = value === 1;
+		}
+	});
 </script>
 
 <input {id} type="checkbox" bind:checked={value} />

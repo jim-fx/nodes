@@ -2,20 +2,28 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	// Styling
-	export let min: number | undefined = undefined;
-	export let max: number | undefined = undefined;
-	export let step = 1;
-	export let value = 0;
-	export let id = '';
+	interface Props {
+		min?: number | undefined;
+		max?: number | undefined;
+		step?: number;
+		value?: number;
+		id?: string;
+	}
+
+	let {
+		min = undefined,
+		max = undefined,
+		step = 1,
+		value = $bindable(0),
+		id = ''
+	}: Props = $props();
 
 	if (!value) {
 		value = 0;
 	}
 
-	let inputEl: HTMLInputElement;
-	let wrapper: HTMLDivElement;
-	$: value !== undefined && update();
+	let inputEl: HTMLInputElement | undefined = $state();
+	let wrapper: HTMLDivElement | undefined = $state();
 
 	let prev = -1;
 	function update() {
@@ -23,10 +31,6 @@
 		prev = value;
 		dispatch('change', parseFloat(value + ''));
 	}
-
-	$: width = Number.isFinite(value)
-		? Math.max((value?.toString().length ?? 1) * 8, 30) + 'px'
-		: '20px';
 
 	function handleChange(change: number) {
 		value = Math.max(min ?? -Infinity, Math.min(+value + change, max ?? Infinity));
@@ -70,6 +74,13 @@
 			value = downV + Math.round(vx / 10);
 		}
 	}
+
+	$effect(() => {
+		value !== undefined && update();
+	});
+	let width = $derived(
+		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 30) + 'px' : '20px'
+	);
 </script>
 
 <div
@@ -78,13 +89,14 @@
 	role="slider"
 	tabindex="0"
 	aria-valuenow={value}
-	on:mousedown={handleMouseDown}
-	on:mouseup={handleMouseUp}
+	onmousedown={handleMouseDown}
+	onmouseup={handleMouseUp}
 >
 	{#if typeof min !== 'undefined' && typeof max !== 'undefined'}
-		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`} />
+		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`}
+		></span>
 	{/if}
-	<button on:click={() => handleChange(-step)}>-</button>
+	<button onclick={() => handleChange(-step)}>-</button>
 	<input
 		bind:value
 		bind:this={inputEl}
@@ -96,7 +108,7 @@
 		style={`width:${width};`}
 	/>
 
-	<button on:click={() => handleChange(+step)}>+</button>
+	<button onclick={() => handleChange(+step)}>+</button>
 </div>
 
 <style>
@@ -159,4 +171,3 @@
 		border-style: none;
 	}
 </style>
-

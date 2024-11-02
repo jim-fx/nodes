@@ -1,7 +1,11 @@
 <script lang="ts">
-	export let options: string[] = [];
-	export let value: number = 0;
-	export let id = '';
+	interface Props {
+		options?: string[];
+		value?: number;
+		id?: string;
+	}
+
+	let { options = [], value = $bindable(0), id = '' }: Props = $props();
 </script>
 
 <select {id} bind:value>

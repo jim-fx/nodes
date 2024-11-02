@@ -2,6 +2,7 @@
 node_modules
 /build
 /dist
+/storybook-static
 /.svelte-kit
 /package
 .env
@@ -9,3 +10,5 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+*storybook.log

@@ -7,9 +7,13 @@
 	import type { NodeInput } from '@nodes/types';
 	import Vec3 from './elements/Vec3.svelte';
 
-	export let input: NodeInput;
-	export let value: any;
-	export let id: string;
+	interface Props {
+		input: NodeInput;
+		value: any;
+		id: string;
+	}
+
+	let { input, value = $bindable(), id }: Props = $props();
 </script>
 
 {#if input.type === 'float'}

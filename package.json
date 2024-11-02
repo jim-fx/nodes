@@ -4,7 +4,7 @@
     "build:app": "BASE_PATH=/ui pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
-    "build:deploy": "pnpm build && cp -r ./packages/ui/build ./app/build/ui",
+    "build:deploy": "pnpm build && cp -r ./packages/ui/storybook-static ./app/build/ui",
     "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"
   }
 }

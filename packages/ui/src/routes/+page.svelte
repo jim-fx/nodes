@@ -4,9 +4,9 @@
 	import Integer from '$lib/elements/Integer.svelte';
 	import Vec3 from '$lib/elements/Vec3.svelte';
 
-	let intValue = 0;
-	let floatValue = 0.2;
-	let vecValue = [0.2, 0.3, 0.4];
+	let intValue = $state(0);
+	let floatValue = $state(0.2);
+	let vecValue = $state([0.2, 0.3, 0.4]);
 </script>
 
 <main>

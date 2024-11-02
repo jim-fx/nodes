@@ -1,12 +1,17 @@
 <script lang="ts">
-  export let title = "Details";
-  export let transparent = false;
+  interface Props {
+    title?: string;
+    transparent?: boolean;
+    children?: import('svelte').Snippet;
+  }
+
+  let { title = "Details", transparent = false, children }: Props = $props();
 </script>
 
 <details class:transparent>
   <summary>{title}</summary>
   <div class="content">
-    <slot />
+    {@render children?.()}
   </div>
 </details>
 
