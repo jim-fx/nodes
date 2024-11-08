@@ -21,10 +21,9 @@
   import HelpView from "../HelpView.svelte";
   import FileSaver from "file-saver";
   import { Canvas } from "@threlte/core";
+  import { getGraphManager } from "./context.js";
 
   const state = getGraphState();
-
-  export let manager: GraphManager;
 
   export let snapToGrid = true;
   export let showGrid = true;
@@ -33,7 +32,8 @@
   let keymap =
     getContext<ReturnType<typeof createKeyMap>>("keymap") || createKeyMap([]);
 
-  setContext("graphManager", manager);
+  const manager = getGraphManager();
+
   const status = manager.status;
   const nodes = manager.nodes;
   const edges = manager.edges;
@@ -965,6 +965,7 @@
 <style>
   .graph-wrapper {
     position: relative;
+    z-index: 0;
     transition: opacity 0.3s ease;
     height: 100%;
   }

@@ -6,11 +6,11 @@
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
   import { AppSettingTypes, AppSettings } from "$lib/settings/app-settings";
-  import { writable, type Writable } from "svelte/store";
+  import { appSettings as _appSettings, AppSettingTypes as _AppSettingTypes} from "$lib/settings/app-settings.svelte";
+  import { writable } from "svelte/store";
   import Keymap from "$lib/settings/panels/Keymap.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
-  import type { GraphManager } from "$lib/graph-interface/graph-manager";
   import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
   import Panel from "$lib/settings/Panel.svelte";
@@ -22,12 +22,11 @@
     MemoryRuntimeCache,
     WorkerRuntimeExecutor,
     MemoryRuntimeExecutor,
-  } from "@nodes/runtime";
+  } from "$lib/runtime";
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
   import { createPerformanceStore } from "@nodes/utils";
   import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
-  import type { Component } from "svelte";
 
   let performanceStore = createPerformanceStore();
 
@@ -160,8 +159,8 @@
           <Panel id="general" title="General" icon="i-tabler-settings">
             <NestedSettings
               id="general"
-              store={AppSettings}
-              settings={AppSettingTypes}
+              value={_appSettings}
+              type={_AppSettingTypes}
             />
           </Panel>
           <Panel

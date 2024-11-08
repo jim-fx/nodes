@@ -29,16 +29,22 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
   private _nodes: Map<number, Node> = new Map();
   nodes: Writable<Map<number, Node>> = writable(new Map());
-  settingTypes: Record<string, NodeInput> = {};
-  settings: Record<string, unknown> = {};
+
   private _edges: Edge[] = [];
   edges: Writable<Edge[]> = writable([]);
+
+  settingTypes: Record<string, NodeInput> = {};
+  settings: Record<string, unknown> = {};
 
   currentUndoGroup: number | null = null;
 
   inputSockets: Writable<Set<string>> = writable(new Set());
 
   history: HistoryManager = new HistoryManager();
+  execute = throttle(() => {
+    if (this.loaded === false) return;
+    this.emit("result", this.serialize());
+  }, 10);
 
   constructor(public registry: NodeRegistry) {
     super();
@@ -53,7 +59,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
       }
       this.inputSockets.set(s);
     });
-    this.execute = throttle(() => this._execute(), 10);
   }
 
   serialize(): Graph {
@@ -67,7 +72,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     const edges = this._edges.map(edge => [edge[0].id, edge[1], edge[2].id, edge[3]]) as Graph["edges"];
     const serialized = { id: this.graph.id, settings: this.settings, nodes, edges };
     logger.groupEnd();
-    console.log({ serialized });
 
     return clone(serialized);
   }
@@ -86,11 +90,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
   }
 
 
-  execute() { }
-  _execute() {
-    if (this.loaded === false) return;
-    this.emit("result", this.serialize());
-  }
 
   getNodeDefinitions() {
     return this.registry.getAllNodes();
@@ -111,9 +110,7 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
     return [...nodes.values()];
   }
 
-
   getEdgesBetweenNodes(nodes: Node[]): [number, number, number, string][] {
-
     const edges = [];
     for (const node of nodes) {
       const children = node.tmp?.children || [];

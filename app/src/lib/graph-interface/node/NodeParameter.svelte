@@ -59,9 +59,9 @@
     aspectRatio,
   });
   const pathDisabled = createNodePath({
-    depth: 0,
-    height: 15,
-    y: 50,
+    depth: 4.5,
+    height: 14,
+    y: 50.5,
     cornerBottom,
     leftBump,
     aspectRatio,
@@ -80,7 +80,7 @@
   class="wrapper"
   data-node-type={node.type}
   data-node-input={id}
-  class:disabled={!graphState.possibleSocketIds.has(socketId)}
+  class:disabled={!graphState?.possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
     <div class="content" class:disabled={$inputSockets?.has(socketId)}>

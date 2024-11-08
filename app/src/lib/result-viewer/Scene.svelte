@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, useThrelte } from "@threlte/core";
+  import { T, useTask, useThrelte } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial, Text } from "@threlte/extras";
   import {
     type Group,
@@ -8,23 +8,29 @@
     type Vector3Tuple,
     Box3,
     Mesh,
-    MeshMatcapMaterial,
     MeshBasicMaterial,
   } from "three";
   import { AppSettings } from "../settings/app-settings";
   import Camera from "./Camera.svelte";
 
-  const threlte = useThrelte();
+  const { renderStage, invalidate: _invalidate } = useThrelte();
 
   export let fps: number[] = [];
-  let renderer = threlte.renderer;
-  let rendererRender = renderer.render;
-  renderer.render = function (scene, camera) {
-    const a = performance.now();
-    rendererRender.call(renderer, scene, camera);
-    fps.push(performance.now() - a);
-    fps = fps.slice(-100);
-  };
+  // let renderer = threlte.renderer;
+  // let rendererRender = renderer.render;
+  // renderer.render = function (scene, camera) {
+  //   const a = performance.now();
+  //   rendererRender.call(renderer, scene, camera);
+  //   fps.push(performance.now() - a);
+  //   fps = fps.slice(-100);
+  // };
+  useTask(
+    (delta) => {
+      fps.push(1 / delta);
+      fps = fps.slice(-100);
+    },
+    { stage: renderStage, autoInvalidate: false },
+  );
 
   export const invalidate = function () {
     if (scene) {
@@ -44,7 +50,7 @@
         .max(new Vector3(-4, -4, -4))
         .min(new Vector3(4, 4, 4));
     }
-    threlte.invalidate();
+    _invalidate();
   };
 
   let geometries: BufferGeometry[] = [];
@@ -68,7 +74,7 @@
         child.material.wireframe = $AppSettings.wireframe;
       }
     });
-    threlte.invalidate();
+    invalidate();
   }
 
   function getPosition(geo: BufferGeometry, i: number) {

@@ -94,6 +94,7 @@
 
   .content {
     background: var(--layer-1);
+    z-index: 10;
     position: relative;
     max-height: 100vh;
     overflow-y: auto;

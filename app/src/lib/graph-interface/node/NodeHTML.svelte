@@ -3,7 +3,6 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { getContext, onMount } from "svelte";
-  import Page from "../../../routes/+page.svelte";
   export let isActive = false;
   export let isSelected = false;
   export let inView = true;

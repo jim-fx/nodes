@@ -4,7 +4,7 @@
 		id?: string;
 	}
 
-	let { value = $bindable(), id = '' }: Props = $props();
+	let { value = $bindable(false), id = '' }: Props = $props();
 	$effect(() => {
 		if (typeof value === 'string') {
 			value = value === 'true';
@@ -98,4 +98,3 @@
 		display: block;
 	}
 </style>
-

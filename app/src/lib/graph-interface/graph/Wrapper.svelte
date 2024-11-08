@@ -8,6 +8,9 @@
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import { GraphState } from "./state.svelte";
 
+  const state = new GraphState();
+  setContext("graphState", state);
+
   type Props = {
     graph: Graph;
     registry: NodeRegistry;
@@ -38,10 +41,9 @@
   }: Props = $props();
 
   export const keymap = createKeyMap([]);
-  export const manager = new GraphManager(registry);
 
-  const state = new GraphState();
-  setContext("graphState", state);
+  export const manager = new GraphManager(registry);
+  setContext("graphManager", manager);
 
   $effect(() => {
     if (state.activeNodeId !== -1) {
@@ -75,4 +77,4 @@
   manager.load(graph);
 </script>
 
-<GraphEl {manager} bind:showGrid bind:snapToGrid bind:showHelp />
+<GraphEl bind:showGrid bind:snapToGrid bind:showHelp />

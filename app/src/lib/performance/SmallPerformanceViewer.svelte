@@ -25,44 +25,42 @@
 <div class="wrapper">
   <table>
     <tbody>
-    <tr on:click={() => ($open.runtime = !$open.runtime)}>
-      <td>{$open.runtime ? "-" : "+"} runtime </td>
-      <td>{humanizeDuration(runtime || 1000)}</td>
-    </tr>
-    {#if $open.runtime}
-      <tr>
-        <td colspan="2">
-          <SmallGraph points={getPoints($store, "runtime")} />
+      <tr on:click={() => ($open.runtime = !$open.runtime)}>
+        <td>{$open.runtime ? "-" : "+"} runtime </td>
+        <td>{humanizeDuration(runtime || 1000)}</td>
+      </tr>
+      {#if $open.runtime}
+        <tr>
+          <td colspan="2">
+            <SmallGraph points={getPoints($store, "runtime")} />
+          </td>
+        </tr>
+      {/if}
+
+      <tr on:click={() => ($open.fps = !$open.fps)}>
+        <td>{$open.fps ? "-" : "+"} fps </td>
+        <td>
+          {Math.floor(fps[fps.length - 1])}fps
         </td>
       </tr>
-    {/if}
+      {#if $open.fps}
+        <tr>
+          <td colspan="2">
+            <SmallGraph points={fps} />
+          </td>
+        </tr>
+      {/if}
 
-    <tr on:click={() => ($open.fps = !$open.fps)}>
-      <td>{$open.fps ? "-" : "+"} fps </td>
-      <td>
-        {#if fps[fps.length - 1] > 5}
-          {Math.floor(1000 / fps[fps.length - 1])}fps
-        {/if}
-      </td>
-    </tr>
-    {#if $open.fps}
       <tr>
-        <td colspan="2">
-          <SmallGraph points={fps} />
-        </td>
+        <td>vertices </td>
+        <td>{humanizeNumber(vertices || 0)}</td>
       </tr>
-    {/if}
 
-    <tr>
-      <td>vertices </td>
-      <td>{humanizeNumber(vertices || 0)}</td>
-    </tr>
-
-    <tr>
-      <td>faces </td>
-      <td>{humanizeNumber(faces || 0)}</td>
-    </tr>
-      </tbody>
+      <tr>
+        <td>faces </td>
+        <td>{humanizeNumber(faces || 0)}</td>
+      </tr>
+    </tbody>
   </table>
 </div>
 
@@ -71,6 +69,7 @@
     position: absolute;
     top: 10px;
     left: 10px;
+    z-index: 2;
     background: var(--layer-0);
     border: solid thin var(--outline);
     border-collapse: collapse;

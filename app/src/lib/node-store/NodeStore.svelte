@@ -1,9 +1,8 @@
 <script lang="ts">
-  import localStore from "$lib/helpers/localStore";
-  import type { RemoteNodeRegistry } from "$lib/node-registry-client";
   import { writable } from "svelte/store";
   import BreadCrumbs from "./BreadCrumbs.svelte";
   import DraggableNode from "./DraggableNode.svelte";
+  import type { RemoteNodeRegistry } from "@nodes/registry";
 
   export let registry: RemoteNodeRegistry;
 
@@ -58,7 +57,7 @@
     {:then collection}
       {#each collection.nodes as node}
         {#await registry.fetchNodeDefinition(node.id)}
-          <div>Loading...</div>
+          <div>Loading... {node.id}</div>
         {:then node}
           {#if node}
             <DraggableNode {node} />

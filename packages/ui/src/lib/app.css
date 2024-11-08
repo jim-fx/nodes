@@ -47,9 +47,6 @@ html {
   --neutral-800: #111111;
   --neutral-900: #060606;
 
-  /* Secondary color */
-  --secondary-color: #6c757d;
-
   --layer-0: var(--neutral-900);
   --layer-1: var(--neutral-500);
   --layer-2: var(--neutral-400);

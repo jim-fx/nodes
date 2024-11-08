@@ -3,6 +3,7 @@
   import type { OBJExporter } from "three/addons/exporters/OBJExporter.js";
   import type { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
   import FileSaver from "file-saver";
+  import { appSettings } from "../app-settings.svelte";
 
   // Download
   const download = (
@@ -51,6 +52,8 @@
     // download .obj file
     download(result, "plant", "text/plain", "obj");
   }
+
+
 </script>
 
 <div class="p-2">

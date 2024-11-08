@@ -6,14 +6,17 @@
   "inputs": {
     "0": {
       "type": "float",
+      "value": 0,
       "label": ""
     },
     "1": {
       "type": "float",
+      "value": 0,
       "label": ""
     },
     "2": {
       "type": "float",
+      "value": 0,
       "label": ""
     }
   }

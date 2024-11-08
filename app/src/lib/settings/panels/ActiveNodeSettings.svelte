@@ -11,7 +11,7 @@
   function filterInputs(inputs: Record<string, NodeInput>) {
     return Object.fromEntries(
       Object.entries(inputs)
-        .filter(([key, value]) => {
+        .filter(([_key, value]) => {
           return value.hidden === true;
         })
         .map(([key, value]) => {

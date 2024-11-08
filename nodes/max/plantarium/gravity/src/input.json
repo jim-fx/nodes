@@ -11,11 +11,13 @@
       "type": "float",
       "min": 0,
       "max": 1
+      "value": 1,
     },
     "curviness": {
       "type": "float",
       "hidden": true,
       "min": 0,
+      "value": 0.5,
       "max": 1
     },
     "depth": {
