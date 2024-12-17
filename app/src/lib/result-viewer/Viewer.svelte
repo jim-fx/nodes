@@ -2,12 +2,10 @@
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
   import { Vector3 } from "three";
-
   import { decodeFloat, splitNestedArray } from "@nodes/utils";
   import type { PerformanceStore } from "@nodes/utils";
-  import { AppSettings } from "$lib/settings/app-settings";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
   import SmallPerformanceViewer from "$lib/performance/SmallPerformanceViewer.svelte";
-
   import { MeshMatcapMaterial, TextureLoader, type Group } from "three";
   import {
     createGeometryPool,
@@ -22,9 +20,11 @@
     matcap,
   });
 
+  let sceneComponent = $state<ReturnType<typeof Scene>>();
+  let fps = $state<number[]>([]);
+
   let geometryPool: ReturnType<typeof createGeometryPool>;
   let instancePool: ReturnType<typeof createInstancedGeometryPool>;
-
   export function updateGeometries(inputs: Int32Array[], group: Group) {
     geometryPool = geometryPool || createGeometryPool(group, material);
     instancePool = instancePool || createInstancedGeometryPool(group, material);
@@ -38,14 +38,15 @@
     };
   }
 
-  export let centerCamera: boolean = true;
-  export let perf: PerformanceStore;
-  export let scene: Group;
-  let fps: number[] = [];
+  type Props = {
+    scene: Group;
+    centerCamera: boolean;
+    perf: PerformanceStore;
+  };
 
-  let lines: Vector3[][] = [];
+  let { scene = $bindable(), centerCamera, perf }: Props = $props();
 
-  let invalidate: () => void;
+  let lines = $state<Vector3[][]>([]);
 
   function createLineGeometryFromEncodedData(encodedData: Int32Array) {
     const positions: Vector3[] = [];
@@ -63,12 +64,12 @@
   }
 
   export const update = function update(result: Int32Array) {
-    perf?.addPoint("split-result");
+    perf.addPoint("split-result");
     const inputs = splitNestedArray(result);
-    perf?.endPoint();
+    perf.endPoint();
 
-    if ($AppSettings.showStemLines) {
-      perf?.addPoint("create-lines");
+    if (appSettings.debug.showStemLines) {
+      perf.addPoint("create-lines");
       lines = inputs
         .map((input) => {
           if (input[0] === 0) {
@@ -79,21 +80,27 @@
       perf.endPoint();
     }
 
-    perf?.addPoint("update-geometries");
+    perf.addPoint("update-geometries");
 
     const { totalVertices, totalFaces } = updateGeometries(inputs, scene);
-    perf?.endPoint();
+    perf.endPoint();
 
-    perf?.addPoint("total-vertices", totalVertices);
-    perf?.addPoint("total-faces", totalFaces);
-    invalidate();
+    perf.addPoint("total-vertices", totalVertices);
+    perf.addPoint("total-faces", totalFaces);
+    sceneComponent?.invalidate();
   };
 </script>
 
-{#if $AppSettings.showPerformancePanel}
+{#if appSettings.debug.showPerformancePanel}
   <SmallPerformanceViewer {fps} store={perf} />
 {/if}
 
 <Canvas>
-  <Scene bind:scene bind:invalidate {lines} {centerCamera} bind:fps />
+  <Scene
+    bind:this={sceneComponent}
+    {lines}
+    {centerCamera}
+    bind:scene
+    bind:fps
+  />
 </Canvas>

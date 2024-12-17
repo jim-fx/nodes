@@ -18,7 +18,6 @@ export function createKeyMap(keys: Shortcut[]) {
 
   const store = writable(new Map(keys.map(k => [getShortcutId(k), k])));
 
-
   return {
     handleKeyboardEvent: (event: KeyboardEvent) => {
       const activeElement = document.activeElement as HTMLElement;

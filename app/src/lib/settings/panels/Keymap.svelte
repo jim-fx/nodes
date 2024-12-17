@@ -1,44 +1,49 @@
 <script lang="ts">
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
   import { ShortCut } from "@nodes/ui";
+  import { get } from "svelte/store";
 
-  export let keymap: ReturnType<typeof createKeyMap>;
-  const keys = keymap?.keys;
-  export let title = "Keymap";
+  type Props = {
+    keymaps: {
+      keymap: ReturnType<typeof createKeyMap>;
+      title: string;
+    }[];
+  };
+
+  let { keymaps }: Props = $props();
+  console.log({ keymaps });
 </script>
 
-<div class="wrapper">
-  <h3>{title}</h3>
-
-  <section>
-    {#each $keys as key}
-      {#if key.description}
-        <div class="command-wrapper">
-          <ShortCut
-            alt={key.alt}
-            ctrl={key.ctrl}
-            shift={key.shift}
-            key={key.key}
-          />
-        </div>
-        <p>{key.description}</p>
-      {/if}
+<table class="wrapper">
+  <tbody>
+    {#each keymaps as keymap}
+      <tr>
+        <td colspan="2">
+          <h3>{keymap.title}</h3>
+        </td>
+      </tr>
+      {#each get(keymap.keymap?.keys) as key}
+        <tr>
+          {#if key.description}
+            <td class="command-wrapper">
+              <ShortCut
+                alt={key.alt}
+                ctrl={key.ctrl}
+                shift={key.shift}
+                key={key.key}
+              />
+            </td>
+            <td>{key.description}</td>
+          {/if}
+        </tr>
+      {/each}
     {/each}
-  </section>
-</div>
+  </tbody>
+</table>
 
 <style>
   .wrapper {
     padding: 1em;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-  }
-
-  section {
-    display: grid;
-    grid-template-columns: min-content 1fr;
-    gap: 1em;
   }
 
   h3 {
@@ -51,10 +56,11 @@
     align-items: center;
   }
 
-  p {
+  td {
     font-size: 0.9em;
     margin: 0;
-    display: flex;
+    padding: 7px;
+    padding-left: 0;
     align-items: center;
   }
 </style>

@@ -53,14 +53,14 @@
   const path = createNodePath({
     depth: 7,
     height: 20,
-    y: 51,
+    y: 50.5,
     cornerBottom,
     leftBump,
     aspectRatio,
   });
   const pathDisabled = createNodePath({
-    depth: 4.5,
-    height: 14,
+    depth: 6,
+    height: 18,
     y: 50.5,
     cornerBottom,
     leftBump,
@@ -172,11 +172,11 @@
   svg {
     position: absolute;
     box-sizing: border-box;
-    width: 100%;
+    width: calc(100% - 2px);
     height: 100%;
     overflow: visible;
     top: 0;
-    left: 0;
+    left: 1px;
     z-index: -1;
   }
 

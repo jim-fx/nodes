@@ -3,14 +3,27 @@
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { getContext, onMount } from "svelte";
-  export let isActive = false;
-  export let isSelected = false;
-  export let inView = true;
-  export let z = 2;
 
   let ref: HTMLDivElement;
-  export let node: Node;
-  export let position = "absolute";
+
+  type Props = {
+    node: Node;
+
+    position?: "absolute" | "fixed";
+    isActive?: boolean;
+    isSelected?: boolean;
+    inView?: boolean;
+    z?: number;
+  };
+
+  let {
+    node,
+    position = "absolute",
+    isActive = false,
+    isSelected = false,
+    inView = true,
+    z = 2,
+  }: Props = $props();
 
   const zOffset = (node.tmp?.random || 0) * 0.5;
   const zLimit = 2 - zOffset;
@@ -24,12 +37,6 @@
 
   const updateNodePosition =
     getContext<(n: Node) => void>("updateNodePosition");
-
-  $: if (node && ref) {
-    node.tmp = node.tmp || {};
-    node.tmp.ref = ref;
-    updateNodePosition?.(node);
-  }
 
   onMount(() => {
     node.tmp = node.tmp || {};

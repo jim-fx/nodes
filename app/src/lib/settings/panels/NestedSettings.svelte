@@ -1,3 +1,7 @@
+<script module lang="ts">
+  let openSections = localState<Record<string,boolean>>("open-details", {});
+</script>
+
 <script lang="ts">
   import NestedSettings from "./NestedSettings.svelte";
   import {localState} from "$lib/helpers/localState.svelte";
@@ -11,14 +15,17 @@
   interface Nested {
     [key: string]: (Nested & { title?: string }) | InputType;
   }
+  type SettingsType = Record<string, Nested>;
+  type SettingsValue = Record<string, Record<string, unknown> | string | number | boolean>;
 
   type Props = {
     id: string;
     key?: string;
-    value: Record<string, unknown> | string | number | boolean;
-    type: Nested;
+    value: SettingsValue;
+    type: SettingsType;
     depth?: number;
   };
+
 
   let { id, key = "", value = $bindable(), type, depth = 0 }: Props = $props();
 
@@ -28,14 +35,14 @@
 
   let internalValue = $state(Array.isArray(type?.[key]?.options) ? type[key]?.options?.indexOf(value?.[key]) : value?.[key]);
 
-  let openSections = localState("open-details", {});
   let open = $state(openSections[id]);
   if(depth > 0 && !isNodeInput(type[key])){
     $effect(() => {
-      if(open !== undefined){}
-      openSections[id] = open;
-      });
-    }
+      if(open !== undefined){
+        openSections[id] = open;
+      };
+    });
+  }
   
 
   $effect(() => {
@@ -49,7 +56,7 @@
 </script>
 
 {#if key && isNodeInput(type?.[key]) }
-  <div class="input input-{type[key].type}">
+  <div class="input input-{type[key].type}" class:first-level={depth === 1}>
     {#if type[key].type === "button"}
       <button onclick={() => console.log(type[key])}>
         {type[key].label || key}
@@ -65,27 +72,25 @@
       <NestedSettings
         id={`${id}.${childKey}`}
         key={childKey}
-        value={value as Record<string, unknown>}
-        type={type as Nested}
+        value={value}
+        type={type}
         depth={depth + 1}
       />
     {/each}
-  {#if depth > 0}
     <hr />
-  {/if}
   {:else if key && type?.[key]}
   {#if depth > 0}
     <hr />
   {/if}
     <details bind:open>
-      <summary>{type[key]?.title||key}</summary>
+      <summary><p>{type[key]?.title||key}</p></summary>
       <div class="content">
         {#each Object.keys(type[key]).filter((key) => key !== "title") as childKey}
           <NestedSettings
             id={`${id}.${childKey}`}
             key={childKey}
-            value={value[key] as Record<string, unknown>}
-            type={type[key] as Nested}
+            value={value[key] as SettingsValue}
+            type={type[key] as SettingsType}
             depth={depth + 1}
           />
         {/each}
@@ -103,9 +108,18 @@
     user-select: none;
     margin-bottom: 1em;
   }
+
+  summary::marker { }
+
+  summary > p {
+    display: inline;
+    padding-left: 6px;
+  }
+
   details {
     padding: 1em;
     padding-bottom: 0;
+    padding-left: 21px;
   }
 
   .input {
@@ -114,7 +128,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-left: 14px;
+    padding-left: 20px;
   }
 
   .input-boolean {
@@ -126,16 +140,12 @@
     order: 2;
   }
 
-  .first-level > .input {
-    padding-right: 1rem;
+  .first-level.input {
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-bottom: 1px;
   }
 
-  .first-level {
-    border-bottom: solid thin var(--outline);
-  }
-  .first-level > details {
-    border: none;
-  }
   hr {
     position: absolute;
     margin: 0;

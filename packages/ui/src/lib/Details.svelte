@@ -34,6 +34,6 @@
   }
 
   .content {
-    padding-left: 12px;
+    /* padding-left: 12px; */
   }
 </style>

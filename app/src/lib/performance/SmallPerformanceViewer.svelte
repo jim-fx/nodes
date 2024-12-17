@@ -11,9 +11,9 @@
     fps: false,
   });
 
-  $: vertices = $store?.at(-1)?.["total-vertices"][0] || 0;
-  $: faces = $store?.at(-1)?.["total-faces"][0] || 0;
-  $: runtime = $store?.at(-1)?.["runtime"][0] || 0;
+  $: vertices = $store?.at(-1)?.["total-vertices"]?.[0] || 0;
+  $: faces = $store?.at(-1)?.["total-faces"]?.[0] || 0;
+  $: runtime = $store?.at(-1)?.["runtime"]?.[0] || 0;
 
   function getPoints(data: PerformanceData, key: string) {
     return data?.map((run) => run[key]?.[0] || 0) || [];

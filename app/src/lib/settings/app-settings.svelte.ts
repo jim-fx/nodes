@@ -39,6 +39,7 @@ export const AppSettingTypes = {
     }
   },
   debug: {
+    title: "Debug",
     wireframe: {
       type: "boolean",
       label: "Wireframe",
@@ -79,7 +80,8 @@ export const AppSettingTypes = {
       amount: {
         type: "integer",
         min: 2,
-        max: 15
+        max: 15,
+        value: 4
       },
       loadGrid: {
         type: "button",
@@ -138,8 +140,8 @@ export const appSettings = localState("app-settings", settingsToStore(AppSetting
 
 $effect.root(() => {
   $effect(() => {
-    const { theme } = $state.snapshot(appSettings);
-    const classes = document.body.parentElement?.classList;
+    const theme = appSettings.theme;
+    const classes = document.documentElement.classList;
     const newClassName = `theme-${theme}`;
     if (classes) {
       for (const className of classes) {
@@ -148,6 +150,6 @@ $effect.root(() => {
         }
       }
     }
-    document.body?.parentElement?.classList.add(newClassName);
+    document.documentElement.classList.add(newClassName);
   });
 });
