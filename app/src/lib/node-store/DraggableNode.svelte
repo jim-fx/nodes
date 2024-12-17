@@ -3,7 +3,6 @@
   import type { NodeDefinition } from "@nodes/types";
 
   export let node: NodeDefinition;
-  console.log(node);
 
   let dragging = false;
 

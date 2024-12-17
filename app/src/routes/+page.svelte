@@ -6,7 +6,10 @@
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import Settings from "$lib/settings/Settings.svelte";
   import { AppSettingTypes, AppSettings } from "$lib/settings/app-settings";
-  import { appSettings as _appSettings, AppSettingTypes as _AppSettingTypes} from "$lib/settings/app-settings.svelte";
+  import {
+    appSettings as _appSettings,
+    AppSettingTypes as _AppSettingTypes,
+  } from "$lib/settings/app-settings.svelte";
   import { writable } from "svelte/store";
   import Keymap from "$lib/settings/panels/Keymap.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
