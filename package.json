@@ -1,11 +1,11 @@
 {
   "scripts": {
-    "build": "pnpm build:nodes && pnpm build:app && pnpm build:story",
+    "build": "pnpm build:nodes && pnpm build:app",
     "build:story": "pnpm -r --filter 'ui' story:build",
     "build:app": "BASE_PATH=/ui pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
-    "build:deploy": "pnpm build && cp -r ./packages/ui/storybook-static ./app/build/ui",
+    "build:deploy": "pnpm build",
     "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b",
