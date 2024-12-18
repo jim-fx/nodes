@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "pnpm build:nodes && pnpm build:app",
+    "build": "pnpm build:nodes && pnpm build:app && pnpm build:story",
+    "build:story": "pnpm -r --filter 'ui' story:build",
     "build:app": "BASE_PATH=/ui pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
