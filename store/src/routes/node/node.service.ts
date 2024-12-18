@@ -1,7 +1,9 @@
 import { db } from "../../db/db.ts";
-import { nodeTable } from "./node.schema.ts";
-import { NodeDefinition, NodeDefinitionSchema } from "./types.ts";
+import { nodeTable } from "./schemas/node.schema.ts";
+import { NodeDefinition, NodeDefinitionSchema } from "./schemas/types.ts";
 import { and, eq } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { WorkerMessage } from "./worker/types.ts";
 
 export type CreateNodeDTO = {
   id: string;
@@ -10,10 +12,21 @@ export type CreateNodeDTO = {
   content: ArrayBuffer;
 };
 
+function getNodeHash(content: Uint8Array) {
+  const hash = createHash("sha256");
+  hash.update(content);
+  return hash.digest("hex").slice(0, 8);
+}
+
 function extractDefinition(content: ArrayBuffer): Promise<NodeDefinition> {
-  const worker = new Worker(new URL("./node.worker.ts", import.meta.url).href, {
-    type: "module",
-  });
+  const worker = new Worker(
+    new URL("./worker/node.worker.ts", import.meta.url).href,
+    {
+      type: "module",
+    },
+  ) as Worker & {
+    postMessage: (message: WorkerMessage) => void;
+  };
 
   return new Promise((res, rej) => {
     worker.postMessage({ action: "extract-definition", content });
@@ -22,12 +35,12 @@ function extractDefinition(content: ArrayBuffer): Promise<NodeDefinition> {
       rej(new Error("Worker timeout out"));
     }, 100);
     worker.onmessage = function (e) {
-      console.log(e.data);
       switch (e.data.action) {
         case "result":
           res(e.data.result);
           break;
         case "error":
+          console.log("Worker error", e.data.error);
           rej(e.data.result);
           break;
         default:
@@ -51,20 +64,28 @@ export async function createNode(
       systemId,
       nodeId,
       definition: def,
+      hash: getNodeHash(content),
       content: content,
     };
 
     await db.insert(nodeTable).values(node);
-    console.log("New user created!");
-    // await db.insert(users).values({ name: "Andrew" });
+    console.log("new node created!");
     return def;
   } catch (error) {
-    console.log({ error });
+    console.log("Creation Error", { error });
     throw error;
   }
 }
 
-export async function getNodesByUser(userName: string) {}
+export function getNodeDefinitionsByUser(userName: string) {
+  return db.select({ definition: nodeTable.definition }).from(nodeTable)
+    .where(
+      and(
+        eq(nodeTable.userId, userName),
+      ),
+    );
+}
+
 export async function getNodesBySystem(
   username: string,
   systemId: string,
@@ -84,4 +105,51 @@ export async function getNodesBySystem(
   return definitions;
 }
 
-export async function getNodeById(dto: CreateNodeDTO) {}
+export async function getNodeWasmById(
+  userName: string,
+  systemId: string,
+  nodeId: string,
+) {
+  const node = await db.select({ content: nodeTable.content }).from(nodeTable)
+    .where(
+      and(
+        eq(nodeTable.userId, userName),
+        eq(nodeTable.systemId, systemId),
+        eq(nodeTable.nodeId, nodeId),
+      ),
+    ).limit(1);
+
+  if (!node[0]) {
+    throw new Error("Node not found");
+  }
+
+  return node[0].content;
+}
+
+export async function getNodeDefinitionById(
+  userName: string,
+  systemId: string,
+  nodeId: string,
+) {
+  const node = await db.select({ definition: nodeTable.definition }).from(
+    nodeTable,
+  ).where(
+    and(
+      eq(nodeTable.userId, userName),
+      eq(nodeTable.systemId, systemId),
+      eq(nodeTable.nodeId, nodeId),
+    ),
+  ).limit(1);
+
+  if (!node[0]) {
+    return;
+  }
+
+  const definition = NodeDefinitionSchema.safeParse(node[0]?.definition);
+
+  if (!definition.data) {
+    throw new Error("Invalid definition");
+  }
+
+  return definition.data;
+}

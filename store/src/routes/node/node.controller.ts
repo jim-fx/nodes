@@ -1,5 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { NodeDefinitionSchema } from "./types.ts";
+import { HTTPException } from "hono/http-exception";
+import { idRegex, NodeDefinitionSchema } from "./schemas/types.ts";
 import * as service from "./node.service.ts";
 import { bodyLimit } from "hono/body-limit";
 
@@ -11,24 +12,49 @@ const SingleParam = (name: string) =>
     .min(3)
     .max(20)
     .refine(
-      (value) => /^[a-z_-]+$/i.test(value),
+      (value) => idRegex.test(value),
       "Name should contain only alphabets",
     )
     .openapi({ param: { name, in: "path" } });
 
 const ParamsSchema = z.object({
-  userId: SingleParam("userId"),
-  nodeSystemId: SingleParam("nodeSystemId"),
+  user: SingleParam("user"),
+  system: SingleParam("system"),
   nodeId: SingleParam("nodeId"),
+});
+
+const getUserNodesRoute = createRoute({
+  method: "get",
+  path: "/{user}.json",
+  request: {
+    params: z.object({
+      user: SingleParam("user"),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(NodeDefinitionSchema),
+        },
+      },
+      description: "Retrieve a single node definition",
+    },
+  },
+});
+nodeRouter.openapi(getUserNodesRoute, async (c) => {
+  const userId = c.req.param("user.json").replace(/\.json$/, "");
+  const nodes = await service.getNodeDefinitionsByUser(userId);
+  return c.json(nodes);
 });
 
 const getNodeCollectionRoute = createRoute({
   method: "get",
-  path: "/{userId}/{nodeSystemId}.json",
+  path: "/{user}/{system}.json",
   request: {
     params: z.object({
-      userId: SingleParam("userId"),
-      nodeSystemId: SingleParam("nodeSystemId").optional(),
+      user: SingleParam("user"),
+      system: SingleParam("system").optional(),
     }),
   },
   responses: {
@@ -43,17 +69,16 @@ const getNodeCollectionRoute = createRoute({
   },
 });
 nodeRouter.openapi(getNodeCollectionRoute, async (c) => {
-  const { userId } = c.req.valid("param");
-  const nodeSystemId = c.req.param("nodeSystemId.json").replace(/\.json$/, "");
+  const { user } = c.req.valid("param");
+  const nodeSystemId = c.req.param("system.json").replace(/\.json$/, "");
 
-  const nodes = await service.getNodesBySystem(userId, nodeSystemId);
-
+  const nodes = await service.getNodesBySystem(user, nodeSystemId);
   return c.json(nodes);
 });
 
 const getNodeDefinitionRoute = createRoute({
   method: "get",
-  path: "/{userId}/{nodeSystemId}/{nodeId}.json",
+  path: "/{user}/{system}/{nodeId}{.+\\.json}",
   request: {
     params: ParamsSchema,
   },
@@ -68,15 +93,25 @@ const getNodeDefinitionRoute = createRoute({
     },
   },
 });
-nodeRouter.openapi(getNodeDefinitionRoute, (c) => {
-  return c.json({
-    id: "",
-  });
+nodeRouter.openapi(getNodeDefinitionRoute, async (c) => {
+  const { user, system, nodeId } = c.req.valid("param");
+
+  const node = await service.getNodeDefinitionById(
+    user,
+    system,
+    nodeId.replace(/\.json$/, ""),
+  );
+
+  if (!node) {
+    throw new HTTPException(404);
+  }
+
+  return c.json(node);
 });
 
 const getNodeWasmRoute = createRoute({
   method: "get",
-  path: "/{userId}/{nodeSystemId}/{nodeId}.wasm",
+  path: "/{user}/{system}/{nodeId}{.+\\.wasm}",
   request: {
     params: ParamsSchema,
   },
@@ -91,11 +126,18 @@ const getNodeWasmRoute = createRoute({
     },
   },
 });
+nodeRouter.openapi(getNodeWasmRoute, async (c) => {
+  const { user, system, nodeId } = c.req.valid("param");
 
-nodeRouter.openapi(getNodeWasmRoute, (c) => {
-  return c.json({
-    id: "",
-  });
+  const wasmContent = await service.getNodeWasmById(
+    user,
+    system,
+    nodeId.replace(/\.wasm/, ""),
+  );
+
+  c.header("Content-Type", "application/wasm");
+
+  return c.body(wasmContent);
 });
 
 const createNodeRoute = createRoute({
@@ -113,20 +155,17 @@ const createNodeRoute = createRoute({
   },
   middleware: [
     bodyLimit({
-      maxSize: 50 * 1024, // 50kb
+      maxSize: 128 * 1024, // 128kb
       onError: (c) => {
-        return c.text("overflow :(", 413);
+        return c.text("Node content too large", 413);
       },
     }),
   ],
 });
-
 nodeRouter.openapi(createNodeRoute, async (c) => {
   const buffer = await c.req.arrayBuffer();
   const bytes = await (await c.req.blob()).bytes();
-
   const node = await service.createNode(buffer, bytes);
-
   return c.json(node);
 });
 

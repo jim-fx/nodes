@@ -2,7 +2,7 @@
   "tasks": {
     "dev": "deno run --watch main.ts",
     "test": "deno run vitest",
-    "drizzle": "docker compose exec app deno --env -A --node-modules-dir npm:drizzle-kit",
+    "drizzle": "podman-compose exec app deno --env -A --node-modules-dir npm:drizzle-kit",
     "upload": "deno run --allow-read --allow-net bin/upload.ts"
   },
   "imports": {

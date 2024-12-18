@@ -1,5 +1,5 @@
 // @ts-nocheck: Nocheck
-import { NodeDefinition } from "./types.ts";
+import { NodeDefinition } from "../schemas/types.ts";
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,

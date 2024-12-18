@@ -22,7 +22,7 @@ export async function findUserByName(userName: string) {
   const users = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.name, userName));
+    .where(eq(usersTable.name, userName)).limit(1);
 
   return users[0];
 }

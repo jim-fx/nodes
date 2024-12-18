@@ -7,7 +7,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
-import { usersTable } from "../user/user.schema.ts";
+import { usersTable } from "../../user/user.schema.ts";
 
 const bytea = customType<{
   data: ArrayBuffer;
@@ -25,6 +25,7 @@ export const nodeTable = pgTable("nodes", {
   nodeId: varchar().notNull(),
   content: bytea().notNull(),
   definition: json().notNull(),
+  hash: varchar({ length: 8 }).notNull(),
   previous: integer(),
 });
 

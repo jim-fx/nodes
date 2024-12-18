@@ -52,8 +52,10 @@ async function postNode(node: Node) {
   });
 
   if (res.ok) {
-    const json = await res.text();
-    console.log(json);
+    console.log(`Uploaded ${node.id}`);
+  } else {
+    const text = await res.text();
+    console.log(`Failed to upload ${node.id}: ${text}`);
   }
 }
 

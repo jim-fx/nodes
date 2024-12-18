@@ -12,14 +12,14 @@ app.use("/v1/*", cors());
 app.use(logger());
 app.route("v1", router);
 
-app.doc("/doc", {
+app.doc("/openapi.json", {
   openapi: "3.0.0",
   info: {
     version: "1.0.0",
-    title: "My API",
+    title: "Nodarium API",
   },
 });
 
-app.get("/ui", swaggerUI({ url: "/doc" }));
+app.get("/ui", swaggerUI({ url: "/openapi.json" }));
 
 Deno.serve(app.fetch);

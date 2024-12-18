@@ -10,7 +10,7 @@ const DefaultOptionsSchema = z.object({
   hidden: z.boolean().optional(),
 });
 
-export const NodeInputFloatSchema = z.object({
+const NodeInputFloatSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("float"),
   element: z.literal("slider").optional(),
@@ -20,7 +20,7 @@ export const NodeInputFloatSchema = z.object({
   step: z.number().optional(),
 });
 
-export const NodeInputIntegerSchema = z.object({
+const NodeInputIntegerSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("integer"),
   element: z.literal("slider").optional(),
@@ -29,37 +29,37 @@ export const NodeInputIntegerSchema = z.object({
   max: z.number().optional(),
 });
 
-export const NodeInputBooleanSchema = z.object({
+const NodeInputBooleanSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("boolean"),
   value: z.boolean().optional(),
 });
 
-export const NodeInputSelectSchema = z.object({
+const NodeInputSelectSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("select"),
   options: z.array(z.string()).optional(),
   value: z.number().optional(),
 });
 
-export const NodeInputSeedSchema = z.object({
+const NodeInputSeedSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("seed"),
   value: z.number().optional(),
 });
 
-export const NodeInputVec3Schema = z.object({
+const NodeInputVec3Schema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("vec3"),
   value: z.array(z.number()).optional(),
 });
 
-export const NodeInputGeometrySchema = z.object({
+const NodeInputGeometrySchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("geometry"),
 });
 
-export const NodeInputPathSchema = z.object({
+const NodeInputPathSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("path"),
 });

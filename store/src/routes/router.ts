@@ -5,6 +5,6 @@ import { userRouter } from "./user/user.controller.ts";
 const router = new OpenAPIHono();
 
 router.route("nodes", nodeRouter);
-router.route("nodes", userRouter);
+router.route("users", userRouter);
 
 export { router };

@@ -1,5 +1,5 @@
-import { type NodeRegistry, type NodeDefinition, NodeDefinitionSchema, type AsyncCache } from "@nodes/types";
-import { createWasmWrapper, createLogger } from "@nodes/utils";
+import { NodeDefinitionSchema, type AsyncCache, type NodeDefinition, type NodeRegistry } from "@nodes/types";
+import { createLogger, createWasmWrapper } from "@nodes/utils";
 
 const log = createLogger("node-registry");
 log.mute();
@@ -49,18 +49,21 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   private async fetchNodeWasm(nodeId: `${string}/${string}/${string}`) {
 
-    const response = await this.fetch(`${this.url}/nodes/${nodeId}.wasm`);
-    if (!response.ok) {
-      if (this.cache) {
-        let value = await this.cache.get(nodeId);
-        if (value) {
-          return value;
-        }
-      }
+    const fetchNode = async () => {
+      const response = await this.fetch(`${this.url}/nodes/${nodeId}.wasm`);
+      return response.arrayBuffer();
+    }
+
+    const res = await Promise.race([
+      fetchNode(),
+      this.cache?.get(nodeId)
+    ]);
+
+    if (!res) {
       throw new Error(`Failed to load node wasm ${nodeId}`);
     }
 
-    return response.arrayBuffer();
+    return res;
   }
 
   async load(nodeIds: `${string}/${string}/${string}`[]) {

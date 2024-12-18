@@ -65,7 +65,7 @@ export function createNodePath({
 
 export const debounce = (fn: Function, ms = 300) => {
   let timeoutId: ReturnType<typeof setTimeout>;
-  return function(this: any, ...args: any[]) {
+  return function (this: any, ...args: any[]) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => fn.apply(this, args), ms);
   };
@@ -131,40 +131,99 @@ export function humanizeDuration(durationInMilliseconds: number) {
 
   return durationString.trim();
 }
-export function debounceAsyncFunction<T extends any[], R>(func: (...args: T) => Promise<R>): (...args: T) => Promise<R> {
-  let currentPromise: Promise<R> | null = null;
-  let nextArgs: T | null = null;
-  let resolveNext: ((result: R) => void) | null = null;
+// export function debounceAsyncFunction<T extends any[], R>(
+//   func: (...args: T) => Promise<R>
+// ): (...args: T) => Promise<R> {
+//   let timeoutId: ReturnType<typeof setTimeout> | null = null;
+//   let lastPromise: Promise<R> | null = null;
+//   let lastReject: ((reason?: any) => void) | null = null;
+//
+//   return (...args: T): Promise<R> => {
+//     if (timeoutId) {
+//       clearTimeout(timeoutId);
+//       if (lastReject) {
+//         lastReject(new Error("Debounced: Previous call was canceled."));
+//       }
+//     }
+//
+//     return new Promise<R>((resolve, reject) => {
+//       lastReject = reject;
+//       timeoutId = setTimeout(() => {
+//         timeoutId = null;
+//         lastReject = null;
+//         lastPromise = func(...args).then(resolve, reject);
+//       }, 300); // Default debounce time is 300ms; you can make this configurable.
+//     });
+//   };
+// }
+export function debounceAsyncFunction<T extends (...args: any[]) => Promise<any>>(asyncFn: T): T {
+  let isRunning = false;
+  let latestArgs: Parameters<T> | null = null;
+  let resolveNext: (() => void) | null = null;
 
-  const debouncedFunction = async (...args: T): Promise<R> => {
-    if (currentPromise) {
-      // Store the latest arguments and create a new promise to resolve them later
-      nextArgs = args;
-      return new Promise<R>((resolve) => {
+  return (async function serializedFunction(...args: Parameters<T>): Promise<ReturnType<T>> {
+    latestArgs = args;
+
+    if (isRunning) {
+      // Wait for the current execution to finish
+      await new Promise<void>((resolve) => {
         resolveNext = resolve;
       });
-    } else {
-      // Execute the function immediately
-      try {
-        currentPromise = func(...args);
-        const result = await currentPromise;
-        return result;
-      } finally {
-        currentPromise = null;
-        // If there are stored arguments, call the function again with the latest arguments
-        if (nextArgs) {
-          const argsToUse = nextArgs;
-          const resolver = resolveNext;
-          nextArgs = null;
-          resolveNext = null;
-          resolver!(await debouncedFunction(...argsToUse));
-        }
+    }
+
+    // Indicate the function is running
+    isRunning = true;
+
+    try {
+      // Execute with the latest arguments
+      const result = await asyncFn(...latestArgs!);
+      return result;
+    } finally {
+      // Allow the next execution
+      isRunning = false;
+
+      if (resolveNext) {
+        resolveNext();
+        resolveNext = null;
       }
     }
-  };
-
-  return debouncedFunction;
+  }) as T;
 }
+
+// export function debounceAsyncFunction<T extends any[], R>(func: (...args: T) => Promise<R>): (...args: T) => Promise<R> {
+//   let currentPromise: Promise<R> | null = null;
+//   let nextArgs: T | null = null;
+//   let resolveNext: ((result: R) => void) | null = null;
+//
+//   const debouncedFunction = async (...args: T): Promise<R> => {
+//     if (currentPromise) {
+//       // Store the latest arguments and create a new promise to resolve them later
+//       nextArgs = args;
+//       return new Promise<R>((resolve) => {
+//         resolveNext = resolve;
+//       });
+//     } else {
+//       // Execute the function immediately
+//       try {
+//         currentPromise = func(...args);
+//         const result = await currentPromise;
+//         return result;
+//       } finally {
+//         currentPromise = null;
+//         // If there are stored arguments, call the function again with the latest arguments
+//         if (nextArgs) {
+//           const argsToUse = nextArgs;
+//           const resolver = resolveNext;
+//           nextArgs = null;
+//           resolveNext = null;
+//           resolver!(await debouncedFunction(...argsToUse));
+//         }
+//       }
+//     }
+//   };
+//
+//   return debouncedFunction;
+// }
 
 export function withArgsChangeOnly<T extends any[], R>(func: (...args: T) => R): (...args: T) => R {
   let lastArgs: T | undefined = undefined;
