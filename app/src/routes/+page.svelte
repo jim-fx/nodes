@@ -34,7 +34,7 @@
   let performanceStore = createPerformanceStore();
 
   const registryCache = new IndexDBCache("node-registry");
-  const nodeRegistry = new RemoteNodeRegistry("http://localhost:8000/v1");
+  const nodeRegistry = new RemoteNodeRegistry("");
   nodeRegistry.cache = registryCache;
   const workerRuntime = new WorkerRuntimeExecutor();
   const runtimeCache = new MemoryRuntimeCache();
