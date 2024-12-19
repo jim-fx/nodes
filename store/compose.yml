@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
       - deno-cache:/deno-dir/ 
-    command: run --allow-net --allow-env --allow-read --watch src/main.ts
+    command: task dev
     depends_on:
       - db
 
