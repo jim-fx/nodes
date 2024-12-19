@@ -110,6 +110,7 @@ export async function getNodeWasmById(
   systemId: string,
   nodeId: string,
 ) {
+  const a = performance.now();
   const node = await db.select({ content: nodeTable.content }).from(nodeTable)
     .where(
       and(
@@ -117,7 +118,8 @@ export async function getNodeWasmById(
         eq(nodeTable.systemId, systemId),
         eq(nodeTable.nodeId, nodeId),
       ),
-    ).limit(1);
+    ).limit(1).execute();
+  console.log("Time to load wasm", performance.now() - a);
 
   if (!node[0]) {
     throw new Error("Node not found");

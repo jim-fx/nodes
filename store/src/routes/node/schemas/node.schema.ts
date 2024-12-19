@@ -1,5 +1,6 @@
 import {
   customType,
+  index,
   integer,
   json,
   pgTable,
@@ -27,7 +28,12 @@ export const nodeTable = pgTable("nodes", {
   definition: json().notNull(),
   hash: varchar({ length: 8 }).notNull(),
   previous: integer(),
-});
+}, (table) => [
+  index("user_id_idx").on(table.userId),
+  index("system_id_idx").on(table.systemId),
+  index("node_id_idx").on(table.nodeId),
+  index("hash_idx").on(table.hash),
+]);
 
 export const nodeRelations = relations(nodeTable, ({ one }) => ({
   userId: one(usersTable, {

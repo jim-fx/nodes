@@ -1,6 +1,7 @@
 {
   "tasks": {
-    "dev": "deno run -A --watch src/main.ts",
+    "dev": "deno run -A --watch src/server.ts",
+    "run": "deno run -A src/server.ts",
     "test": "deno run vitest",
     "drizzle": "podman-compose exec app deno --env -A --node-modules-dir npm:drizzle-kit",
     "upload": "deno run --allow-read --allow-net bin/upload.ts"

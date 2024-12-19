@@ -129,6 +129,7 @@ const getNodeWasmRoute = createRoute({
 nodeRouter.openapi(getNodeWasmRoute, async (c) => {
   const { user, system, nodeId } = c.req.valid("param");
 
+  const a = performance.now();
   const wasmContent = await service.getNodeWasmById(
     user,
     system,

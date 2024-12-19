@@ -13,7 +13,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   fetch: typeof fetch = globalThis.fetch.bind(globalThis);
 
-  constructor(private url: string) { }
+  constructor(private url: string, private cache?: AsyncCache<ArrayBuffer>) { }
 
   async fetchUsers() {
     const response = await this.fetch(`${this.url}/nodes/users.json`);
@@ -24,7 +24,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async fetchUser(userId: `${string}`) {
-    const response = await this.fetch(`${this.url}/nodes/${userId}.json`);
+    const response = await this.fetch(`${this.url}/user/${userId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to load user ${userId}`);
     }

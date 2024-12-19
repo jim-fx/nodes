@@ -23,7 +23,7 @@
 <div class="wrapper">
   {#if !activeUser}
     {#await registry.fetchUsers()}
-      <div>Loading...</div>
+      <div>Loading Users...</div>
     {:then users}
       {#each users as user}
         <button
@@ -37,7 +37,7 @@
     {/await}
   {:else if !activeCollection}
     {#await registry.fetchUser(activeUser)}
-      <div>Loading...</div>
+      <div>Loading User...</div>
     {:then user}
       {#each user.collections as collection}
         <button
@@ -53,11 +53,11 @@
     {/await}
   {:else if !activeNode}
     {#await registry.fetchCollection(`${activeUser}/${activeCollection}`)}
-      <div>Loading...</div>
+      <div>Loading Collection...</div>
     {:then collection}
       {#each collection.nodes as node}
         {#await registry.fetchNodeDefinition(node.id)}
-          <div>Loading... {node.id}</div>
+          <div>Loading Node... {node.id}</div>
         {:then node}
           {#if node}
             <DraggableNode {node} />
