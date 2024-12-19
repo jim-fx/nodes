@@ -39,6 +39,7 @@ export const AppSettingTypes = {
     }
   },
   debug: {
+    title: "Debug",
     wireframe: {
       type: "boolean",
       label: "Wireframe",
@@ -79,7 +80,8 @@ export const AppSettingTypes = {
       amount: {
         type: "integer",
         min: 2,
-        max: 15
+        max: 15,
+        value: 4
       },
       loadGrid: {
         type: "button",
@@ -103,16 +105,26 @@ export const AppSettingTypes = {
       }
     },
   }
-} as const
+} as const;
 
 type IsInputDefinition<T> = T extends NodeInput ? T : never;
 type HasTitle = { title: string };
+
+type Widen<T> = T extends boolean
+  ? boolean
+  : T extends number
+  ? number
+  : T extends string
+  ? string
+  : T;
+
+
 type ExtractSettingsValues<T> = {
-  [K in keyof T]: T[K] extends HasTitle
+  -readonly [K in keyof T]: T[K] extends HasTitle
   ? ExtractSettingsValues<Omit<T[K], 'title'>>
   : T[K] extends IsInputDefinition<T[K]>
-  ? T[K] extends { value: any }
-  ? T[K]['value']
+  ? T[K] extends { value: infer V }
+  ? Widen<V>
   : never
   : T[K] extends Record<string, any>
   ? ExtractSettingsValues<T[K]>
@@ -138,8 +150,8 @@ export const appSettings = localState("app-settings", settingsToStore(AppSetting
 
 $effect.root(() => {
   $effect(() => {
-    const { theme } = $state.snapshot(appSettings);
-    const classes = document.body.parentElement?.classList;
+    const theme = appSettings.theme;
+    const classes = document.documentElement.classList;
     const newClassName = `theme-${theme}`;
     if (classes) {
       for (const className of classes) {
@@ -148,6 +160,6 @@ $effect.root(() => {
         }
       }
     }
-    document.body?.parentElement?.classList.add(newClassName);
+    document.documentElement.classList.add(newClassName);
   });
 });

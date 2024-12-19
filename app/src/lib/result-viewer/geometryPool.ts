@@ -1,6 +1,5 @@
 import { fastHashArrayBuffer } from "@nodes/utils";
-import { BufferAttribute, BufferGeometry, Float32BufferAttribute, Group, InstancedMesh, Material, Matrix4, Mesh } from "three"
-
+import { BufferAttribute, BufferGeometry, Float32BufferAttribute, Group, InstancedMesh, Material, Matrix4, Mesh } from "three";
 
 function fastArrayHash(arr: ArrayBuffer) {
   let ints = new Uint8Array(arr);
@@ -108,7 +107,6 @@ export function createGeometryPool(parentScene: Group, material: Material) {
       scene.add(mesh);
       meshes.push(mesh);
     }
-
   }
 
 

@@ -9,21 +9,28 @@
     Box3,
     Mesh,
     MeshBasicMaterial,
+    Color,
   } from "three";
-  import { AppSettings } from "../settings/app-settings";
+  import { appSettings } from "../settings/app-settings.svelte";
   import Camera from "./Camera.svelte";
+  import { colors } from "$lib/graph-interface/graph/colors.svelte";
 
   const { renderStage, invalidate: _invalidate } = useThrelte();
 
-  export let fps: number[] = [];
-  // let renderer = threlte.renderer;
-  // let rendererRender = renderer.render;
-  // renderer.render = function (scene, camera) {
-  //   const a = performance.now();
-  //   rendererRender.call(renderer, scene, camera);
-  //   fps.push(performance.now() - a);
-  //   fps = fps.slice(-100);
-  // };
+  type Props = {
+    fps: number[];
+    lines: Vector3[][];
+    scene: Group;
+    centerCamera: boolean;
+  };
+
+  let {
+    lines,
+    centerCamera,
+    fps = $bindable(),
+    scene = $bindable(),
+  }: Props = $props();
+
   useTask(
     (delta) => {
       fps.push(1 / delta);
@@ -53,12 +60,8 @@
     _invalidate();
   };
 
-  let geometries: BufferGeometry[] = [];
-  export let lines: Vector3[][];
-  export let scene: Group;
-
-  export let centerCamera: boolean = true;
-  let center = new Vector3(0, 4, 0);
+  let geometries = $state<BufferGeometry[]>();
+  let center = $state(new Vector3(0, 4, 0));
 
   function isMesh(child: Mesh | any): child is Mesh {
     return child.isObject3D && "material" in child;
@@ -68,14 +71,15 @@
     return material.isMaterial && "matcap" in material;
   }
 
-  $: if ($AppSettings && scene) {
+  $effect(() => {
+    const wireframe = appSettings.debug.wireframe;
     scene.traverse(function (child) {
       if (isMesh(child) && isMatCapMaterial(child.material)) {
-        child.material.wireframe = $AppSettings.wireframe;
+        child.material.wireframe = wireframe;
       }
     });
-    invalidate();
-  }
+    _invalidate();
+  });
 
   function getPosition(geo: BufferGeometry, i: number) {
     return [
@@ -88,32 +92,38 @@
 
 <Camera {center} {centerCamera} />
 
-{#if $AppSettings.showGrid}
-  <T.GridHelper args={[20, 20]} />
+{#if appSettings.showGrid}
+  <T.GridHelper
+    args={[20, 20]}
+    colorGrid={colors["outline"]}
+    colorCenterLine={new Color("red")}
+  />
 {/if}
 
 <T.Group>
-  {#each geometries as geo}
-    {#if $AppSettings.showIndices}
-      {#each geo.attributes.position.array as _, i}
-        {#if i % 3 === 0}
-          <Text fontSize={0.25} position={getPosition(geo, i)} />
-        {/if}
-      {/each}
-    {/if}
+  {#if geometries}
+    {#each geometries as geo}
+      {#if appSettings.debug.showIndices}
+        {#each geo.attributes.position.array as _, i}
+          {#if i % 3 === 0}
+            <Text fontSize={0.25} position={getPosition(geo, i)} />
+          {/if}
+        {/each}
+      {/if}
 
-    {#if $AppSettings.showVertices}
-      <T.Points visible={true}>
-        <T is={geo} />
-        <T.PointsMaterial size={0.25} />
-      </T.Points>
-    {/if}
-  {/each}
+      {#if appSettings.debug.showVertices}
+        <T.Points visible={true}>
+          <T is={geo} />
+          <T.PointsMaterial size={0.25} />
+        </T.Points>
+      {/if}
+    {/each}
+  {/if}
 
   <T.Group bind:ref={scene}></T.Group>
 </T.Group>
 
-{#if $AppSettings.showStemLines && lines}
+{#if appSettings.debug.showStemLines && lines}
   {#each lines as line}
     <T.Mesh>
       <MeshLineGeometry points={line} />

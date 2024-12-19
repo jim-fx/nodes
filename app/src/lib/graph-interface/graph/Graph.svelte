@@ -6,7 +6,6 @@
   } from "../helpers/index.js";
   import type { OrthographicCamera } from "three";
   import Background from "../background/Background.svelte";
-  import type { GraphManager } from "../graph-manager.js";
   import { getContext, onMount, setContext } from "svelte";
   import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
@@ -23,14 +22,13 @@
   import { Canvas } from "@threlte/core";
   import { getGraphManager } from "./context.js";
 
-  const state = getGraphState();
+  const graphState = getGraphState();
 
   export let snapToGrid = true;
   export let showGrid = true;
   export let showHelp = false;
 
-  let keymap =
-    getContext<ReturnType<typeof createKeyMap>>("keymap") || createKeyMap([]);
+  const keymap = getContext<ReturnType<typeof createKeyMap>>("keymap");
 
   const manager = getGraphManager();
 
@@ -179,7 +177,7 @@
   }
 
   setContext("setDownSocket", (socket: Socket) => {
-    state.activeSocket = socket;
+    graphState.activeSocket = socket;
 
     let { node, index, position } = socket;
 
@@ -198,14 +196,14 @@
     }
 
     mouseDown = position;
-    state.activeSocket = {
+    graphState.activeSocket = {
       node,
       index,
       position,
     };
 
-    state.possibleSockets = manager
-      .getPossibleSockets(state.activeSocket)
+    graphState.possibleSockets = manager
+      .getPossibleSockets(graphState.activeSocket)
       .map(([node, index]) => {
         return {
           node,
@@ -259,14 +257,15 @@
     let my = event.clientY - rect.y;
 
     mousePosition = projectScreenToWorld(mx, my);
+    hoveredNodeId = getNodeIdFromEvent(event);
 
     if (!mouseDown) return;
 
     // we are creating a new edge here
-    if (state.activeSocket || state.possibleSockets?.length) {
+    if (graphState.activeSocket || graphState.possibleSockets?.length) {
       let smallestDist = 1000;
       let _socket;
-      for (const socket of state.possibleSockets) {
+      for (const socket of graphState.possibleSockets) {
         const dist = Math.sqrt(
           (socket.position[0] - mousePosition[0]) ** 2 +
             (socket.position[1] - mousePosition[1]) ** 2,
@@ -279,9 +278,9 @@
 
       if (_socket && smallestDist < 0.9) {
         mousePosition = _socket.position;
-        state.hoveredSocket = _socket;
+        graphState.hoveredSocket = _socket;
       } else {
-        state.hoveredSocket = null;
+        graphState.hoveredSocket = null;
       }
       return;
     }
@@ -301,17 +300,17 @@
         const y = node.position[1];
         const height = getNodeHeight(node.type);
         if (x > x1 - 20 && x < x2 && y > y1 - height && y < y2) {
-          state.selectedNodes?.add(node.id);
+          graphState.selectedNodes?.add(node.id);
         } else {
-          state.selectedNodes?.delete(node.id);
+          graphState.selectedNodes?.delete(node.id);
         }
       }
       return;
     }
 
     // here we are handling dragging of nodes
-    if (state.activeNodeId !== -1 && mouseDownId !== -1) {
-      const node = manager.getNode(state.activeNodeId);
+    if (graphState.activeNodeId !== -1 && mouseDownId !== -1) {
+      const node = manager.getNode(graphState.activeNodeId);
       if (!node || event.buttons !== 1) return;
 
       node.tmp = node.tmp || {};
@@ -340,8 +339,8 @@
       const vecX = oldX - newX;
       const vecY = oldY - newY;
 
-      if (state.selectedNodes?.size) {
-        for (const nodeId of state.selectedNodes) {
+      if (graphState.selectedNodes?.size) {
+        for (const nodeId of graphState.selectedNodes) {
           const n = manager.getNode(nodeId);
           if (!n?.tmp) continue;
           n.tmp.x = (n?.tmp?.downX || 0) - vecX;
@@ -360,6 +359,7 @@
     }
 
     // here we are handling panning of camera
+    isPanning = true;
     let newX = cameraDown[0] - (mx - mouseDown[0]) / cameraPosition[2];
     let newY = cameraDown[1] - (my - mouseDown[1]) / cameraPosition[2];
 
@@ -424,43 +424,46 @@
 
     // if we clicked on a node
     if (clickedNodeId !== -1) {
-      if (state.activeNodeId === -1) {
-        state.activeNodeId = clickedNodeId;
+      if (graphState.activeNodeId === -1) {
+        graphState.activeNodeId = clickedNodeId;
         // if the selected node is the same as the clicked node
-      } else if (state.activeNodeId === clickedNodeId) {
+      } else if (graphState.activeNodeId === clickedNodeId) {
         //$activeNodeId = -1;
         // if the clicked node is different from the selected node and secondary
       } else if (event.ctrlKey) {
-        state.selectedNodes = state.selectedNodes || new Set();
-        state.selectedNodes.add(state.activeNodeId);
-        state.selectedNodes.delete(clickedNodeId);
-        state.activeNodeId = clickedNodeId;
+        graphState.selectedNodes.add(graphState.activeNodeId);
+        graphState.selectedNodes.delete(clickedNodeId);
+        graphState.activeNodeId = clickedNodeId;
         // select the node
       } else if (event.shiftKey) {
-        const activeNode = manager.getNode(state.activeNodeId);
+        const activeNode = manager.getNode(graphState.activeNodeId);
         const newNode = manager.getNode(clickedNodeId);
         if (activeNode && newNode) {
           const edge = manager.getNodesBetween(activeNode, newNode);
           if (edge) {
-            const selected = new Set(edge.map((n) => n.id));
-            selected.add(clickedNodeId);
-            state.selectedNodes = selected;
+            graphState.selectedNodes.clear();
+            for (const node of edge) {
+              graphState.selectedNodes.add(node.id);
+            }
+            graphState.selectedNodes.add(clickedNodeId);
           }
         }
-      } else if (!state.selectedNodes?.has(clickedNodeId)) {
-        state.activeNodeId = clickedNodeId;
-        state.clearSelection();
+      } else if (!graphState.selectedNodes.has(clickedNodeId)) {
+        graphState.activeNodeId = clickedNodeId;
+        graphState.clearSelection();
       }
     } else if (event.ctrlKey) {
       boxSelection = true;
     }
-    const node = manager.getNode(state.activeNodeId);
+
+    const node = manager.getNode(graphState.activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
     node.tmp.downX = node.position[0];
     node.tmp.downY = node.position[1];
-    if (state.selectedNodes) {
-      for (const nodeId of state.selectedNodes) {
+
+    if (graphState.selectedNodes) {
+      for (const nodeId of graphState.selectedNodes) {
         const n = manager.getNode(nodeId);
         if (!n) continue;
         n.tmp = n.tmp || {};
@@ -471,8 +474,12 @@
   }
 
   function copyNodes() {
-    if (state.activeNodeId === -1 && !state.selectedNodes?.size) return;
-    let _nodes = [state.activeNodeId, ...(state.selectedNodes?.values() || [])]
+    if (graphState.activeNodeId === -1 && !graphState.selectedNodes?.size)
+      return;
+    let _nodes = [
+      graphState.activeNodeId,
+      ...(graphState.selectedNodes?.values() || []),
+    ]
       .map((id) => manager.getNode(id))
       .filter(Boolean) as Node[];
 
@@ -508,7 +515,10 @@
       .filter(Boolean) as Node[];
 
     const newNodes = manager.createGraph(_nodes, clipboard.edges);
-    state.selectedNodes = new Set(newNodes.map((n) => n.id));
+    graphState.selectedNodes.clear();
+    for (const node of newNodes) {
+      graphState.selectedNodes.add(node.id);
+    }
   }
 
   const isBodyFocused = () => document?.activeElement?.nodeName !== "INPUT";
@@ -517,12 +527,14 @@
     key: "l",
     description: "Select linked nodes",
     callback: () => {
-      const activeNode = manager.getNode(state.activeNodeId);
+      const activeNode = manager.getNode(graphState.activeNodeId);
       if (activeNode) {
         const nodes = manager.getLinkedNodes(activeNode);
-        state.selectedNodes = new Set(nodes.map((n) => n.id));
+        graphState.selectedNodes.clear();
+        for (const node of nodes) {
+          graphState.selectedNodes.add(node.id);
+        }
       }
-      console.log(activeNode);
     },
   });
 
@@ -552,8 +564,8 @@
     key: "Escape",
     description: "Deselect nodes",
     callback: () => {
-      state.activeNodeId = -1;
-      state.clearSelection();
+      graphState.activeNodeId = -1;
+      graphState.clearSelection();
       (document.activeElement as HTMLElement)?.blur();
     },
   });
@@ -605,7 +617,9 @@
     description: "Select all nodes",
     callback: () => {
       if (!isBodyFocused()) return;
-      state.selectedNodes = new Set($nodes.keys());
+      for (const node of $nodes.keys()) {
+        graphState.selectedNodes.add(node);
+      }
     },
   });
 
@@ -654,38 +668,39 @@
     callback: (event) => {
       if (!isBodyFocused()) return;
       manager.startUndoGroup();
-      if (state.activeNodeId !== -1) {
-        const node = manager.getNode(state.activeNodeId);
+      if (graphState.activeNodeId !== -1) {
+        const node = manager.getNode(graphState.activeNodeId);
         if (node) {
           manager.removeNode(node, { restoreEdges: event.ctrlKey });
-          state.activeNodeId = -1;
+          graphState.activeNodeId = -1;
         }
       }
-      if (state.selectedNodes) {
-        for (const nodeId of state.selectedNodes) {
+      if (graphState.selectedNodes) {
+        for (const nodeId of graphState.selectedNodes) {
           const node = manager.getNode(nodeId);
           if (node) {
             manager.removeNode(node, { restoreEdges: event.ctrlKey });
           }
         }
-        state.clearSelection();
+        graphState.clearSelection();
       }
       manager.saveUndoGroup();
     },
   });
 
   function handleMouseUp(event: MouseEvent) {
+    isPanning = false;
     if (!mouseDown) return;
 
-    const activeNode = manager.getNode(state.activeNodeId);
+    const activeNode = manager.getNode(graphState.activeNodeId);
 
     const clickedNodeId = getNodeIdFromEvent(event);
 
     if (clickedNodeId !== -1) {
       if (activeNode) {
         if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
-          state.clearSelection();
-          state.activeNodeId = clickedNodeId;
+          graphState.activeNodeId = clickedNodeId;
+          graphState.clearSelection();
         }
       }
     }
@@ -708,7 +723,7 @@
         activeNode.position[1] = activeNode?.tmp?.y ?? activeNode.position[1];
       }
       const nodes = [
-        ...[...(state.selectedNodes?.values() || [])].map((id) =>
+        ...[...(graphState.selectedNodes?.values() || [])].map((id) =>
           manager.getNode(id),
         ),
       ] as NodeType[];
@@ -747,26 +762,26 @@
         $edges = $edges;
       });
       manager.save();
-    } else if (state.hoveredSocket && state.activeSocket) {
+    } else if (graphState.hoveredSocket && graphState.activeSocket) {
       if (
-        typeof state.hoveredSocket.index === "number" &&
-        typeof state.activeSocket.index === "string"
+        typeof graphState.hoveredSocket.index === "number" &&
+        typeof graphState.activeSocket.index === "string"
       ) {
         manager.createEdge(
-          state.hoveredSocket.node,
-          state.hoveredSocket.index || 0,
-          state.activeSocket.node,
-          state.activeSocket.index,
+          graphState.hoveredSocket.node,
+          graphState.hoveredSocket.index || 0,
+          graphState.activeSocket.node,
+          graphState.activeSocket.index,
         );
       } else if (
-        typeof state.activeSocket.index == "number" &&
-        typeof state.hoveredSocket.index === "string"
+        typeof graphState.activeSocket.index == "number" &&
+        typeof graphState.hoveredSocket.index === "string"
       ) {
         manager.createEdge(
-          state.activeSocket.node,
-          state.activeSocket.index || 0,
-          state.hoveredSocket.node,
-          state.hoveredSocket.index,
+          graphState.activeSocket.node,
+          graphState.activeSocket.index || 0,
+          graphState.hoveredSocket.node,
+          graphState.hoveredSocket.index,
         );
       }
       manager.save();
@@ -780,22 +795,25 @@
       cameraDown[1] === cameraPosition[1] &&
       isBodyFocused()
     ) {
-      state.activeNodeId = -1;
-      state.clearSelection();
+      graphState.activeNodeId = -1;
+      graphState.clearSelection();
     }
 
     mouseDown = null;
     boxSelection = false;
-    state.activeSocket = null;
-    state.possibleSockets = [];
-    state.hoveredSocket = null;
+    graphState.activeSocket = null;
+    graphState.possibleSockets = [];
+    graphState.hoveredSocket = null;
     addMenuPosition = null;
   }
 
+  let isPanning = false;
   let isDragging = false;
+  let hoveredNodeId = -1;
 
   function handleMouseLeave() {
     isDragging = false;
+    isPanning = false;
   }
 
   function handleDrop(event: DragEvent) {
@@ -865,16 +883,19 @@
   function handleDragEnter(e: DragEvent) {
     e.preventDefault();
     isDragging = true;
+    isPanning = false;
   }
 
   function handlerDragOver(e: DragEvent) {
-    isDragging = true;
     e.preventDefault();
+    isDragging = true;
+    isPanning = false;
   }
 
   function handleDragEnd(e: DragEvent) {
-    isDragging = false;
     e.preventDefault();
+    isDragging = true;
+    isPanning = false;
   }
 
   onMount(() => {
@@ -893,6 +914,8 @@
   on:wheel={handleMouseScroll}
   bind:this={wrapper}
   class="graph-wrapper"
+  class:is-panning={isPanning}
+  class:is-hovering={hoveredNodeId !== -1}
   aria-label="Graph"
   role="button"
   tabindex="0"
@@ -916,9 +939,6 @@
   />
   <label for="drop-zone"></label>
 
-  {#if showHelp}
-    <HelpView registry={manager.registry} />
-  {/if}
   <Canvas shadows={false} renderMode="on-demand" colorManagementEnabled={false}>
     <Camera bind:camera position={cameraPosition} />
 
@@ -943,11 +963,12 @@
         <AddMenu bind:position={addMenuPosition} graph={manager} />
       {/if}
 
-      {#if state.activeSocket}
+      {#if graphState.activeSocket}
         <FloatingEdge
+          z={cameraPosition[2]}
           from={{
-            x: state.activeSocket.position[0],
-            y: state.activeSocket.position[1],
+            x: graphState.activeSocket.position[0],
+            y: graphState.activeSocket.position[1],
           }}
           to={{ x: mousePosition[0], y: mousePosition[1] }}
         />
@@ -962,6 +983,10 @@
   </Canvas>
 </div>
 
+{#if showHelp}
+  <HelpView registry={manager.registry} />
+{/if}
+
 <style>
   .graph-wrapper {
     position: relative;
@@ -969,6 +994,15 @@
     transition: opacity 0.3s ease;
     height: 100%;
   }
+
+  .is-hovering {
+    cursor: pointer;
+  }
+
+  .is-panning {
+    cursor: grab;
+  }
+
   input {
     position: absolute;
     z-index: 1;

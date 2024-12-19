@@ -1,11 +1,29 @@
-import { BufferGeometry, Vector3, BufferAttribute } from 'three'
-import { setXY, setXYZ, setXYZW, setXYZXYZ } from './utils.js'
+import { BufferAttribute, BufferGeometry, Vector3 } from 'three';
+import { setXY, setXYZ, setXYZW, setXYZXYZ } from './utils.js';
 
 
 export function createEdgeGeometry(points: Vector3[]) {
 
-  let shape = 'none'
-  let shapeFunction = (p: number) => 1
+  const length = points[0].distanceTo(points[points.length - 1]);
+
+  const startRadius = 8;
+  const constantWidth = 2;
+  const taperFraction = 0.8 / length;
+
+  function ease(t: number) {
+    return t * t * (3 - 2 * t);
+  }
+  let shapeFunction = (alpha: number) => {
+    if (alpha < taperFraction) {
+      const easedAlpha = ease(alpha / taperFraction);
+      return startRadius + (constantWidth - startRadius) * easedAlpha;
+    } else if (alpha > 1 - taperFraction) {
+      const easedAlpha = ease((alpha - (1 - taperFraction)) / taperFraction);
+      return constantWidth + (startRadius - constantWidth) * easedAlpha;
+    } else {
+      return constantWidth;
+    }
+  };
 
   // When the component first runs we create the buffer geometry and allocate the buffer attributes
   let pointCount = points.length
@@ -19,9 +37,7 @@ export function createEdgeGeometry(points: Vector3[]) {
   let indices: number[] = []
   let indicesIndex = 0
 
-  if (shape === 'taper') {
-    shapeFunction = (p: number) => 1 * Math.pow(4 * p * (1 - p), 1)
-  }
+
 
   for (let j = 0; j < pointCount; j++) {
     const c = j / points.length
@@ -30,7 +46,7 @@ export function createEdgeGeometry(points: Vector3[]) {
     counterIndex += 2
 
     setXY(side, doubleIndex, 1, -1)
-    let width = shape === 'none' ? 1 : shapeFunction(j / (pointCount - 1))
+    let width = shapeFunction((j / (pointCount - 1)))
     setXY(widthArray, doubleIndex, width, width)
     doubleIndex += 2
 

@@ -15,7 +15,7 @@
         var value = JSON.parse(store);
         var themes = ["dark", "light", "catppuccin"];
         if (themes[value.theme]) {
-          document.body.classList.add("theme-" + themes[value.theme]);
+          document.documentElement.classList.add("theme-" + themes[value.theme]);
         }
       } catch (e) { }
     }

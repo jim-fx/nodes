@@ -1,6 +1,5 @@
-import type { Graph, NodeRegistry, NodeDefinition, RuntimeExecutor, NodeInput } from "@nodes/types";
-import { concatEncodedArrays, encodeFloat, fastHashArrayBuffer, createLogger, type PerformanceStore } from "@nodes/utils"
-import type { SyncCache } from "@nodes/types";
+import type { Graph, NodeDefinition, NodeInput, NodeRegistry, RuntimeExecutor, SyncCache } from "@nodes/types";
+import { concatEncodedArrays, createLogger, encodeFloat, fastHashArrayBuffer, type PerformanceStore } from "@nodes/utils";
 
 const log = createLogger("runtime-executor");
 log.mute()
@@ -9,6 +8,7 @@ function getValue(input: NodeInput, value?: unknown) {
   if (value === undefined && "value" in input) {
     value = input.value
   }
+
   if (input.type === "float") {
     return encodeFloat(value as number);
   }

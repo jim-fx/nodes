@@ -1,13 +1,15 @@
 <script module lang="ts">
-  import { colors } from "../graph/state.svelte";
+  import { colors } from "../graph/colors.svelte";
 
   const circleMaterial = new MeshBasicMaterial({
-    color: get(colors).edge,
+    color: colors.edge.clone(),
     toneMapped: false,
   });
-
-  colors.subscribe((c) => {
-    circleMaterial.color.copy(c.edge.clone().convertSRGBToLinear());
+  $effect.root(() => {
+    $effect(() => {
+      appSettings.theme;
+      circleMaterial.color = colors.edge.clone().convertSRGBToLinear();
+    });
   });
 
   const lineCache = new Map<number, BufferGeometry>();
@@ -27,18 +29,21 @@
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
-  import { get } from "svelte/store";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
     from: { x: number; y: number };
     to: { x: number; y: number };
+    z: number;
   };
 
-  const { from, to }: Props = $props();
+  const { from, to, z }: Props = $props();
 
-  let samples = 5;
+  let geometry: BufferGeometry | null = $state(null);
 
-  let geometry: BufferGeometry|null = $state(null);
+  const lineColor = $derived(
+    appSettings.theme && colors.edge.clone().convertSRGBToLinear(),
+  );
 
   let lastId: number | null = null;
 
@@ -63,7 +68,8 @@
     const length = Math.floor(
       Math.sqrt(Math.pow(new_x, 2) + Math.pow(new_y, 2)) / 4,
     );
-    samples = Math.min(Math.max(10, length), 60) * 2;
+
+    const samples = Math.max(length * 16, 10);
 
     curve.v0.set(0, 0);
     curve.v1.set(mid.x, 0);
@@ -77,15 +83,13 @@
 
     geometry = createEdgeGeometry(points);
     lineCache.set(curveId, geometry);
-  };
+  }
 
   $effect(() => {
     if (from || to) {
       update();
     }
   });
-
-  const lineColor = $derived($colors.edge.clone().convertSRGBToLinear());
 </script>
 
 <T.Mesh
@@ -110,6 +114,6 @@
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial width={3} attenuate={false} color={lineColor} />
+    <MeshLineMaterial width={Math.max(z * 0.0001, 0.00001)} color={lineColor} />
   </T.Mesh>
 {/if}

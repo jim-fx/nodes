@@ -1,12 +1,14 @@
 <script lang="ts">
   import type { Node } from "@nodes/types";
   import { getContext, onMount } from "svelte";
-  import { colors, getGraphState } from "../graph/state.svelte";
+  import { getGraphState } from "../graph/state.svelte";
   import { T } from "@threlte/core";
-  import { Color, type Mesh } from "three";
+  import { type Mesh } from "three";
   import NodeFrag from "./Node.frag";
   import NodeVert from "./Node.vert";
   import NodeHtml from "./NodeHTML.svelte";
+  import { colors } from "../graph/colors.svelte";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
   const graphState = getGraphState();
 
@@ -18,7 +20,16 @@
   const { node, inView, z }: Props = $props();
 
   const isActive = $derived(graphState.activeNodeId === node.id);
-  const isSelected = $derived(!!graphState.selectedNodes?.has(node.id));
+  const isSelected = $derived(graphState.selectedNodes.has(node.id));
+  let strokeColor = $state(colors.selected);
+  $effect(() => {
+    appSettings.theme;
+    strokeColor = isSelected
+      ? colors.selected
+      : isActive
+        ? colors.active
+        : colors.outline;
+  });
 
   const updateNodePosition =
     getContext<(n: Node) => void>("updateNodePosition");
@@ -30,15 +41,10 @@
   const height = getNodeHeight?.(node.type);
 
   $effect(() => {
-    if (node && meshRef) {
-      node.tmp = node.tmp || {};
-      node.tmp.mesh = meshRef;
-      updateNodePosition?.(node);
-    }
+    node.tmp = node.tmp || {};
+    node.tmp.mesh = meshRef;
+    updateNodePosition?.(node);
   });
-
-  const colorBright = $colors["layer-2"];
-  const colorDark = $colors["layer-1"];
 
   onMount(() => {
     node.tmp = node.tmp || {};
@@ -61,20 +67,14 @@
     fragmentShader={NodeFrag}
     transparent
     uniforms={{
-      uColorBright: { value: new Color("#171717") },
-      uColorDark: { value: new Color("#151515") },
-      uStrokeColor: { value: new Color("#9d5f28") },
+      uColorBright: { value: colors["layer-2"] },
+      uColorDark: { value: colors["layer-1"] },
+      uStrokeColor: { value: colors.outline.clone() },
       uStrokeWidth: { value: 1.0 },
       uWidth: { value: 20 },
       uHeight: { value: height },
     }}
-    uniforms.uColorBright.value={colorBright}
-    uniforms.uColorDark.value={colorDark}
-    uniforms.uStrokeColor.value={isSelected
-      ? $colors.selected
-      : isActive
-        ? $colors.active
-        : $colors.outline}
+    uniforms.uStrokeColor.value={strokeColor.clone()}
     uniforms.uStrokeWidth.value={(7 - z) / 3}
   />
 </T.Mesh>

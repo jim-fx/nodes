@@ -3,19 +3,18 @@
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.js";
   import { setContext } from "svelte";
-  import { type Writable } from "svelte/store";
   import { debounce } from "$lib/helpers";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import { GraphState } from "./state.svelte";
 
-  const state = new GraphState();
-  setContext("graphState", state);
+  const graphState = new GraphState();
+  setContext("graphState", graphState);
 
   type Props = {
     graph: Graph;
     registry: NodeRegistry;
 
-    settings?: Writable<Record<string, any>>;
+    settings?: Record<string, any>;
 
     activeNode?: Node;
     showGrid?: boolean;
@@ -41,19 +40,18 @@
   }: Props = $props();
 
   export const keymap = createKeyMap([]);
+  setContext("keymap", keymap);
 
   export const manager = new GraphManager(registry);
   setContext("graphManager", manager);
 
   $effect(() => {
-    if (state.activeNodeId !== -1) {
-      activeNode = manager.getNode(state.activeNodeId);
-    } else {
+    if (graphState.activeNodeId !== -1) {
+      activeNode = manager.getNode(graphState.activeNodeId);
+    } else if (activeNode) {
       activeNode = undefined;
     }
   });
-
-  setContext("keymap", keymap);
 
   const updateSettings = debounce((s) => {
     manager.setSettings(s);
@@ -61,13 +59,13 @@
 
   $effect(() => {
     if (settingTypes && settings) {
-      updateSettings($settings);
+      updateSettings($state.snapshot(settings));
     }
   });
 
   manager.on("settings", (_settings) => {
-    settingTypes = _settings.types;
-    settings?.set(_settings.values);
+    settingTypes = { ...settingTypes, ..._settings.types };
+    settings = _settings.values;
   });
 
   manager.on("result", (result) => onresult?.(result));

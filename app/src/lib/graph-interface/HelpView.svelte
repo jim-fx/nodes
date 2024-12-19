@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { NodeDefinition, NodeRegistry } from "@nodes/types";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
   let mx = $state(0);
   let my = $state(0);
@@ -39,9 +39,10 @@
   }
 
   onMount(() => {
-    wrapper?.parentElement?.setAttribute("style", "cursor:help !important");
+    const style = wrapper.parentElement?.style;
+    style?.setProperty("cursor", "help");
     return () => {
-      wrapper?.parentElement?.style.removeProperty("cursor");
+      style?.removeProperty("cursor");
     };
   });
 </script>
@@ -91,8 +92,9 @@
     border-radius: 5px;
     top: 10px;
     left: 10px;
+    max-width: 250px;
     border: 1px solid var(--outline);
-    z-index: 1000;
+    z-index: 10000;
     display: none;
   }
 

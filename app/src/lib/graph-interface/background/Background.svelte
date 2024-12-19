@@ -1,10 +1,10 @@
 <script lang="ts">
   import { T } from "@threlte/core";
-
   import BackgroundVert from "./Background.vert";
   import BackgroundFrag from "./Background.frag";
-  import { colors } from "../graph/state.svelte";
+  import { colors } from "../graph/colors.svelte";
   import { Color } from "three";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
     minZoom: number;
@@ -42,10 +42,10 @@
           value: [0, 1, 0],
         },
         backgroundColor: {
-          value: new Color(0x171717),
+          value: colors["layer-0"].clone(),
         },
         lineColor: {
-          value: new Color(0x111111),
+          value: colors["outline"].clone(),
         },
         zoomLimits: {
           value: [2, 50],
@@ -55,8 +55,9 @@
         },
       }}
       uniforms.camPos.value={cameraPosition}
-      uniforms.backgroundColor.value={$colors["layer-0"]}
-      uniforms.lineColor.value={$colors["outline"]}
+      uniforms.backgroundColor.value={appSettings.theme &&
+        colors["layer-0"].clone()}
+      uniforms.lineColor.value={appSettings.theme && colors["outline"].clone()}
       uniforms.zoomLimits.value={[minZoom, maxZoom]}
       uniforms.dimensions.value={[width, height]}
     />

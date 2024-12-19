@@ -6,10 +6,23 @@
   import { getContext, onMount } from "svelte";
   import type { Writable } from "svelte/store";
   import { getGraphState } from "./state.svelte";
+  import { useThrelte } from "@threlte/core";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
-  export let nodes: Writable<Map<number, NodeType>>;
-  export let edges: Writable<EdgeType[]>;
-  export let cameraPosition = [0, 0, 4];
+  type Props = {
+    nodes: Writable<Map<number, NodeType>>;
+    edges: Writable<EdgeType[]>;
+    cameraPosition: [number, number, number];
+  };
+
+  const { nodes, edges, cameraPosition = [0, 0, 4] }: Props = $props();
+
+  const { invalidate } = useThrelte();
+
+  $effect(() => {
+    appSettings.theme;
+    invalidate();
+  });
 
   const graphState = getGraphState();
 
@@ -23,7 +36,6 @@
   function getEdgePosition(edge: EdgeType) {
     const pos1 = getSocketPosition(edge[0], edge[1]);
     const pos2 = getSocketPosition(edge[2], edge[3]);
-
     return [pos1[0], pos1[1], pos2[0], pos2[1]];
   }
 
@@ -41,6 +53,7 @@
   {@const pos = getEdgePosition(edge)}
   {@const [x1, y1, x2, y2] = pos}
   <Edge
+    z={cameraPosition[2]}
     from={{
       x: x1,
       y: y1,

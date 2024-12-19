@@ -4,23 +4,20 @@
   import * as templates from "$lib/graph-templates";
   import type { Graph, Node } from "@nodes/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
-  import Settings from "$lib/settings/Settings.svelte";
-  import { AppSettingTypes, AppSettings } from "$lib/settings/app-settings";
   import {
-    appSettings as _appSettings,
-    AppSettingTypes as _AppSettingTypes,
+    appSettings,
+    AppSettingTypes,
   } from "$lib/settings/app-settings.svelte";
-  import { writable } from "svelte/store";
-  import Keymap from "$lib/settings/panels/Keymap.svelte";
+  import Keymap from "$lib/sidebar/panels/Keymap.svelte";
+  import Sidebar from "$lib/sidebar/Sidebar.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
-  import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
+  import ActiveNodeSettings from "$lib/sidebar/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
-  import Panel from "$lib/settings/Panel.svelte";
-  import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
-  import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
+  import Panel from "$lib/sidebar/Panel.svelte";
+  import NestedSettings from "$lib/settings/NestedSettings.svelte";
   import type { Group } from "three";
-  import ExportSettings from "$lib/settings/panels/ExportSettings.svelte";
+  import ExportSettings from "$lib/sidebar/panels/ExportSettings.svelte";
   import {
     MemoryRuntimeCache,
     WorkerRuntimeExecutor,
@@ -28,8 +25,9 @@
   } from "$lib/runtime";
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
   import { createPerformanceStore } from "@nodes/utils";
-  import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
+  import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
+  import { onMount } from "svelte";
 
   let performanceStore = createPerformanceStore();
 
@@ -41,24 +39,26 @@
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
   memoryRuntime.perf = performanceStore;
 
-  $: runtime = $AppSettings.useWorker ? workerRuntime : memoryRuntime;
+  const runtime = $derived(
+    appSettings.debug.useWorker ? workerRuntime : memoryRuntime,
+  );
 
-  let activeNode: Node | undefined;
-  let scene: Group;
-  let updateViewerResult: (result: Int32Array) => void;
+  let activeNode = $state<Node | undefined>(undefined);
+  let scene = $state<Group>(null!);
 
   let graph = localStorage.getItem("graph")
     ? JSON.parse(localStorage.getItem("graph")!)
     : templates.defaultPlant;
 
-  let graphInterface: ReturnType<typeof GraphInterface>;
-  $: manager = graphInterface?.manager;
-  $: managerStatus = manager?.status;
-  $: keymap = graphInterface?.keymap;
+  let graphInterface = $state<ReturnType<typeof GraphInterface>>(null!);
+  let viewerComponent = $state<ReturnType<typeof Viewer>>();
+  const manager = $derived(graphInterface?.manager);
+  const managerStatus = $derived(manager?.status);
 
   async function randomGenerate() {
+    if (!manager) return;
     const g = manager.serialize();
-    const s = { ...$graphSettings, randomSeed: true };
+    const s = { ...graphSettings, randomSeed: true };
     await handleUpdate(g, s);
   }
 
@@ -69,18 +69,20 @@
       callback: randomGenerate,
     },
   ]);
-  let graphSettings = writable<Record<string, any>>({});
-  let graphSettingTypes = {};
+  let graphSettings = $state<Record<string, any>>({});
+  let graphSettingTypes = $state({
+    randomSeed: { type: "boolean", value: false },
+  });
 
   const handleUpdate = debounceAsyncFunction(
-    async (g: Graph, s: Record<string, any>) => {
+    async (g: Graph, s: Record<string, any> = graphSettings) => {
       performanceStore.startRun();
       try {
         let a = performance.now();
-        const graphResult = await runtime.execute(g, s);
+        const graphResult = await runtime.execute(g, $state.snapshot(s));
         let b = performance.now();
 
-        if ($AppSettings.useWorker) {
+        if (appSettings.debug.useWorker) {
           let perfData = await runtime.getPerformanceData();
           let lastRun = perfData?.at(-1);
           if (lastRun?.total) {
@@ -94,7 +96,7 @@
           }
         }
 
-        updateViewerResult(graphResult);
+        viewerComponent?.update(graphResult);
       } catch (error) {
         console.log("errors", error);
       } finally {
@@ -103,32 +105,35 @@
     },
   );
 
-  $: if (AppSettings) {
-    //@ts-ignore
-    AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
-      graph = templates.grid($AppSettings.amount, $AppSettings.amount);
-    };
-    //@ts-ignore
-    AppSettingTypes.debug.stressTest.loadTree.callback = () => {
-      graph = templates.tree($AppSettings.amount);
-    };
-    //@ts-ignore
-    AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
-      graph = templates.lottaFaces;
-    };
-    //@ts-ignore
-    AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
-      graph = templates.lottaNodes;
-    };
-    //@ts-ignore
-    AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
-      graph = templates.lottaNodesAndFaces;
-    };
-  }
+  // $ if (AppSettings) {
+  //   //@ts-ignore
+  //   AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
+  //     graph = templates.grid($AppSettings.amount, $AppSettings.amount);
+  //   };
+  //   //@ts-ignore
+  //   AppSettingTypes.debug.stressTest.loadTree.callback = () => {
+  //     graph = templates.tree($AppSettings.amount);
+  //   };
+  //   //@ts-ignore
+  //   AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
+  //     graph = templates.lottaFaces;
+  //   };
+  //   //@ts-ignore
+  //   AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
+  //     graph = templates.lottaNodes;
+  //   };
+  //   //@ts-ignore
+  //   AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
+  //     graph = templates.lottaNodesAndFaces;
+  //   };
+  // }
 
   function handleSave(graph: Graph) {
     localStorage.setItem("graph", JSON.stringify(graph));
   }
+  onMount(() => {
+    handleUpdate(graph);
+  });
 </script>
 
 <svelte:document on:keydown={applicationKeymap.handleKeyboardEvent} />
@@ -137,10 +142,10 @@
   <Grid.Row>
     <Grid.Cell>
       <Viewer
-        perf={performanceStore}
         bind:scene
-        bind:update={updateViewerResult}
-        centerCamera={$AppSettings.centerCamera}
+        bind:this={viewerComponent}
+        perf={performanceStore}
+        centerCamera={appSettings.centerCamera}
       />
     </Grid.Cell>
     <Grid.Cell>
@@ -149,21 +154,21 @@
           bind:this={graphInterface}
           {graph}
           registry={nodeRegistry}
+          showGrid={appSettings.nodeInterface.showNodeGrid}
+          snapToGrid={appSettings.nodeInterface.snapToGrid}
           bind:activeNode
-          showGrid={$AppSettings.showNodeGrid}
-          snapToGrid={$AppSettings.snapToGrid}
-          bind:showHelp={$AppSettings.showHelp}
+          bind:showHelp={appSettings.nodeInterface.showHelp}
           bind:settings={graphSettings}
           bind:settingTypes={graphSettingTypes}
-          onresult={(result) => handleUpdate(result, $graphSettings)}
+          onresult={(result) => handleUpdate(result)}
           onsave={(graph) => handleSave(graph)}
         />
-        <Settings>
+        <Sidebar>
           <Panel id="general" title="General" icon="i-tabler-settings">
             <NestedSettings
               id="general"
-              value={_appSettings}
-              type={_AppSettingTypes}
+              value={appSettings}
+              type={AppSettingTypes}
             />
           </Panel>
           <Panel
@@ -171,10 +176,12 @@
             title="Keyboard Shortcuts"
             icon="i-tabler-keyboard"
           >
-            <Keymap title="Application" keymap={applicationKeymap} />
-            {#if keymap}
-              <Keymap title="Node-Editor" {keymap} />
-            {/if}
+            <Keymap
+              keymaps={[
+                { keymap: applicationKeymap, title: "Application" },
+                { keymap: graphInterface.keymap, title: "Node-Editor" },
+              ]}
+            />
           </Panel>
           <Panel id="exports" title="Exporter" icon="i-tabler-package-export">
             <ExportSettings {scene} />
@@ -191,7 +198,7 @@
             id="performance"
             title="Performance"
             classes="text-red-400"
-            hidden={!$AppSettings.showPerformancePanel}
+            hidden={!appSettings.debug.showPerformancePanel}
             icon="i-tabler-brand-speedtest"
           >
             {#if $performanceStore}
@@ -202,7 +209,7 @@
             id="benchmark"
             title="Benchmark"
             classes="text-red-400"
-            hidden={!$AppSettings.showBenchmarkPanel}
+            hidden={!appSettings.debug.showBenchmarkPanel}
             icon="i-tabler-graph"
           >
             <BenchmarkPanel run={randomGenerate} />
@@ -213,9 +220,11 @@
             classes="text-blue-400"
             icon="i-custom-graph"
           >
-            {#if Object.keys(graphSettingTypes).length > 0}
-              <GraphSettings type={graphSettingTypes} store={graphSettings} />
-            {/if}
+            <NestedSettings
+              id="graph-settings"
+              type={graphSettingTypes}
+              bind:value={graphSettings}
+            />
           </Panel>
           <Panel
             id="active-node"
@@ -225,7 +234,7 @@
           >
             <ActiveNodeSettings {manager} node={activeNode} />
           </Panel>
-        </Settings>
+        </Sidebar>
       {/key}
     </Grid.Cell>
   </Grid.Row>

@@ -26,9 +26,9 @@
   const aspectRatio = 0.25;
 
   const path = createNodePath({
-    depth: 5,
-    height: 29,
-    y: 50,
+    depth: 5.5,
+    height: 34,
+    y: 49,
     cornerTop,
     rightBump,
     aspectRatio,
@@ -42,9 +42,9 @@
     aspectRatio,
   });
   const pathHover = createNodePath({
-    depth: 9,
+    depth: 8.5,
     height: 50,
-    y: 50,
+    y: 49,
     cornerTop,
     rightBump,
     aspectRatio,
@@ -103,12 +103,12 @@
 
   svg {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 1px;
+    left: 1px;
     z-index: -1;
     box-sizing: border-box;
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 2px);
+    height: calc(100% - 1px);
     overflow: visible;
   }
 
