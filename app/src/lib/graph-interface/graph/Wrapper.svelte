@@ -48,7 +48,7 @@
   $effect(() => {
     if (graphState.activeNodeId !== -1) {
       activeNode = manager.getNode(graphState.activeNodeId);
-    } else {
+    } else if (activeNode) {
       activeNode = undefined;
     }
   });
@@ -64,7 +64,7 @@
   });
 
   manager.on("settings", (_settings) => {
-    settingTypes = _settings.types;
+    settingTypes = { ...settingTypes, ..._settings.types };
     settings = _settings.values;
   });
 

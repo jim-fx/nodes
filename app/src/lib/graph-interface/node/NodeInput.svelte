@@ -31,7 +31,7 @@
   }
 
   let value = $state(getDefaultValue());
-  $inspect({ nodeId: node.type, id, value });
+
   $effect(() => {
     if (value !== undefined && node?.props?.[id] !== value) {
       node.props = { ...node.props, [id]: value };

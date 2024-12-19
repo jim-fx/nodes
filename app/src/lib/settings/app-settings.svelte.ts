@@ -105,16 +105,26 @@ export const AppSettingTypes = {
       }
     },
   }
-} as const
+} as const;
 
 type IsInputDefinition<T> = T extends NodeInput ? T : never;
 type HasTitle = { title: string };
+
+type Widen<T> = T extends boolean
+  ? boolean
+  : T extends number
+  ? number
+  : T extends string
+  ? string
+  : T;
+
+
 type ExtractSettingsValues<T> = {
-  [K in keyof T]: T[K] extends HasTitle
+  -readonly [K in keyof T]: T[K] extends HasTitle
   ? ExtractSettingsValues<Omit<T[K], 'title'>>
   : T[K] extends IsInputDefinition<T[K]>
-  ? T[K] extends { value: any }
-  ? T[K]['value']
+  ? T[K] extends { value: infer V }
+  ? Widen<V>
   : never
   : T[K] extends Record<string, any>
   ? ExtractSettingsValues<T[K]>

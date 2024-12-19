@@ -1,6 +1,6 @@
 import type { Edge, Graph, Node, NodeInput, NodeRegistry, Socket, } from "@nodes/types";
 import { fastHashString } from "@nodes/utils";
-import { get, writable, type Writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 import EventEmitter from "./helpers/EventEmitter.js";
 import { createLogger } from "./helpers/index.js";
 import throttle from "./helpers/throttle.js";
@@ -42,7 +42,6 @@ export class GraphManager extends EventEmitter<{ "save": Graph, "result": any, "
 
   history: HistoryManager = new HistoryManager();
   execute = throttle(() => {
-    console.log("Props", get(this.nodes).values().find(n => n.type === "max/plantarium/gravity")?.props);
     if (this.loaded === false) return;
     this.emit("result", this.serialize());
   }, 10);

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Node, NodeInput } from "@nodes/types";
-  import NestedSettings from "./NestedSettings.svelte";
+  import NestedSettings from "$lib/settings/NestedSettings.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager";
 
   type Props = {
@@ -69,24 +69,14 @@
   }
 
   $effect(() => {
-    if (store && store) {
+    if (store) {
       updateNode();
     }
   });
 </script>
 
-{#if node}
-  {#key node.id}
-    {#if nodeDefinition && store && Object.keys(nodeDefinition).length > 0}
-      <NestedSettings
-        id="activeNodeSettings"
-        bind:value={store}
-        type={nodeDefinition}
-      />
-    {:else}
-      <p class="mx-4">Active Node has no Settings</p>
-    {/if}
-  {/key}
-{:else}
-  <p class="mx-4">No active node</p>
-{/if}
+<NestedSettings
+  id="activeNodeSettings"
+  bind:value={store}
+  type={nodeDefinition}
+/>

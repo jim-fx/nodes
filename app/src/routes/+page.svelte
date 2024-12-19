@@ -4,21 +4,20 @@
   import * as templates from "$lib/graph-templates";
   import type { Graph, Node } from "@nodes/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
-  import Settings from "$lib/settings/Settings.svelte";
+  import Sidebar from "$lib/sidebar/Sidebar.svelte";
   import {
     appSettings,
     AppSettingTypes,
   } from "$lib/settings/app-settings.svelte";
-  import Keymap from "$lib/settings/panels/Keymap.svelte";
+  import Keymap from "$lib/sidebar/panels/Keymap.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
   import NodeStore from "$lib/node-store/NodeStore.svelte";
-  import ActiveNodeSettings from "$lib/settings/panels/ActiveNodeSettings.svelte";
+  import ActiveNodeSettings from "$lib/sidebar/panels/ActiveNodeSettings.svelte";
   import PerformanceViewer from "$lib/performance/PerformanceViewer.svelte";
-  import Panel from "$lib/settings/Panel.svelte";
-  import GraphSettings from "$lib/settings/panels/GraphSettings.svelte";
-  import NestedSettings from "$lib/settings/panels/NestedSettings.svelte";
+  import Panel from "$lib/sidebar/Panel.svelte";
+  import NestedSettings from "$lib/settings/NestedSettings.svelte";
   import type { Group } from "three";
-  import ExportSettings from "$lib/settings/panels/ExportSettings.svelte";
+  import ExportSettings from "$lib/sidebar/panels/ExportSettings.svelte";
   import {
     MemoryRuntimeCache,
     WorkerRuntimeExecutor,
@@ -26,7 +25,7 @@
   } from "$lib/runtime";
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
   import { createPerformanceStore } from "@nodes/utils";
-  import BenchmarkPanel from "$lib/settings/panels/BenchmarkPanel.svelte";
+  import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
   import { onMount } from "svelte";
 
@@ -71,7 +70,9 @@
     },
   ]);
   let graphSettings = $state<Record<string, any>>({});
-  let graphSettingTypes = $state({});
+  let graphSettingTypes = $state({
+    randomSeed: { type: "boolean", value: false },
+  });
 
   const handleUpdate = debounceAsyncFunction(
     async (g: Graph, s: Record<string, any> = graphSettings) => {
@@ -162,7 +163,7 @@
           onresult={(result) => handleUpdate(result)}
           onsave={(graph) => handleSave(graph)}
         />
-        <Settings>
+        <Sidebar>
           <Panel id="general" title="General" icon="i-tabler-settings">
             <NestedSettings
               id="general"
@@ -219,9 +220,11 @@
             classes="text-blue-400"
             icon="i-custom-graph"
           >
-            {#if Object.keys(graphSettingTypes).length > 0}
-              <GraphSettings type={graphSettingTypes} store={graphSettings} />
-            {/if}
+            <NestedSettings
+              id="graph-settings"
+              type={graphSettingTypes}
+              bind:value={graphSettings}
+            />
           </Panel>
           <Panel
             id="active-node"
@@ -231,7 +234,7 @@
           >
             <ActiveNodeSettings {manager} node={activeNode} />
           </Panel>
-        </Settings>
+        </Sidebar>
       {/key}
     </Grid.Cell>
   </Grid.Row>
