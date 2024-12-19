@@ -19,8 +19,19 @@
 
   const graph = getGraphManager();
 
-  let value = $state(node?.props?.[id] ?? input.value);
+  function getDefaultValue() {
+    if (node?.props?.[id] !== undefined) return node?.props?.[id] as number;
+    if ("value" in input && input?.value !== undefined)
+      return input?.value as number;
+    if (input.type === "boolean") return 0;
+    if (input.type === "float") return 0.5;
+    if (input.type === "integer") return 0;
+    if (input.type === "select") return 0;
+    return 0;
+  }
 
+  let value = $state(getDefaultValue());
+  $inspect({ nodeId: node.type, id, value });
   $effect(() => {
     if (value !== undefined && node?.props?.[id] !== value) {
       node.props = { ...node.props, [id]: value };

@@ -9,7 +9,7 @@
     $effect(() => {
       appSettings.theme;
       circleMaterial.color = colors.edge.clone().convertSRGBToLinear();
-    })
+    });
   });
 
   const lineCache = new Map<number, BufferGeometry>();
@@ -25,23 +25,25 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { MeshLineMaterial } from "@threlte/extras";
-  import { BufferGeometry,  MeshBasicMaterial, Vector3 } from "three";
+  import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
-    import { appSettings } from "$lib/settings/app-settings.svelte";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
     from: { x: number; y: number };
     to: { x: number; y: number };
-    z:number;
+    z: number;
   };
 
   const { from, to, z }: Props = $props();
 
-  let geometry: BufferGeometry|null = $state(null);
+  let geometry: BufferGeometry | null = $state(null);
 
-  const lineColor = $derived(appSettings.theme && colors.edge.clone().convertSRGBToLinear());
+  const lineColor = $derived(
+    appSettings.theme && colors.edge.clone().convertSRGBToLinear(),
+  );
 
   let lastId: number | null = null;
 
@@ -81,8 +83,7 @@
 
     geometry = createEdgeGeometry(points);
     lineCache.set(curveId, geometry);
-  };
-
+  }
 
   $effect(() => {
     if (from || to) {
@@ -113,6 +114,6 @@
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial width={Math.max(z*0.0001,0.00001)} color={lineColor}  />
+    <MeshLineMaterial width={Math.max(z * 0.0001, 0.00001)} color={lineColor} />
   </T.Mesh>
 {/if}

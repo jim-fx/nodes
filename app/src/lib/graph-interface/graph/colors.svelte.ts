@@ -1,5 +1,5 @@
 import { appSettings } from "$lib/settings/app-settings.svelte";
-import { Color } from "three";
+import { Color, LinearSRGBColorSpace } from "three";
 
 const variables = [
   "layer-0",
@@ -15,7 +15,7 @@ const variables = [
 function getColor(variable: typeof variables[number]) {
   const style = getComputedStyle(document.body.parentElement!);
   let color = style.getPropertyValue(`--${variable}`);
-  return new Color().setStyle(color);
+  return new Color().setStyle(color, LinearSRGBColorSpace);
 }
 
 export const colors = Object.fromEntries(variables.map(v => [v, getColor(v)])) as Record<typeof variables[number], Color>;
@@ -25,7 +25,8 @@ $effect.root(() => {
     if (!appSettings.theme || !("getComputedStyle" in globalThis)) return;
     const style = getComputedStyle(document.body.parentElement!);
     for (const v of variables) {
-      colors[v].setStyle(style.getPropertyValue(`--${v}`));
+      const hex = style.getPropertyValue(`--${v}`);
+      colors[v].setStyle(hex, LinearSRGBColorSpace);
     }
   });
 })

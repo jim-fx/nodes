@@ -6,7 +6,7 @@ export function createEdgeGeometry(points: Vector3[]) {
 
   const length = points[0].distanceTo(points[points.length - 1]);
 
-  const startRadius = 10.5;
+  const startRadius = 8;
   const constantWidth = 2;
   const taperFraction = 0.8 / length;
 

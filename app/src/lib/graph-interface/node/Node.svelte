@@ -25,10 +25,10 @@
   $effect(() => {
     appSettings.theme;
     strokeColor = isSelected
-      ? colors.selected.clone()
+      ? colors.selected
       : isActive
-        ? colors.active.clone()
-        : colors.outline.clone();
+        ? colors.active
+        : colors.outline;
   });
 
   const updateNodePosition =

@@ -8,8 +8,7 @@
 
   type Props = {
     node: Node;
-
-    position?: "absolute" | "fixed";
+    position?: "absolute" | "fixed" | "relative";
     isActive?: boolean;
     isSelected?: boolean;
     inView?: boolean;
@@ -17,7 +16,7 @@
   };
 
   let {
-    node,
+    node = $bindable(),
     position = "absolute",
     isActive = false,
     isSelected = false,
