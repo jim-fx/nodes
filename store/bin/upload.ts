@@ -45,6 +45,7 @@ async function postNode(node: Node) {
   const wasmContent = await Deno.readFile(node.path);
 
   const url = `http://localhost:8000/nodes`;
+  // const url = "https://node-store.app.max-richter.dev/nodes";
 
   const res = await fetch(url, {
     method: "POST",

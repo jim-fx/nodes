@@ -58,34 +58,16 @@ async function getNodeByVersion(
       const [id, version] = nodeId.replace(/\.wasm$/, "").split("@");
       console.log({ user, system, id, version });
       if (version) {
-        return service.getNodeVersionWasm(
-          user,
-          system,
-          id,
-          version,
-        );
+        return service.getNodeVersionWasm(user, system, id, version);
       } else {
-        return service.getNodeWasmById(
-          user,
-          system,
-          id,
-        );
+        return service.getNodeWasmById(user, system, id);
       }
     } else {
       const [id, version] = nodeId.replace(/\.json$/, "").split("@");
       if (!version) {
-        return service.getNodeDefinitionById(
-          user,
-          system,
-          id,
-        );
+        return service.getNodeDefinitionById(user, system, id);
       } else {
-        return await service.getNodeVersion(
-          user,
-          system,
-          id,
-          version,
-        );
+        return await service.getNodeVersion(user, system, id, version);
       }
     }
   }
@@ -170,7 +152,10 @@ nodeRouter.openapi(
     console.log("Get Nodes by System", { user, system });
     try {
       const nodes = await service.getNodesBySystem(user, system);
-      return c.json(nodes);
+      return c.json({
+        id: `${user}/${system}`,
+        nodes: nodes.map((n) => ({ id: n.id.split("@")[0] })),
+      });
     } catch (error) {
       if (error instanceof CustomError) {
         throw new HTTPException(error.status, { message: error.message });
@@ -201,8 +186,13 @@ nodeRouter.openapi(
     const nodeId = c.req.param("nodeId.json").replace(/\.json$/, "");
     console.log("Get Node by Id", { user, system, nodeId });
     try {
-      const node = await service.getNodeDefinitionById(user, system, nodeId);
-      return c.json(node);
+      const res = await getNodeByVersion(user, system, nodeId);
+      if (res instanceof ArrayBuffer) {
+        c.header("Content-Type", "application/wasm");
+        return c.body(res);
+      } else {
+        return c.json(res);
+      }
     } catch (error) {
       if (error instanceof CustomError) {
         throw new HTTPException(error.status, { message: error.message });
