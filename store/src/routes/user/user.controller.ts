@@ -1,7 +1,8 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
-import { UserSchema, usersTable } from "./user.schema.ts";
+import { usersTable } from "./user.schema.ts";
 import { db } from "../../db/db.ts";
 import { findUserByName } from "./user.service.ts";
+import { UserSchema } from "./user.validation.ts";
 
 const userRouter = new OpenAPIHono();
 

@@ -1,6 +1,6 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { HTTPException } from "hono/http-exception";
-import { idRegex, NodeDefinitionSchema } from "./schemas/types.ts";
+import { idRegex, NodeDefinitionSchema } from "./validations/types.ts";
 import * as service from "./node.service.ts";
 import { bodyLimit } from "hono/body-limit";
 
@@ -13,7 +13,7 @@ const SingleParam = (name: string) =>
     .max(20)
     .refine(
       (value) => idRegex.test(value),
-      "Name should contain only alphabets",
+      `${name} should contain only letters, numbers, "-" or "_"`,
     )
     .openapi({ param: { name, in: "path" } });
 
@@ -129,7 +129,6 @@ const getNodeWasmRoute = createRoute({
 nodeRouter.openapi(getNodeWasmRoute, async (c) => {
   const { user, system, nodeId } = c.req.valid("param");
 
-  const a = performance.now();
   const wasmContent = await service.getNodeWasmById(
     user,
     system,
