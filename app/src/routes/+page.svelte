@@ -33,7 +33,7 @@
 
   const registryCache = new IndexDBCache("node-registry");
   const nodeRegistry = new RemoteNodeRegistry(
-    "https://node-store.app.max-richter.dev/nodes",
+    "https://node-store.app.max-richter.dev",
     // "http://localhost:8000",
     registryCache,
   );
