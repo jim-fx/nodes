@@ -8,6 +8,13 @@
       "when": 1734695353420,
       "tag": "0000_steep_bromley",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1734696211359,
+      "tag": "0001_amazing_weapon_omega",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { db } from "../../db/db.ts";
 import { nodeTable } from "./node.schema.ts";
 import { NodeDefinition, NodeDefinitionSchema } from "./validations/types.ts";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
 import { WorkerMessage } from "./worker/messages.ts";
 
@@ -15,7 +15,7 @@ export type CreateNodeDTO = {
 function getNodeHash(content: Uint8Array) {
   const hash = createHash("sha256");
   hash.update(content);
-  return hash.digest("hex").slice(0, 8);
+  return hash.digest("hex").slice(0, 16);
 }
 
 function extractDefinition(content: ArrayBuffer): Promise<NodeDefinition> {
@@ -40,7 +40,6 @@ function extractDefinition(content: ArrayBuffer): Promise<NodeDefinition> {
           res(e.data.result);
           break;
         case "error":
-          console.log("Worker error", e.data.error);
           rej(e.data.result);
           break;
         default:
@@ -54,36 +53,46 @@ export async function createNode(
   wasmBuffer: ArrayBuffer,
   content: Uint8Array,
 ): Promise<NodeDefinition> {
-  try {
-    const def = await extractDefinition(wasmBuffer);
+  const def = await extractDefinition(wasmBuffer);
 
-    const [userId, systemId, nodeId] = def.id.split("/");
+  const [userId, systemId, nodeId] = def.id.split("/");
 
-    const node: typeof nodeTable.$inferInsert = {
-      userId,
-      systemId,
-      nodeId,
-      definition: def,
-      hash: getNodeHash(content),
-      content: content,
-    };
+  const hash = getNodeHash(content);
 
-    await db.insert(nodeTable).values(node);
-    console.log("new node created!");
-    return def;
-  } catch (error) {
-    console.log("Creation Error", { error });
-    throw error;
+  const node: typeof nodeTable.$inferInsert = {
+    userId,
+    systemId,
+    nodeId,
+    definition: def,
+    hash,
+    content: content,
+  };
+
+  const previousNode = await db
+    .select({ hash: nodeTable.hash })
+    .from(nodeTable)
+    .orderBy(asc(nodeTable.createdAt))
+    .limit(1);
+
+  if (previousNode[0]) {
+    node.previous = previousNode[0].hash;
   }
+
+  await db.insert(nodeTable).values(node);
+  return def;
 }
 
-export function getNodeDefinitionsByUser(userName: string) {
-  return db.select({ definition: nodeTable.definition }).from(nodeTable)
+export async function getNodeDefinitionsByUser(userName: string) {
+  const nodes = await db.select({ definition: nodeTable.definition }).from(
+    nodeTable,
+  )
     .where(
       and(
         eq(nodeTable.userId, userName),
       ),
     );
+
+  return nodes.map((n) => n.definition);
 }
 
 export async function getNodesBySystem(
@@ -91,11 +100,14 @@ export async function getNodesBySystem(
   systemId: string,
 ): Promise<NodeDefinition[]> {
   const nodes = await db
-    .select()
+    .selectDistinctOn(
+      [nodeTable.userId, nodeTable.systemId, nodeTable.nodeId],
+      { definition: nodeTable.definition },
+    )
     .from(nodeTable)
     .where(
       and(eq(nodeTable.systemId, systemId), eq(nodeTable.userId, username)),
-    );
+    ).orderBy(nodeTable.userId, nodeTable.systemId, nodeTable.nodeId);
 
   const definitions = nodes
     .map((node) => NodeDefinitionSchema.safeParse(node.definition))
@@ -118,7 +130,9 @@ export async function getNodeWasmById(
         eq(nodeTable.systemId, systemId),
         eq(nodeTable.nodeId, nodeId),
       ),
-    ).limit(1).execute();
+    )
+    .orderBy(asc(nodeTable.createdAt))
+    .limit(1);
   console.log("Time to load wasm", performance.now() - a);
 
   if (!node[0]) {
@@ -141,7 +155,9 @@ export async function getNodeDefinitionById(
       eq(nodeTable.systemId, systemId),
       eq(nodeTable.nodeId, nodeId),
     ),
-  ).limit(1);
+  )
+    .orderBy(asc(nodeTable.createdAt))
+    .limit(1);
 
   if (!node[0]) {
     return;
@@ -154,4 +170,56 @@ export async function getNodeDefinitionById(
   }
 
   return definition.data;
+}
+
+export async function getNodeVersions(
+  user: string,
+  system: string,
+  nodeId: string,
+) {
+  const nodes = await db.select({
+    definition: nodeTable.definition,
+    hash: nodeTable.hash,
+  }).from(
+    nodeTable,
+  ).where(
+    and(
+      eq(nodeTable.userId, user),
+      eq(nodeTable.systemId, system),
+      eq(nodeTable.nodeId, nodeId),
+    ),
+  )
+    .orderBy(asc(nodeTable.createdAt));
+
+  return nodes.map((node) => ({
+    ...node.definition,
+    id: node.definition.id + "@" + node.hash,
+  }));
+}
+
+export async function getNodeVersion(
+  user: string,
+  system: string,
+  nodeId: string,
+  hash: string,
+) {
+  const nodes = await db.select({
+    definition: nodeTable.definition,
+    hash: nodeTable.hash,
+  }).from(
+    nodeTable,
+  ).where(
+    and(
+      eq(nodeTable.userId, user),
+      eq(nodeTable.systemId, system),
+      eq(nodeTable.nodeId, nodeId),
+      eq(nodeTable.hash, hash),
+    ),
+  ).limit(1);
+
+  if (nodes.length === 0) {
+    throw new Error("Node not found");
+  }
+
+  return nodes[0].definition;
 }

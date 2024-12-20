@@ -44,7 +44,7 @@ for await (const dir of dirs) {
 async function postNode(node: Node) {
   const wasmContent = await Deno.readFile(node.path);
 
-  const url = `http://localhost:8000/v1/nodes`;
+  const url = `http://localhost:8000/nodes`;
 
   const res = await fetch(url, {
     method: "POST",
@@ -55,7 +55,7 @@ async function postNode(node: Node) {
     console.log(`Uploaded ${node.id}`);
   } else {
     const text = await res.text();
-    console.log(`Failed to upload ${node.id}: ${text}`);
+    console.log(`Failed to upload ${node.id}: ${res.status} ${text}`);
   }
 }
 

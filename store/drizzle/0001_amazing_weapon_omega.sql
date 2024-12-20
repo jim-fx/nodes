@@ -1,0 +1,1 @@
+ALTER TABLE "nodes" ADD COLUMN "createdAt" timestamp DEFAULT now();

@@ -78,7 +78,7 @@ nodeRouter.openapi(getNodeCollectionRoute, async (c) => {
 
 const getNodeDefinitionRoute = createRoute({
   method: "get",
-  path: "/{user}/{system}/{nodeId}{.+\\.json}",
+  path: "/{user}/{system}/{nodeId}.json",
   request: {
     params: ParamsSchema,
   },
@@ -111,7 +111,7 @@ nodeRouter.openapi(getNodeDefinitionRoute, async (c) => {
 
 const getNodeWasmRoute = createRoute({
   method: "get",
-  path: "/{user}/{system}/{nodeId}{.+\\.wasm}",
+  path: "/{user}/{system}/{nodeId}.wasm",
   request: {
     params: ParamsSchema,
   },
@@ -140,6 +140,63 @@ nodeRouter.openapi(getNodeWasmRoute, async (c) => {
   return c.body(wasmContent);
 });
 
+const getNodeVersionRoute = createRoute({
+  method: "get",
+  path: "/{user}/{system}/{nodeId}@{hash}.json",
+  request: {
+    params: ParamsSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: NodeDefinitionSchema,
+        },
+      },
+      description: "Create a single node",
+    },
+  },
+});
+
+nodeRouter.openapi(getNodeVersionRoute, async (c) => {
+  const { user, system, nodeId } = c.req.valid("param");
+
+  const nodes = await service.getNodeVersions(user, system, nodeId);
+
+  return c.json(nodes);
+});
+
+const getNodeVersionsRoute = createRoute({
+  method: "get",
+  path: "/{user}/{system}/{nodeId}/versions.json",
+  request: {
+    params: z.object({
+      user: SingleParam("user"),
+      system: SingleParam("system"),
+      nodeId: SingleParam("nodeId"),
+      hash: SingleParam("hash"),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: NodeDefinitionSchema,
+        },
+      },
+      description: "Create a single node",
+    },
+  },
+});
+
+nodeRouter.openapi(getNodeVersionsRoute, async (c) => {
+  const { user, system, nodeId, hash } = c.req.valid("param");
+
+  const node = await service.getNodeVersion(user, system, nodeId, hash);
+
+  return c.json(node);
+});
+
 const createNodeRoute = createRoute({
   method: "post",
   path: "/",
@@ -165,8 +222,19 @@ const createNodeRoute = createRoute({
 nodeRouter.openapi(createNodeRoute, async (c) => {
   const buffer = await c.req.arrayBuffer();
   const bytes = await (await c.req.blob()).bytes();
-  const node = await service.createNode(buffer, bytes);
-  return c.json(node);
+
+  try {
+    const node = await service.createNode(buffer, bytes);
+    return c.json(node);
+  } catch (error) {
+    if (error instanceof Error && "code" in error) {
+      switch (error.code) {
+        case "23505":
+          throw new HTTPException(409, { message: "node already exists" });
+      }
+    }
+  }
+  throw new HTTPException(500);
 });
 
 export { nodeRouter };

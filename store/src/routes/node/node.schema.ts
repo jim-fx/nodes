@@ -2,14 +2,14 @@ import {
   customType,
   foreignKey,
   index,
-  integer,
   json,
   pgTable,
   serial,
+  timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm/relations";
 import { usersTable } from "../user/user.schema.ts";
+import { NodeDefinition } from "./validations/types.ts";
 
 const bytea = customType<{
   data: ArrayBuffer;
@@ -23,12 +23,13 @@ const bytea = customType<{
 export const nodeTable = pgTable("nodes", {
   id: serial().primaryKey(),
   userId: varchar().notNull().references(() => usersTable.name),
+  createdAt: timestamp().defaultNow(),
   systemId: varchar().notNull(),
   nodeId: varchar().notNull(),
   content: bytea().notNull(),
-  definition: json().notNull(),
-  hash: varchar({ length: 8 }).notNull().unique(),
-  previous: varchar({ length: 8 }),
+  definition: json().notNull().$type<NodeDefinition>(),
+  hash: varchar({ length: 16 }).notNull().unique(),
+  previous: varchar({ length: 16 }),
 }, (table) => [
   foreignKey({
     columns: [table.previous],
