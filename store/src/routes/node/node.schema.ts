@@ -27,7 +27,7 @@ export const nodeTable = pgTable("nodes", {
   nodeId: varchar().notNull(),
   content: bytea().notNull(),
   definition: json().notNull(),
-  hash: varchar({ length: 8 }).notNull(),
+  hash: varchar({ length: 8 }).notNull().unique(),
   previous: varchar({ length: 8 }),
 }, (table) => [
   foreignKey({

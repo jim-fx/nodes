@@ -12,7 +12,8 @@ CREATE TABLE "nodes" (
 	"content" "bytea" NOT NULL,
 	"definition" json NOT NULL,
 	"hash" varchar(8) NOT NULL,
-	"previous" varchar(8)
+	"previous" varchar(8),
+	CONSTRAINT "nodes_hash_unique" UNIQUE("hash")
 );
 --> statement-breakpoint
 ALTER TABLE "nodes" ADD CONSTRAINT "nodes_userId_users_name_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("name") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
