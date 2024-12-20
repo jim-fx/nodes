@@ -7,12 +7,13 @@ CREATE TABLE "users" (
 CREATE TABLE "nodes" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"userId" varchar NOT NULL,
+	"createdAt" timestamp DEFAULT now(),
 	"systemId" varchar NOT NULL,
 	"nodeId" varchar NOT NULL,
 	"content" "bytea" NOT NULL,
 	"definition" json NOT NULL,
-	"hash" varchar(8) NOT NULL,
-	"previous" varchar(8),
+	"hash" varchar(16) NOT NULL,
+	"previous" varchar(16),
 	CONSTRAINT "nodes_hash_unique" UNIQUE("hash")
 );
 --> statement-breakpoint

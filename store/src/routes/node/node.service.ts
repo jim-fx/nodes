@@ -3,7 +3,8 @@ import { nodeTable } from "./node.schema.ts";
 import { NodeDefinition, NodeDefinitionSchema } from "./validations/types.ts";
 import { and, asc, eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
-import { WorkerMessage } from "./worker/messages.ts";
+import { extractDefinition } from "./worker/index.ts";
+import { InvalidNodeDefinitionError, NodeNotFoundError } from "./errors.ts";
 
 export type CreateNodeDTO = {
   id: string;
@@ -16,37 +17,6 @@ function getNodeHash(content: Uint8Array) {
   const hash = createHash("sha256");
   hash.update(content);
   return hash.digest("hex").slice(0, 16);
-}
-
-function extractDefinition(content: ArrayBuffer): Promise<NodeDefinition> {
-  const worker = new Worker(
-    new URL("./worker/node.worker.ts", import.meta.url).href,
-    {
-      type: "module",
-    },
-  ) as Worker & {
-    postMessage: (message: WorkerMessage) => void;
-  };
-
-  return new Promise((res, rej) => {
-    worker.postMessage({ action: "extract-definition", content });
-    setTimeout(() => {
-      worker.terminate();
-      rej(new Error("Worker timeout out"));
-    }, 100);
-    worker.onmessage = function (e) {
-      switch (e.data.action) {
-        case "result":
-          res(e.data.result);
-          break;
-        case "error":
-          rej(e.data.result);
-          break;
-        default:
-          rej(new Error("Unknown worker response"));
-      }
-    };
-  });
 }
 
 export async function createNode(
@@ -133,7 +103,6 @@ export async function getNodeWasmById(
   systemId: string,
   nodeId: string,
 ) {
-  const a = performance.now();
   const node = await db.select({ content: nodeTable.content }).from(nodeTable)
     .where(
       and(
@@ -144,10 +113,9 @@ export async function getNodeWasmById(
     )
     .orderBy(asc(nodeTable.createdAt))
     .limit(1);
-  console.log("Time to load wasm", performance.now() - a);
 
   if (!node[0]) {
-    throw new Error("Node not found");
+    throw new NodeNotFoundError();
   }
 
   return node[0].content;
@@ -174,13 +142,13 @@ export async function getNodeDefinitionById(
     .limit(1);
 
   if (!node[0]) {
-    return;
+    throw new NodeNotFoundError();
   }
 
   const definition = NodeDefinitionSchema.safeParse(node[0]?.definition);
 
-  if (!definition.data) {
-    throw new Error("Invalid definition");
+  if (!definition.success) {
+    throw new InvalidNodeDefinitionError();
   }
 
   return { ...definition.data, id: definition.data.id + "@" + node[0].hash };
@@ -231,7 +199,7 @@ export async function getNodeVersion(
   ).limit(1);
 
   if (nodes.length === 0) {
-    throw new Error("Node not found");
+    throw new NodeNotFoundError();
   }
 
   return nodes[0].definition;
@@ -257,7 +225,7 @@ export async function getNodeVersionWasm(
   ).limit(1);
 
   if (node.length === 0) {
-    throw new Error("Node not found");
+    throw new NodeNotFoundError();
   }
 
   return node[0].content;

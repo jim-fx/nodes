@@ -1,5 +1,5 @@
 {
-  "id": "b5fc8bcf-82d4-4d2e-bcd1-89d5a238f5e2",
+  "id": "15ad729d-5756-4c06-87ed-cb8b721201f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -54,6 +54,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
         "systemId": {
           "name": "systemId",
           "type": "varchar",
@@ -80,13 +87,13 @@
         },
         "hash": {
           "name": "hash",
-          "type": "varchar(8)",
+          "type": "varchar(16)",
           "primaryKey": false,
           "notNull": true
         },
         "previous": {
           "name": "previous",
-          "type": "varchar(8)",
+          "type": "varchar(16)",
           "primaryKey": false,
           "notNull": false
         }
