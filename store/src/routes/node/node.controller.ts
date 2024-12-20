@@ -28,7 +28,7 @@ const getUserNodesRoute = createRoute({
   path: "/{user}.json",
   request: {
     params: z.object({
-      user: SingleParam("user"),
+      user: SingleParam("user").optional(),
     }),
   },
   responses: {
@@ -44,7 +44,9 @@ const getUserNodesRoute = createRoute({
 });
 nodeRouter.openapi(getUserNodesRoute, async (c) => {
   const userId = c.req.param("user.json").replace(/\.json$/, "");
-  const nodes = await service.getNodeDefinitionsByUser(userId);
+  const nodes = await service.getNodeDefinitionsByUser(
+    userId,
+  );
   return c.json(nodes);
 });
 
@@ -80,7 +82,11 @@ const getNodeDefinitionRoute = createRoute({
   method: "get",
   path: "/{user}/{system}/{nodeId}.json",
   request: {
-    params: ParamsSchema,
+    params: z.object({
+      user: SingleParam("user"),
+      system: SingleParam("system"),
+      nodeId: SingleParam("nodeId").optional(),
+    }),
   },
   responses: {
     200: {
@@ -94,12 +100,13 @@ const getNodeDefinitionRoute = createRoute({
   },
 });
 nodeRouter.openapi(getNodeDefinitionRoute, async (c) => {
-  const { user, system, nodeId } = c.req.valid("param");
+  const { user, system } = c.req.valid("param");
+  const nodeId = c.req.param("nodeId.json").replace(/\.json$/, "");
 
   const node = await service.getNodeDefinitionById(
     user,
     system,
-    nodeId.replace(/\.json$/, ""),
+    nodeId,
   );
 
   if (!node) {
@@ -140,17 +147,22 @@ nodeRouter.openapi(getNodeWasmRoute, async (c) => {
   return c.body(wasmContent);
 });
 
-const getNodeVersionRoute = createRoute({
+const getNodeVersionWasmRoute = createRoute({
   method: "get",
-  path: "/{user}/{system}/{nodeId}@{hash}.json",
+  path: "/{user}/{system}/{nodeId}@{hash}.wasm",
   request: {
-    params: ParamsSchema,
+    params: z.object({
+      user: SingleParam("user"),
+      system: SingleParam("system"),
+      nodeId: SingleParam("nodeId"),
+      hash: SingleParam("hash"),
+    }),
   },
   responses: {
     200: {
       content: {
-        "application/json": {
-          schema: NodeDefinitionSchema,
+        "application/wasm": {
+          schema: z.any(),
         },
       },
       description: "Create a single node",
@@ -158,17 +170,17 @@ const getNodeVersionRoute = createRoute({
   },
 });
 
-nodeRouter.openapi(getNodeVersionRoute, async (c) => {
-  const { user, system, nodeId } = c.req.valid("param");
+nodeRouter.openapi(getNodeVersionWasmRoute, async (c) => {
+  const { user, system, nodeId, hash } = c.req.valid("param");
 
-  const nodes = await service.getNodeVersions(user, system, nodeId);
+  const nodes = await service.getNodeVersionWasm(user, system, nodeId, hash);
 
   return c.json(nodes);
 });
 
-const getNodeVersionsRoute = createRoute({
+const getNodeVersionRoute = createRoute({
   method: "get",
-  path: "/{user}/{system}/{nodeId}/versions.json",
+  path: "/{user}/{system}/{nodeId}@{hash}.json",
   request: {
     params: z.object({
       user: SingleParam("user"),
@@ -189,10 +201,40 @@ const getNodeVersionsRoute = createRoute({
   },
 });
 
-nodeRouter.openapi(getNodeVersionsRoute, async (c) => {
+nodeRouter.openapi(getNodeVersionRoute, async (c) => {
   const { user, system, nodeId, hash } = c.req.valid("param");
 
-  const node = await service.getNodeVersion(user, system, nodeId, hash);
+  const nodes = await service.getNodeVersion(user, system, nodeId, hash);
+
+  return c.json(nodes);
+});
+
+const getNodeVersionsRoute = createRoute({
+  method: "get",
+  path: "/{user}/{system}/{nodeId}/versions.json",
+  request: {
+    params: z.object({
+      user: SingleParam("user"),
+      system: SingleParam("system"),
+      nodeId: SingleParam("nodeId"),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(NodeDefinitionSchema),
+        },
+      },
+      description: "Create a single node",
+    },
+  },
+});
+
+nodeRouter.openapi(getNodeVersionsRoute, async (c) => {
+  const { user, system, nodeId } = c.req.valid("param");
+
+  const node = await service.getNodeVersions(user, system, nodeId);
 
   return c.json(node);
 });
