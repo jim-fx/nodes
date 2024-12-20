@@ -1,5 +1,6 @@
 import {
   customType,
+  foreignKey,
   index,
   integer,
   json,
@@ -21,27 +22,21 @@ const bytea = customType<{
 
 export const nodeTable = pgTable("nodes", {
   id: serial().primaryKey(),
-  userId: varchar().notNull(),
+  userId: varchar().notNull().references(() => usersTable.id),
   systemId: varchar().notNull(),
   nodeId: varchar().notNull(),
   content: bytea().notNull(),
   definition: json().notNull(),
   hash: varchar({ length: 8 }).notNull(),
-  previous: integer(),
+  previous: varchar({ length: 8 }),
 }, (table) => [
+  foreignKey({
+    columns: [table.previous],
+    foreignColumns: [table.hash],
+    name: "node_previous_fk",
+  }),
   index("user_id_idx").on(table.userId),
   index("system_id_idx").on(table.systemId),
   index("node_id_idx").on(table.nodeId),
   index("hash_idx").on(table.hash),
 ]);
-
-export const nodeRelations = relations(nodeTable, ({ one }) => ({
-  userId: one(usersTable, {
-    fields: [nodeTable.userId],
-    references: [usersTable.id],
-  }),
-  previous: one(nodeTable, {
-    fields: [nodeTable.previous],
-    references: [nodeTable.id],
-  }),
-}));
