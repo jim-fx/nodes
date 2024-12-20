@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { nodeRouter } from "./routes/node/node.controller.ts";
 import { userRouter } from "./routes/user/user.controller.ts";
+import { migrateDb } from "./db/db.ts";
 
 const router = new OpenAPIHono();
 
@@ -26,10 +27,11 @@ router.get("/ui", swaggerUI({ url: "/openapi.json" }));
 Deno.serve(router.fetch);
 
 async function init() {
+  await migrateDb();
+  await createUser("max");
+
   const openapi = await router.request("/openapi.json");
   const json = await openapi.text();
   Deno.writeTextFile("openapi.json", json);
-
-  await createUser("max");
 }
 await init();

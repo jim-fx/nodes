@@ -1,3 +1,0 @@
-ALTER TABLE "nodes" ALTER COLUMN "previous" SET DATA TYPE varchar(8);--> statement-breakpoint
-ALTER TABLE "nodes" ADD CONSTRAINT "nodes_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "nodes" ADD CONSTRAINT "node_previous_fk" FOREIGN KEY ("previous") REFERENCES "public"."nodes"("hash") ON DELETE no action ON UPDATE no action;

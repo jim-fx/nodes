@@ -2,6 +2,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema.ts";
 
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+
 // Use pg driver.
 const { Pool } = pg;
 
@@ -13,3 +15,7 @@ export const db = drizzle({
   }),
   schema,
 });
+
+export function migrateDb() {
+  return migrate(db, { migrationsFolder: "drizzle" });
+}

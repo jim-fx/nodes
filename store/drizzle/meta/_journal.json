@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1734446124519,
-      "tag": "0000_dark_squirrel_girl",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1734693909872,
-      "tag": "0001_damp_captain_midlands",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1734694545302,
-      "tag": "0002_chemical_whiplash",
+      "when": 1734694927055,
+      "tag": "0000_clever_odin",
       "breakpoints": true
     }
   ]
