@@ -16,6 +16,7 @@ export const db = drizzle({
   schema,
 });
 
-export function migrateDb() {
-  return migrate(db, { migrationsFolder: "drizzle" });
+export async function migrateDb() {
+  await migrate(db, { migrationsFolder: "drizzle" });
+  console.log("Database migrated");
 }

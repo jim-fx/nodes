@@ -22,7 +22,7 @@ const bytea = customType<{
 
 export const nodeTable = pgTable("nodes", {
   id: serial().primaryKey(),
-  userId: varchar().notNull().references(() => usersTable.id),
+  userId: varchar().notNull().references(() => usersTable.name),
   systemId: varchar().notNull(),
   nodeId: varchar().notNull(),
   content: bytea().notNull(),

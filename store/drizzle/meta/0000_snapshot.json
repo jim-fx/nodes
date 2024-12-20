@@ -1,5 +1,5 @@
 {
-  "id": "91f8730d-dd5a-4a25-b840-e42b0ef1bc72",
+  "id": "e0d14457-de6a-4832-80fd-ee24523ff95c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -154,15 +154,15 @@
         }
       },
       "foreignKeys": {
-        "nodes_userId_users_id_fk": {
-          "name": "nodes_userId_users_id_fk",
+        "nodes_userId_users_name_fk": {
+          "name": "nodes_userId_users_name_fk",
           "tableFrom": "nodes",
           "tableTo": "users",
           "columnsFrom": [
             "userId"
           ],
           "columnsTo": [
-            "id"
+            "name"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
