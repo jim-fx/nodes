@@ -1,9 +1,9 @@
 import { db } from "../../db/db.ts";
-import { nodeTable } from "./schemas/node.schema.ts";
-import { NodeDefinition, NodeDefinitionSchema } from "./schemas/types.ts";
+import { nodeTable } from "./node.schema.ts";
+import { NodeDefinition, NodeDefinitionSchema } from "./validations/types.ts";
 import { and, eq } from "drizzle-orm";
 import { createHash } from "node:crypto";
-import { WorkerMessage } from "./worker/types.ts";
+import { WorkerMessage } from "./worker/messages.ts";
 
 export type CreateNodeDTO = {
   id: string;

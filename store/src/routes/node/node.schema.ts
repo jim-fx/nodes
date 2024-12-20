@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm/relations";
-import { usersTable } from "../../user/user.schema.ts";
+import { usersTable } from "../user/user.schema.ts";
 
 const bytea = customType<{
   data: ArrayBuffer;

@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
-import { NodeDefinitionSchema } from "../schemas/types.ts";
-import { WorkerMessage } from "./types.ts";
+import { NodeDefinitionSchema } from "../validations/types.ts";
+import { WorkerMessage } from "./messages.ts";
 import { createWasmWrapper } from "./utils.ts";
 
 const workerSelf = self as DedicatedWorkerGlobalScope & {

@@ -1,4 +1,4 @@
-import { NodeDefinition } from "../schemas/types.ts";
+import { NodeDefinition } from "../validations/types.ts";
 
 type ExtractDefinitionMessage = {
   action: "extract-definition";
