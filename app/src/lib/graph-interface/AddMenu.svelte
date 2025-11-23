@@ -2,6 +2,7 @@
   import type { GraphManager } from "./graph-manager.js";
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
+  import type { NodeType } from "@nodes/types";
 
   export let position: [x: number, y: number] | null;
 
@@ -9,7 +10,7 @@
 
   let input: HTMLInputElement;
   let value: string = "";
-  let activeNodeId: string = "";
+  let activeNodeId: NodeType = "";
 
   const allNodes = graph.getNodeDefinitions();
 

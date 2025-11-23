@@ -52,13 +52,13 @@
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.4",
-    "vitest": "^4.0.13"
+    "vitest": "^4.0.13",
+    "@nodes/types": "link:../types"
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
   "dependencies": {
-    "@nodes/types": "link:../types",
     "@threlte/core": "^8.3.0",
     "@threlte/extras": "^9.7.0"
   }
