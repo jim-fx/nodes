@@ -19,16 +19,23 @@ jobs:
         run: pnpm run build:deploy
 
       - name: 🔑 Configure rclone
-        run: |
-          echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
-          chmod 600 /tmp/id_rsa
-          mkdir -p ~/.config/rclone
-          echo "[sftp-remote]\ntype = sftp\nhost = ${SSH_HOST}\nuser = ${SSH_USER}\nport = ${SSH_PORT}\nkey_file = /tmp/id_rsa" > ~/.config/rclone/rclone.conf
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ vars.SSH_HOST }}
           SSH_PORT: ${{ vars.SSH_PORT }}
           SSH_USER: ${{ vars.SSH_USER }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
+          chmod 600 /tmp/id_rsa
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf <<EOF
+[sftp-remote]
+type = sftp
+host = ${SSH_HOST}
+user = ${SSH_USER}
+port = ${SSH_PORT}
+key_file = /tmp/id_rsa
+EOF
 
       - name: 🚀 Deploy Changed Files via rclone
         run: |
