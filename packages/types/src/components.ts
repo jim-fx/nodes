@@ -2,17 +2,17 @@ import { Graph, NodeDefinition, NodeId } from "./types";
 
 export interface NodeRegistry {
   /**
-  * The status of the node registry
-  * @remarks The status should be "loading" when the registry is loading, "ready" when the registry is ready, and "error" if an error occurred while loading the registry
-  */
+   * The status of the node registry
+   * @remarks The status should be "loading" when the registry is loading, "ready" when the registry is ready, and "error" if an error occurred while loading the registry
+   */
   status: "loading" | "ready" | "error";
   /**
    * Load the nodes with the given ids
-  * @param nodeIds - The ids of the nodes to load
-  * @returns A promise that resolves when the nodes are loaded
-  * @throws An error if the nodes could not be loaded
-  * @remarks This method should be called before calling getNode or getAllNodes
-  */
+   * @param nodeIds - The ids of the nodes to load
+   * @returns A promise that resolves when the nodes are loaded
+   * @throws An error if the nodes could not be loaded
+   * @remarks This method should be called before calling getNode or getAllNodes
+   */
   load: (nodeIds: NodeId[]) => Promise<NodeDefinition[]>;
   /**
    * Get a node by id
@@ -27,30 +27,30 @@ export interface NodeRegistry {
   getAllNodes: () => NodeDefinition[];
 
   /**
-  * Register a new node
-  * @param wasmBuffer - The WebAssembly buffer for the node
-  * @returns The node definition
+   * Register a new node
+   * @param wasmBuffer - The WebAssembly buffer for the node
+   * @returns The node definition
    */
   register: (wasmBuffer: ArrayBuffer) => Promise<NodeDefinition>;
-
-
-  cache?: AsyncCache<ArrayBuffer>;
 }
 
 export interface RuntimeExecutor {
   /**
-  * Execute the given graph
-  * @param graph - The graph to execute
-  * @returns The result of the execution
-  */
-  execute: (graph: Graph, settings: Record<string, unknown>) => Promise<Int32Array>;
+   * Execute the given graph
+   * @param graph - The graph to execute
+   * @returns The result of the execution
+   */
+  execute: (
+    graph: Graph,
+    settings: Record<string, unknown>,
+  ) => Promise<Int32Array>;
 }
 
 export interface SyncCache<T = unknown> {
   /**
-  * The maximum number of items that can be stored in the cache
-  * @remarks When the cache size exceeds this value, the oldest items should be removed
-  */
+   * The maximum number of items that can be stored in the cache
+   * @remarks When the cache size exceeds this value, the oldest items should be removed
+   */
   size: number;
 
   /**
@@ -69,14 +69,13 @@ export interface SyncCache<T = unknown> {
    * Clear the cache
    */
   clear: () => void;
-
 }
 
 export interface AsyncCache<T = unknown> {
   /**
-  * The maximum number of items that can be stored in the cache
-  * @remarks When the cache size exceeds this value, the oldest items should be removed
-  */
+   * The maximum number of items that can be stored in the cache
+   * @remarks When the cache size exceeds this value, the oldest items should be removed
+   */
   size: number;
 
   /**
