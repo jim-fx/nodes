@@ -26,6 +26,7 @@
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
   import { createPerformanceStore } from "@nodes/utils";
   import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
+  import { debounceAsyncFunction } from "$lib/helpers";
 
   let performanceStore = createPerformanceStore();
 
@@ -79,40 +80,39 @@
   });
 
   let runIndex = 0;
-  const handleUpdate = async (
-    g: Graph,
-    s: Record<string, any> = graphSettings,
-  ) => {
-    runIndex++;
-    performanceStore.startRun();
-    try {
-      let a = performance.now();
-      const graphResult = await runtime.execute(
-        $state.snapshot(g),
-        $state.snapshot(s),
-      );
-      let b = performance.now();
+  const handleUpdate = debounceAsyncFunction(
+    async (g: Graph, s: Record<string, any> = graphSettings) => {
+      runIndex++;
+      performanceStore.startRun();
+      try {
+        let a = performance.now();
+        const graphResult = await runtime.execute(
+          $state.snapshot(g),
+          $state.snapshot(s),
+        );
+        let b = performance.now();
 
-      if (appSettings.debug.useWorker) {
-        let perfData = await runtime.getPerformanceData();
-        let lastRun = perfData?.at(-1);
-        if (lastRun?.total) {
-          lastRun.runtime = lastRun.total;
-          delete lastRun.total;
-          performanceStore.mergeData(lastRun);
-          performanceStore.addPoint(
-            "worker-transfer",
-            b - a - lastRun.runtime[0],
-          );
+        if (appSettings.debug.useWorker) {
+          let perfData = await runtime.getPerformanceData();
+          let lastRun = perfData?.at(-1);
+          if (lastRun?.total) {
+            lastRun.runtime = lastRun.total;
+            delete lastRun.total;
+            performanceStore.mergeData(lastRun);
+            performanceStore.addPoint(
+              "worker-transfer",
+              b - a - lastRun.runtime[0],
+            );
+          }
         }
+        viewerComponent?.update(graphResult);
+      } catch (error) {
+        console.log("errors", error);
+      } finally {
+        performanceStore.stopRun();
       }
-      viewerComponent?.update(graphResult);
-    } catch (error) {
-      console.log("errors", error);
-    } finally {
-      performanceStore.stopRun();
-    }
-  };
+    },
+  );
 
   $effect(() => {
     //@ts-ignore

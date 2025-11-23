@@ -41,6 +41,7 @@
   const height = getNodeHeight?.(node.type);
 
   $effect(() => {
+    if (!node?.tmp) node.tmp = {};
     node.tmp.mesh = meshRef;
   });
 

@@ -1,20 +1,19 @@
-export default <R, A extends any[]>(
-  fn: (...args: A) => R,
-  delay: number
-): ((...args: A) => R) => {
-  let wait = false;
+export default <T extends unknown[]>(
+  callback: (...args: T) => void,
+  delay: number,
+) => {
+  let isWaiting = false;
 
-  return (...args: A) => {
-    if (wait) return undefined;
+  return (...args: T) => {
+    if (isWaiting) {
+      return;
+    }
 
-    const val = fn(...args);
-
-    wait = true;
+    callback(...args);
+    isWaiting = true;
 
     setTimeout(() => {
-      wait = false;
+      isWaiting = false;
     }, delay);
-
-    return val;
-  }
+  };
 };

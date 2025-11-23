@@ -11,7 +11,7 @@ import { fastHashString } from "@nodes/utils";
 import { SvelteMap } from "svelte/reactivity";
 import EventEmitter from "./helpers/EventEmitter";
 import { createLogger } from "./helpers/index";
-import throttle from "./helpers/throttle";
+import throttle from "$lib/helpers/throttle";
 import { HistoryManager } from "./history-manager";
 
 const logger = createLogger("graph-manager");
@@ -24,7 +24,7 @@ const clone =
 
 function areSocketsCompatible(
   output: string | undefined,
-  inputs: string | string[] | undefined,
+  inputs: string | (string | undefined)[] | undefined,
 ) {
   if (Array.isArray(inputs) && output) {
     return inputs.includes(output);
@@ -99,7 +99,6 @@ export class GraphManager extends EventEmitter<{
 
   private lastSettingsHash = 0;
   setSettings(settings: Record<string, unknown>) {
-    console.log("GraphManager.setSettings", settings);
     let hash = fastHashString(JSON.stringify(settings));
     if (hash === this.lastSettingsHash) return;
     this.lastSettingsHash = hash;
@@ -154,7 +153,7 @@ export class GraphManager extends EventEmitter<{
 
   private _init(graph: Graph) {
     const nodes = new Map(
-      graph.nodes.map((node) => {
+      graph.nodes.map((node: Node) => {
         const nodeType = this.registry.getNode(node.type);
         if (nodeType) {
           node.tmp = {

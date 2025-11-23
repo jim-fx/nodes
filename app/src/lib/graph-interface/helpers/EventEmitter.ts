@@ -1,15 +1,15 @@
-import throttle from './throttle.js';
+import throttle from "$lib/helpers/throttle";
 
 type EventMap = Record<string, unknown>;
 type EventKey<T extends EventMap> = string & keyof T;
 type EventReceiver<T> = (params: T, stuff?: Record<string, unknown>) => unknown;
 
-
-export default class EventEmitter<T extends EventMap = { [key: string]: unknown }> {
+export default class EventEmitter<
+  T extends EventMap = { [key: string]: unknown },
+> {
   index = 0;
   public eventMap: T = {} as T;
-  constructor() {
-  }
+  constructor() {}
 
   private cbs: { [key: string]: ((data?: unknown) => unknown)[] } = {};
   private cbsOnce: { [key: string]: ((data?: unknown) => unknown)[] } = {};
@@ -29,7 +29,11 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
     }
   }
 
-  public on<K extends EventKey<T>>(event: K, cb: EventReceiver<T[K]>, throttleTimer = 0) {
+  public on<K extends EventKey<T>>(
+    event: K,
+    cb: EventReceiver<T[K]>,
+    throttleTimer = 0,
+  ) {
     if (throttleTimer > 0) cb = throttle(cb, throttleTimer);
     const cbs = Object.assign(this.cbs, {
       [event]: [...(this.cbs[event] || []), cb],
@@ -38,7 +42,7 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
 
     // console.log('New EventEmitter ', this.constructor.name);
     return () => {
-      cbs[event]?.splice(cbs[event].indexOf(cb), 1);
+      this.cbs[event]?.splice(cbs[event].indexOf(cb), 1);
     };
   }
 
@@ -48,10 +52,17 @@ export default class EventEmitter<T extends EventMap = { [key: string]: unknown 
    * @param {function} cb Listener, gets called everytime the event is emitted
    * @returns {function} Returns a function which removes the listener when called
    */
-  public once<K extends EventKey<T>>(event: K, cb: EventReceiver<T[K]>): () => void {
-    this.cbsOnce[event] = [...(this.cbsOnce[event] || []), cb];
+  public once<K extends EventKey<T>>(
+    event: K,
+    cb: EventReceiver<T[K]>,
+  ): () => void {
+    const cbsOnce = Object.assign(this.cbsOnce, {
+      [event]: [...(this.cbsOnce[event] || []), cb],
+    });
+    this.cbsOnce = cbsOnce;
+
     return () => {
-      this.cbsOnce[event].splice(this.cbsOnce[event].indexOf(cb), 1);
+      cbsOnce[event]?.splice(cbsOnce[event].indexOf(cb), 1);
     };
   }
 

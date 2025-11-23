@@ -23,8 +23,6 @@
     invalidate();
   });
 
-  $effect(() => console.log({ nodes }));
-
   const graphState = getGraphState();
 
   const isNodeInView = getContext<(n: NodeType) => boolean>("isNodeInView");
@@ -49,8 +47,6 @@
       return [pos1[0], pos1[1], pos2[0], pos2[1]];
     }),
   );
-
-  const nodeArray = $derived(Array.from(nodes.values()));
 
   onMount(() => {
     for (const node of nodes.values()) {
@@ -86,9 +82,9 @@
     style:transform={`scale(${cameraPosition[2] * 0.1})`}
     class:hovering-sockets={graphState.activeSocket}
   >
-    {#each nodeArray as node, i (node.id)}
+    {#each nodes.values() as node (node.id)}
       <Node
-        bind:node={nodeArray[i]}
+        {node}
         inView={cameraPosition && isNodeInView(node)}
         z={cameraPosition[2]}
       />

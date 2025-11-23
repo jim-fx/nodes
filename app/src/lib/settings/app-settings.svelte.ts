@@ -1,5 +1,6 @@
 import { localState } from "$lib/helpers/localState.svelte";
 import type { NodeInput } from "@nodes/types";
+import type { SettingsType } from ".";
 
 const themes = [
   "dark",
@@ -118,7 +119,7 @@ export const AppSettingTypes = {
       },
     },
   },
-} as const;
+} as const satisfies SettingsType;
 
 type IsInputDefinition<T> = T extends NodeInput ? T : never;
 type HasTitle = { title: string };

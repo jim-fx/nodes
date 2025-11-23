@@ -27,10 +27,12 @@
   function constructPath() {
     max = max !== undefined ? max : Math.max(...points);
     min = min !== undefined ? min : Math.min(...points);
+    const mi = min as number;
+    const ma = max as number;
     return points
       .map((point, i) => {
         const x = (i / (points.length - 1)) * 100;
-        const y = 100 - ((point - min) / (max - min)) * 100;
+        const y = 100 - ((point - mi) / (ma - mi)) * 100;
         return `${x},${y}`;
       })
       .join(" ");

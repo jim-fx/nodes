@@ -1,7 +1,3 @@
-<script module lang="ts">
-  let openSections = localState<Record<string, boolean>>("open-details", {});
-</script>
-
 <script lang="ts">
   import NestedSettings from "./NestedSettings.svelte";
   import { localState } from "$lib/helpers/localState.svelte";
@@ -12,10 +8,15 @@
 
   type InputType = NodeInput | Button;
 
-  interface Nested {
-    [key: string]: (Nested & { title?: string }) | InputType;
+  type SettingsNode = InputType | SettingsGroup;
+
+  interface SettingsGroup {
+    title?: string;
+    [key: string]: any;
   }
-  type SettingsType = Record<string, Nested>;
+
+  type SettingsType = Record<string, SettingsNode>;
+
   type SettingsValue = Record<
     string,
     Record<string, unknown> | string | number | boolean | number[]
@@ -29,38 +30,57 @@
     depth?: number;
   };
 
+  // Local persistent state for <details> sections
+  const openSections = localState<Record<string, boolean>>("open-details", {});
+
   let { id, key = "", value = $bindable(), type, depth = 0 }: Props = $props();
 
-  function isNodeInput(v: InputType | Nested): v is InputType {
-    return v && "type" in v;
+  function isNodeInput(v: SettingsNode | undefined): v is InputType {
+    return !!v && typeof v === "object" && "type" in v;
   }
 
-  function getDefaultValue() {
-    if (key === "") return;
-    if (key === "title") return;
-    if (Array.isArray(type[key]?.options)) {
-      if (value?.[key] !== undefined) {
-        return type[key]?.options?.indexOf(value?.[key]);
-      } else {
-        return 0;
-      }
-    }
-    if (value?.[key] !== undefined) return value?.[key];
-    if (type[key]?.value !== undefined) return type[key]?.value;
+  function getDefaultValue(): unknown {
+    if (key === "" || key === "title") return;
 
-    if (isNodeInput(type[key])) {
-      if (type[key].type === "boolean") return 0;
-      if (type[key].type === "float") return 0.5;
-      if (type[key].type === "integer") return 0;
-      if (type[key].type === "select") return 0;
+    const node = type[key];
+
+    if (!isNodeInput(node)) return;
+
+    const anyNode = node as any;
+
+    // select input: use index into options
+    if (Array.isArray(anyNode.options)) {
+      if (value?.[key] !== undefined) {
+        return anyNode.options.indexOf(value[key]);
+      }
+      return 0;
     }
-    return 0;
+
+    if (value?.[key] !== undefined) return value[key];
+
+    if ("value" in node && anyNode.value !== undefined) {
+      return anyNode.value;
+    }
+
+    switch (node.type) {
+      case "boolean":
+        return 0;
+      case "float":
+        return 0.5;
+      case "integer":
+      case "select":
+        return 0;
+      default:
+        return 0;
+    }
   }
 
   let internalValue = $state(getDefaultValue());
 
   let open = $state(openSections[id]);
-  if (depth > 0 && !isNodeInput(type[key])) {
+
+  // Persist <details> open/closed state for groups
+  if (depth > 0 && !isNodeInput(type[key!])) {
     $effect(() => {
       if (open !== undefined) {
         openSections[id] = open;
@@ -68,21 +88,26 @@
     });
   }
 
+  // Sync internalValue back into `value`
   $effect(() => {
     if (key === "" || internalValue === undefined) return;
+
+    const node = type[key];
+
     if (
-      isNodeInput(type[key]) &&
-      Array.isArray(type[key]?.options) &&
+      isNodeInput(node) &&
+      Array.isArray((node as any).options) &&
       typeof internalValue === "number"
     ) {
-      value[key] = type[key].options?.[internalValue];
+      value[key] = (node as any).options[internalValue] as any;
     } else {
-      value[key] = internalValue;
+      value[key] = internalValue as any;
     }
   });
 </script>
 
 {#if key && isNodeInput(type?.[key])}
+  <!-- Leaf input -->
   <div class="input input-{type[key].type}" class:first-level={depth === 1}>
     {#if type[key].type === "button"}
       <button onclick={() => console.log(type[key])}>
@@ -94,7 +119,8 @@
     {/if}
   </div>
 {:else if depth === 0}
-  {#each Object.keys(type ?? {}).filter((key) => key !== "title") as childKey}
+  <!-- Root: iterate over top-level keys -->
+  {#each Object.keys(type ?? {}).filter((k) => k !== "title") as childKey}
     <NestedSettings
       id={`${id}.${childKey}`}
       key={childKey}
@@ -105,18 +131,19 @@
   {/each}
   <hr />
 {:else if key && type?.[key]}
+  <!-- Group -->
   {#if depth > 0}
     <hr />
   {/if}
   <details bind:open>
-    <summary><p>{type[key]?.title || key}</p></summary>
+    <summary><p>{(type[key] as SettingsGroup).title || key}</p></summary>
     <div class="content">
-      {#each Object.keys(type[key]).filter((key) => key !== "title") as childKey}
+      {#each Object.keys(type[key] as SettingsGroup).filter((k) => k !== "title") as childKey}
         <NestedSettings
           id={`${id}.${childKey}`}
           key={childKey}
           value={value[key] as SettingsValue}
-          type={type[key] as SettingsType}
+          type={type[key] as unknown as SettingsType}
           depth={depth + 1}
         />
       {/each}
@@ -156,6 +183,7 @@
     flex-direction: row;
     align-items: center;
   }
+
   .input-boolean > label {
     order: 2;
   }

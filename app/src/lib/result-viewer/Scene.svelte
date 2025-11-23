@@ -42,11 +42,9 @@
   export const invalidate = function () {
     if (scene) {
       geometries = scene.children
-        .filter(
-          (child) => "geometry" in child && child.isObject3D && child.geometry,
-        )
+        .filter((child) => "geometry" in child && child.isObject3D)
         .map((child) => {
-          return child.geometry;
+          return (child as Mesh).geometry;
         });
     }
 

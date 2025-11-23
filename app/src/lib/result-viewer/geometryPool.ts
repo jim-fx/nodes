@@ -1,20 +1,27 @@
 import { fastHashArrayBuffer } from "@nodes/utils";
-import { BufferAttribute, BufferGeometry, Float32BufferAttribute, Group, InstancedMesh, Material, Matrix4, Mesh } from "three";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Float32BufferAttribute,
+  Group,
+  InstancedMesh,
+  Material,
+  Matrix4,
+  Mesh,
+} from "three";
 
-function fastArrayHash(arr: ArrayBuffer) {
-  let ints = new Uint8Array(arr);
+function fastArrayHash(arr: Int32Array) {
+  const sampleDistance = Math.max(Math.floor(arr.length / 100), 1);
+  const sampleCount = Math.floor(arr.length / sampleDistance);
 
-  const sampleDistance = Math.max(Math.floor(ints.length / 100), 1);
-  const sampleCount = Math.floor(ints.length / sampleDistance);
-
-  let hash = new Uint8Array(sampleCount);
+  let hash = new Int32Array(sampleCount);
 
   for (let i = 0; i < sampleCount; i++) {
     const index = i * sampleDistance;
-    hash[i] = ints[index];
+    hash[i] = arr[index];
   }
 
-  return fastHashArrayBuffer(hash.buffer);
+  return fastHashArrayBuffer(hash);
 }
 
 export function createGeometryPool(parentScene: Group, material: Material) {
@@ -26,8 +33,10 @@ export function createGeometryPool(parentScene: Group, material: Material) {
   let totalVertices = 0;
   let totalFaces = 0;
 
-  function updateSingleGeometry(data: Int32Array, existingMesh: Mesh | null = null) {
-
+  function updateSingleGeometry(
+    data: Int32Array,
+    existingMesh: Mesh | null = null,
+  ) {
     let hash = fastArrayHash(data);
 
     let geometry = existingMesh ? existingMesh.geometry : new BufferGeometry();
@@ -50,11 +59,7 @@ export function createGeometryPool(parentScene: Group, material: Material) {
     index = indicesEnd;
 
     // Vertices
-    const vertices = new Float32Array(
-      data.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
+    const vertices = new Float32Array(data.buffer, index * 4, vertexCount * 3);
     index = index + vertexCount * 3;
 
     let posAttribute = geometry.getAttribute(
@@ -71,11 +76,7 @@ export function createGeometryPool(parentScene: Group, material: Material) {
       );
     }
 
-    const normals = new Float32Array(
-      data.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
+    const normals = new Float32Array(data.buffer, index * 4, vertexCount * 3);
     index = index + vertexCount * 3;
 
     if (
@@ -109,11 +110,8 @@ export function createGeometryPool(parentScene: Group, material: Material) {
     }
   }
 
-
   return {
-    update(
-      newData: Int32Array[],
-    ) {
+    update(newData: Int32Array[]) {
       totalVertices = 0;
       totalFaces = 0;
       for (let i = 0; i < Math.max(newData.length, meshes.length); i++) {
@@ -127,11 +125,14 @@ export function createGeometryPool(parentScene: Group, material: Material) {
         }
       }
       return { totalVertices, totalFaces };
-    }
-  }
+    },
+  };
 }
 
-export function createInstancedGeometryPool(parentScene: Group, material: Material) {
+export function createInstancedGeometryPool(
+  parentScene: Group,
+  material: Material,
+) {
   const scene = new Group();
   parentScene.add(scene);
 
@@ -139,19 +140,25 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
   let totalVertices = 0;
   let totalFaces = 0;
 
-  function updateSingleInstance(data: Int32Array, existingInstance: InstancedMesh | null = null) {
-
+  function updateSingleInstance(
+    data: Int32Array,
+    existingInstance: InstancedMesh | null = null,
+  ) {
     let hash = fastArrayHash(data);
 
-    let geometry = existingInstance ? existingInstance.geometry : new BufferGeometry();
+    let geometry = existingInstance
+      ? existingInstance.geometry
+      : new BufferGeometry();
 
     // Extract data from the encoded array
     let index = 0;
-    const geometryType = data[index++];
+    // const geometryType = data[index++];
+    index++;
     const vertexCount = data[index++];
     const faceCount = data[index++];
     const instanceCount = data[index++];
-    const stemDepth = data[index++];
+    // const stemDepth = data[index++];
+    index++;
     totalVertices += vertexCount * instanceCount;
     totalFaces += faceCount * instanceCount;
 
@@ -168,11 +175,7 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
     }
 
     // Vertices
-    const vertices = new Float32Array(
-      data.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
+    const vertices = new Float32Array(data.buffer, index * 4, vertexCount * 3);
     index = index + vertexCount * 3;
     let posAttribute = geometry.getAttribute(
       "position",
@@ -187,11 +190,7 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
       );
     }
 
-    const normals = new Float32Array(
-      data.buffer,
-      index * 4,
-      vertexCount * 3,
-    );
+    const normals = new Float32Array(data.buffer, index * 4, vertexCount * 3);
     index = index + vertexCount * 3;
     const normalsAttribute = geometry.getAttribute(
       "normal",
@@ -203,20 +202,23 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
       geometry.setAttribute("normal", new Float32BufferAttribute(normals, 3));
     }
 
-    if (existingInstance && instanceCount > existingInstance.geometry.userData.count) {
-      console.log("recreating instance")
+    if (
+      existingInstance &&
+      instanceCount > existingInstance.geometry.userData.count
+    ) {
+      console.log("recreating instance");
       scene.remove(existingInstance);
       instances.splice(instances.indexOf(existingInstance), 1);
       existingInstance = new InstancedMesh(geometry, material, instanceCount);
-      scene.add(existingInstance)
-      instances.push(existingInstance)
+      scene.add(existingInstance);
+      instances.push(existingInstance);
     } else if (!existingInstance) {
-      console.log("creating instance")
+      console.log("creating instance");
       existingInstance = new InstancedMesh(geometry, material, instanceCount);
-      scene.add(existingInstance)
-      instances.push(existingInstance)
+      scene.add(existingInstance);
+      instances.push(existingInstance);
     } else {
-      console.log("updating instance")
+      console.log("updating instance");
       existingInstance.count = instanceCount;
     }
 
@@ -225,28 +227,31 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
     const matrices = new Float32Array(
       data.buffer,
       index * 4,
-      instanceCount * 16);
+      instanceCount * 16,
+    );
 
     for (let i = 0; i < instanceCount; i++) {
-      const matrix = new Matrix4().fromArray(matrices.subarray(i * 16, i * 16 + 16));
+      const matrix = new Matrix4().fromArray(
+        matrices.subarray(i * 16, i * 16 + 16),
+      );
       existingInstance.setMatrixAt(i, matrix);
     }
 
     geometry.userData = {
       vertexCount,
       faceCount,
-      count: Math.max(instanceCount, existingInstance.geometry.userData.count || 0),
+      count: Math.max(
+        instanceCount,
+        existingInstance.geometry.userData.count || 0,
+      ),
       hash,
     };
 
     existingInstance.instanceMatrix.needsUpdate = true;
-
   }
 
   return {
-    update(
-      newData: Int32Array[],
-    ) {
+    update(newData: Int32Array[]) {
       totalVertices = 0;
       totalFaces = 0;
       for (let i = 0; i < Math.max(newData.length, instances.length); i++) {
@@ -260,6 +265,6 @@ export function createInstancedGeometryPool(parentScene: Group, material: Materi
         }
       }
       return { totalVertices, totalFaces };
-    }
-  }
+    },
+  };
 }

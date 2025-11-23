@@ -7,8 +7,6 @@
 
   const { children } = $props();
 
-  console.log("RowChildren", children);
-
   let registerIndex = 0;
   setContext("registerCell", function () {
     let index = registerIndex;

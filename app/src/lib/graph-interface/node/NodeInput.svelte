@@ -11,7 +11,7 @@
   };
 
   const {
-    node,
+    node = $bindable(),
     input,
     id,
     elementId = `input-${Math.random().toString(36).substring(7)}`,

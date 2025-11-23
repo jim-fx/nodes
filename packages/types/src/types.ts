@@ -8,22 +8,6 @@ export const NodeTypeSchema = z
 
 export type NodeType = z.infer<typeof NodeTypeSchema>;
 
-export const NodeSchema = z.object({
-  id: z.number(),
-  type: NodeTypeSchema,
-  tmp: z.any().optional(),
-  props: z
-    .record(z.string(), z.union([z.number(), z.array(z.number())]))
-    .optional(),
-  meta: z
-    .object({
-      title: z.string().optional(),
-      lastModified: z.string().optional(),
-    })
-    .optional(),
-  position: z.tuple([z.number(), z.number()]),
-});
-
 export type Node = {
   tmp?: {
     depth?: number;
@@ -53,6 +37,21 @@ export const NodeDefinitionSchema = z.object({
       title: z.string().optional(),
     })
     .optional(),
+});
+
+export const NodeSchema = z.object({
+  id: z.number(),
+  type: NodeTypeSchema,
+  props: z
+    .record(z.string(), z.union([z.number(), z.array(z.number())]))
+    .optional(),
+  meta: z
+    .object({
+      title: z.string().optional(),
+      lastModified: z.string().optional(),
+    })
+    .optional(),
+  position: z.tuple([z.number(), z.number()]),
 });
 
 export type NodeDefinition = z.infer<typeof NodeDefinitionSchema> & {

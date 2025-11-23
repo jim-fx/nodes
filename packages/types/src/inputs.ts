@@ -6,10 +6,22 @@ const DefaultOptionsSchema = z.object({
   setting: z.string().optional(),
   label: z.string().optional(),
   description: z.string().optional(),
-  accepts: z.array(z.string()).optional(),
+  accepts: z
+    .array(
+      z.union([
+        z.literal("float"),
+        z.literal("integer"),
+        z.literal("boolean"),
+        z.literal("select"),
+        z.literal("seed"),
+        z.literal("vec3"),
+        z.literal("geometry"),
+        z.literal("path"),
+      ]),
+    )
+    .optional(),
   hidden: z.boolean().optional(),
 });
-
 
 export const NodeInputFloatSchema = z.object({
   ...DefaultOptionsSchema.shape,
@@ -40,7 +52,7 @@ export const NodeInputSelectSchema = z.object({
   ...DefaultOptionsSchema.shape,
   type: z.literal("select"),
   options: z.array(z.string()).optional(),
-  value: z.number().optional(),
+  value: z.string().optional(),
 });
 
 export const NodeInputSeedSchema = z.object({
@@ -74,7 +86,7 @@ export const NodeInputSchema = z.union([
   NodeInputSeedSchema,
   NodeInputVec3Schema,
   NodeInputGeometrySchema,
-  NodeInputPathSchema
+  NodeInputPathSchema,
 ]);
 
 export type NodeInput = z.infer<typeof NodeInputSchema>;

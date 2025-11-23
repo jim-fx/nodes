@@ -1,21 +1,25 @@
+//@ts-nocheck
 import { NodeDefinition } from "@nodes/types";
 
-const cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+const cachedTextDecoder = new TextDecoder("utf-8", {
+  ignoreBOM: true,
+  fatal: true,
+});
 const cachedTextEncoder = new TextEncoder();
 
-
-const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
-  ? function (arg, view) {
-    return cachedTextEncoder.encodeInto(arg, view);
-  }
-  : function (arg, view) {
-    const buf = cachedTextEncoder.encode(arg);
-    view.set(buf);
-    return {
-      read: arg.length,
-      written: buf.length
-    };
-  });
+const encodeString =
+  typeof cachedTextEncoder.encodeInto === "function"
+    ? function (arg, view) {
+        return cachedTextEncoder.encodeInto(arg, view);
+      }
+    : function (arg, view) {
+        const buf = cachedTextEncoder.encode(arg);
+        view.set(buf);
+        return {
+          read: arg.length,
+          written: buf.length,
+        };
+      };
 
 function createWrapper() {
   let wasm: any;
@@ -53,7 +57,9 @@ function createWrapper() {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
   }
 
-  function getObject(idx: number) { return heap[idx]; }
+  function getObject(idx: number) {
+    return heap[idx];
+  }
 
   function addHeapObject(obj: any) {
     if (heap_next === heap.length) heap.push(heap.length + 1);
@@ -63,9 +69,11 @@ function createWrapper() {
     return idx;
   }
 
-
   let WASM_VECTOR_LEN = 0;
-  function passArray32ToWasm0(arg: ArrayLike<number>, malloc: (arg0: number, arg1: number) => number) {
+  function passArray32ToWasm0(
+    arg: ArrayLike<number>,
+    malloc: (arg0: number, arg1: number) => number,
+  ) {
     const ptr = malloc(arg.length * 4, 4) >>> 0;
     getUint32Memory0().set(arg, ptr / 4);
     WASM_VECTOR_LEN = arg.length;
@@ -89,21 +97,10 @@ function createWrapper() {
     return ret;
   }
 
-  function getArrayJsValueFromWasm0(ptr: number, len: number) {
-    ptr = ptr >>> 0;
-    const mem = getUint32Memory0();
-    const slice = mem.subarray(ptr / 4, ptr / 4 + len);
-    const result = [];
-    for (let i = 0; i < slice.length; i++) {
-      result.push(takeObject(slice[i]));
-    }
-    return result;
-  }
-
   function __wbindgen_string_new(arg0: number, arg1: number) {
     const ret = getStringFromWasm0(arg0, arg1);
     return addHeapObject(ret);
-  };
+  }
 
   // Additional methods and their internal helpers can also be refactored in a similar manner.
   function get_definition() {
@@ -124,7 +121,6 @@ function createWrapper() {
     }
   }
 
-
   function execute(args: Int32Array) {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -141,12 +137,19 @@ function createWrapper() {
     }
   }
 
-  function passStringToWasm0(arg: string, malloc: (arg0: any, arg1: number) => number, realloc: ((arg0: number, arg1: any, arg2: number, arg3: number) => number) | undefined) {
-
+  function passStringToWasm0(
+    arg: string,
+    malloc: (arg0: any, arg1: number) => number,
+    realloc:
+      | ((arg0: number, arg1: any, arg2: number, arg3: number) => number)
+      | undefined,
+  ) {
     if (realloc === undefined) {
       const buf = cachedTextEncoder.encode(arg);
       const ptr = malloc(buf.length, 1) >>> 0;
-      getUint8Memory0().subarray(ptr, ptr + buf.length).set(buf);
+      getUint8Memory0()
+        .subarray(ptr, ptr + buf.length)
+        .set(buf);
       WASM_VECTOR_LEN = buf.length;
       return ptr;
     }
@@ -160,7 +163,7 @@ function createWrapper() {
 
     for (; offset < len; offset++) {
       const code = arg.charCodeAt(offset);
-      if (code > 0x7F) break;
+      if (code > 0x7f) break;
       mem[ptr + offset] = code;
     }
 
@@ -168,7 +171,7 @@ function createWrapper() {
       if (offset !== 0) {
         arg = arg.slice(offset);
       }
-      ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+      ptr = realloc(ptr, len, (len = offset + arg.length * 3), 1) >>> 0;
       const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
       const ret = encodeString(arg, view);
 
@@ -183,15 +186,19 @@ function createWrapper() {
   function __wbg_new_abda76e883ba8a5f() {
     const ret = new Error();
     return addHeapObject(ret);
-  };
+  }
 
   function __wbg_stack_658279fe44541cf6(arg0, arg1) {
     const ret = getObject(arg1).stack;
-    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const ptr1 = passStringToWasm0(
+      ret,
+      wasm.__wbindgen_malloc,
+      wasm.__wbindgen_realloc,
+    );
     const len1 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len1;
     getInt32Memory0()[arg0 / 4 + 0] = ptr1;
-  };
+  }
 
   function __wbg_error_f851667af71bcfc6(arg0, arg1) {
     let deferred0_0;
@@ -203,26 +210,24 @@ function createWrapper() {
     } finally {
       wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
     }
-  };
-
+  }
 
   function __wbindgen_object_drop_ref(arg0) {
     takeObject(arg0);
-  };
+  }
 
   function __wbg_log_5bb5f88f245d7762(arg0) {
     console.log(getObject(arg0));
-  };
+  }
 
   function __wbindgen_throw(arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
-  };
+  }
 
   return {
     setInstance(instance: WebAssembly.Instance) {
       wasm = instance.exports;
     },
-
 
     exports: {
       // Expose other methods that interact with the wasm instance
@@ -240,11 +245,12 @@ function createWrapper() {
   };
 }
 
-
-export function createWasmWrapper(wasmBuffer: ArrayBuffer) {
+export function createWasmWrapper(wasmBuffer: ArrayBuffer | Uint8Array) {
   const wrapper = createWrapper();
   const module = new WebAssembly.Module(wasmBuffer);
-  const instance = new WebAssembly.Instance(module, { ["./index_bg.js"]: wrapper });
+  const instance = new WebAssembly.Instance(module, {
+    ["./index_bg.js"]: wrapper,
+  });
   wrapper.setInstance(instance);
   return wrapper.exports;
 }

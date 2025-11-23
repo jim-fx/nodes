@@ -82,7 +82,7 @@
   class:disabled={!graphState?.possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
-    <div class="content" class:disabled={graph.inputSockets?.has(socketId)}>
+    <div class="content" class:disabled={graph?.inputSockets?.has(socketId)}>
       {#if inputType.label !== ""}
         <label for={elementId}>{input.label || id}</label>
       {/if}

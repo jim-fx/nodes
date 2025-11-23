@@ -1,4 +1,4 @@
-import { Graph, NodeDefinition, NodeType } from "./types";
+import type { Graph, NodeDefinition, NodeType } from "./types";
 
 export interface NodeRegistry {
   /**

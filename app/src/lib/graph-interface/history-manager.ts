@@ -2,23 +2,22 @@ import { create, type Delta } from "jsondiffpatch";
 import type { Graph } from "@nodes/types";
 import { createLogger, clone } from "./helpers/index.js";
 
-
 const diff = create({
   objectHash: function (obj, index) {
     if (obj === null) return obj;
-    if ("id" in obj) return obj.id;
+    if ("id" in obj) return obj.id as string;
+    if ("_id" in obj) return obj._id as string;
     if (Array.isArray(obj)) {
-      return obj.join("-")
+      return obj.join("-");
     }
-    return obj?.id || obj._id || '$$index:' + index;
-  }
-})
+    return "$$index:" + index;
+  },
+});
 
-const log = createLogger("history")
+const log = createLogger("history");
 log.mute();
 
 export class HistoryManager {
-
   index: number = -1;
   history: Delta[] = [];
   private initialState: Graph | undefined;
@@ -27,26 +26,25 @@ export class HistoryManager {
   private opts = {
     debounce: 400,
     maxHistory: 100,
-  }
+  };
 
   constructor({ maxHistory = 100, debounce = 100 } = {}) {
     this.history = [];
     this.index = -1;
     this.opts.debounce = debounce;
     this.opts.maxHistory = maxHistory;
-    globalThis["_history"] = this;
   }
 
   save(state: Graph) {
     if (!this.state) {
       this.state = clone(state);
       this.initialState = this.state;
-      log.log("initial state saved")
+      log.log("initial state saved");
     } else {
       const newState = state;
       const delta = diff.diff(this.state, newState);
       if (delta) {
-        log.log("saving state")
+        log.log("saving state");
         // Add the delta to history
         if (this.index < this.history.length - 1) {
           // Clear the history after the current index if new changes are made
@@ -62,7 +60,7 @@ export class HistoryManager {
         }
         this.state = newState;
       } else {
-        log.log("no changes")
+        log.log("no changes");
       }
     }
   }
@@ -76,7 +74,7 @@ export class HistoryManager {
 
   undo() {
     if (this.index === -1 && this.initialState) {
-      log.log("reached start, loading initial state")
+      log.log("reached start, loading initial state");
       return clone(this.initialState);
     } else {
       const delta = this.history[this.index];
@@ -96,7 +94,7 @@ export class HistoryManager {
       this.state = nextState;
       return clone(nextState);
     } else {
-      log.log("reached end")
+      log.log("reached end");
     }
   }
 }

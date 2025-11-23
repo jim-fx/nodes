@@ -1,7 +1,8 @@
 type SparseArray<T = number> = (T | T[] | SparseArray<T>)[];
 
-export function concatEncodedArrays(input: (number | number[] | Int32Array)[]): Int32Array {
-
+export function concatEncodedArrays(
+  input: (number | number[] | Int32Array)[],
+): Int32Array {
   let totalLength = 4;
   for (let i = 0; i < input.length; i++) {
     const item = input[i];
@@ -36,7 +37,7 @@ export function concatEncodedArrays(input: (number | number[] | Int32Array)[]): 
   result[totalLength - 2] = 1;
   result[totalLength - 1] = 1;
 
-  return result
+  return result;
 }
 
 // Encodes a nested array into a flat array with bracket and distance notation
@@ -68,12 +69,11 @@ export function encodeNestedArray(array: SparseArray): number[] {
   }
 
   return [...encoded, 1, 1];
-};
+}
 
 function decode_recursive(dense: number[] | Int32Array, index = 0) {
-
   if (dense instanceof Int32Array) {
-    dense = Array.from(dense)
+    dense = Array.from(dense);
   }
 
   const decoded: (number | number[])[] = [];
@@ -82,12 +82,17 @@ function decode_recursive(dense: number[] | Int32Array, index = 0) {
   index += 2; // Skip the initial bracket notation
   while (index < dense.length) {
     if (index === nextBracketIndex) {
-      if (dense[index] === 0) { // Opening bracket detected
-        const [p, nextIndex, _nextBracketIndex] = decode_recursive(dense, index);
-        decoded.push(p);
+      if (dense[index] === 0) {
+        // Opening bracket detected
+        const [p, nextIndex, _nextBracketIndex] = decode_recursive(
+          dense,
+          index,
+        );
+        decoded.push(...p);
         index = nextIndex + 1;
         nextBracketIndex = _nextBracketIndex;
-      } else { // Closing bracket detected
+      } else {
+        // Closing bracket detected
         nextBracketIndex = dense[index + 1] + index + 1;
         return [decoded, index, nextBracketIndex] as const;
       }
@@ -102,7 +107,6 @@ function decode_recursive(dense: number[] | Int32Array, index = 0) {
 export function decodeNestedArray(dense: number[] | Int32Array) {
   return decode_recursive(dense, 0)[0];
 }
-
 
 export function splitNestedArray(input: Int32Array) {
   let index = 0;

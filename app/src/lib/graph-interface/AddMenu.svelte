@@ -52,7 +52,7 @@
 
     if (event.key === "Enter") {
       if (activeNodeId && position) {
-        graph.createNode({ type: activeNodeId, position });
+        graph.createNode({ type: activeNodeId, position, props: {} });
         position = null;
       }
       return;

@@ -3,12 +3,13 @@
     title?: string;
     transparent?: boolean;
     children?: import('svelte').Snippet;
+    open?: boolean;
   }
 
-  let { title = "Details", transparent = false, children }: Props = $props();
+  let { title = "Details", transparent = false, children, open = $bindable(false) }: Props = $props();
 </script>
 
-<details class:transparent>
+<details class:transparent bind:open>
   <summary>{title}</summary>
   <div class="content">
     {@render children?.()}
@@ -33,7 +34,4 @@
     outline: none;
   }
 
-  .content {
-    /* padding-left: 12px; */
-  }
 </style>

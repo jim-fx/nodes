@@ -27,9 +27,7 @@
   const zOffset = (node.tmp?.random || 0) * 0.5;
   const zLimit = 2 - zOffset;
 
-  const type = node?.tmp?.type;
-
-  const parameters = Object.entries(type?.inputs || {}).filter(
+  const parameters = Object.entries(node?.tmp?.type?.inputs || {}).filter(
     (p) =>
       p[1].type !== "seed" && !("setting" in p[1]) && p[1]?.hidden !== true,
   );
