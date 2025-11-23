@@ -32,10 +32,7 @@
   let performanceStore = createPerformanceStore();
 
   const registryCache = new IndexDBCache("node-registry");
-  const nodeRegistry = new RemoteNodeRegistry(
-    "https://node-store.app.max-richter.dev",
-    registryCache,
-  );
+  const nodeRegistry = new RemoteNodeRegistry("", registryCache);
   const workerRuntime = new WorkerRuntimeExecutor();
   const runtimeCache = new MemoryRuntimeCache();
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
