@@ -17,7 +17,7 @@
     isLast?: boolean;
   };
 
-  const { node = $bindable(), input, id, isLast }: Props = $props();
+  const { node, input, id, isLast }: Props = $props();
 
   const inputType = node?.tmp?.type?.inputs?.[id]!;
 
@@ -26,7 +26,6 @@
   const graph = getGraphManager();
   const graphState = getGraphState();
   const graphId = graph?.id;
-  const inputSockets = graph?.inputSockets;
 
   const elementId = `input-${Math.random().toString(36).substring(7)}`;
 
@@ -83,7 +82,7 @@
   class:disabled={!graphState?.possibleSocketIds.has(socketId)}
 >
   {#key id && graphId}
-    <div class="content" class:disabled={$inputSockets?.has(socketId)}>
+    <div class="content" class:disabled={graph.inputSockets?.has(socketId)}>
       {#if inputType.label !== ""}
         <label for={elementId}>{input.label || id}</label>
       {/if}

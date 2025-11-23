@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Graph, Node, NodeRegistry } from "@nodes/types";
   import GraphEl from "./Graph.svelte";
-  import { GraphManager } from "../graph-manager.js";
+  import { GraphManager } from "../graph-manager.svelte";
   import { setContext } from "svelte";
   import { debounce } from "$lib/helpers";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
@@ -53,13 +53,13 @@
     }
   });
 
-  const updateSettings = debounce((s) => {
+  const updateSettings = debounce((s: Record<string, any>) => {
     manager.setSettings(s);
   }, 200);
 
   $effect(() => {
     if (settingTypes && settings) {
-      updateSettings($state.snapshot(settings));
+      updateSettings(settings);
     }
   });
 

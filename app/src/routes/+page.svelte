@@ -26,8 +26,6 @@
   import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
   import { createPerformanceStore } from "@nodes/utils";
   import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
-  import { debounceAsyncFunction } from "$lib/helpers";
-  import { onMount } from "svelte";
 
   let performanceStore = createPerformanceStore();
 
@@ -45,14 +43,15 @@
   let activeNode = $state<Node | undefined>(undefined);
   let scene = $state<Group>(null!);
 
-  let graph = localStorage.getItem("graph")
-    ? JSON.parse(localStorage.getItem("graph")!)
-    : templates.defaultPlant;
+  let graph = $state(
+    localStorage.getItem("graph")
+      ? JSON.parse(localStorage.getItem("graph")!)
+      : templates.defaultPlant,
+  );
 
   let graphInterface = $state<ReturnType<typeof GraphInterface>>(null!);
   let viewerComponent = $state<ReturnType<typeof Viewer>>();
   const manager = $derived(graphInterface?.manager);
-  const managerStatus = $derived(manager?.status);
 
   async function randomGenerate() {
     if (!manager) return;
@@ -69,74 +68,86 @@
     },
   ]);
   let graphSettings = $state<Record<string, any>>({});
-  let graphSettingTypes = $state({
+  type BooleanSchema = {
+    [key: string]: {
+      type: "boolean";
+      value: false;
+    };
+  };
+  let graphSettingTypes = $state<BooleanSchema>({
     randomSeed: { type: "boolean", value: false },
   });
 
-  const handleUpdate = debounceAsyncFunction(
-    async (g: Graph, s: Record<string, any> = graphSettings) => {
-      performanceStore.startRun();
-      try {
-        let a = performance.now();
-        const graphResult = await runtime.execute(g, $state.snapshot(s));
-        let b = performance.now();
+  let runIndex = 0;
+  const handleUpdate = async (
+    g: Graph,
+    s: Record<string, any> = graphSettings,
+  ) => {
+    runIndex++;
+    performanceStore.startRun();
+    try {
+      let a = performance.now();
+      const graphResult = await runtime.execute(
+        $state.snapshot(g),
+        $state.snapshot(s),
+      );
+      let b = performance.now();
 
-        if (appSettings.debug.useWorker) {
-          let perfData = await runtime.getPerformanceData();
-          let lastRun = perfData?.at(-1);
-          if (lastRun?.total) {
-            lastRun.runtime = lastRun.total;
-            delete lastRun.total;
-            performanceStore.mergeData(lastRun);
-            performanceStore.addPoint(
-              "worker-transfer",
-              b - a - lastRun.runtime[0],
-            );
-          }
+      if (appSettings.debug.useWorker) {
+        let perfData = await runtime.getPerformanceData();
+        let lastRun = perfData?.at(-1);
+        if (lastRun?.total) {
+          lastRun.runtime = lastRun.total;
+          delete lastRun.total;
+          performanceStore.mergeData(lastRun);
+          performanceStore.addPoint(
+            "worker-transfer",
+            b - a - lastRun.runtime[0],
+          );
         }
-
-        viewerComponent?.update(graphResult);
-      } catch (error) {
-        console.log("errors", error);
-      } finally {
-        performanceStore.stopRun();
       }
-    },
-  );
+      viewerComponent?.update(graphResult);
+    } catch (error) {
+      console.log("errors", error);
+    } finally {
+      performanceStore.stopRun();
+    }
+  };
 
-  // $ if (AppSettings) {
-  //   //@ts-ignore
-  //   AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
-  //     graph = templates.grid($AppSettings.amount, $AppSettings.amount);
-  //   };
-  //   //@ts-ignore
-  //   AppSettingTypes.debug.stressTest.loadTree.callback = () => {
-  //     graph = templates.tree($AppSettings.amount);
-  //   };
-  //   //@ts-ignore
-  //   AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
-  //     graph = templates.lottaFaces;
-  //   };
-  //   //@ts-ignore
-  //   AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
-  //     graph = templates.lottaNodes;
-  //   };
-  //   //@ts-ignore
-  //   AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
-  //     graph = templates.lottaNodesAndFaces;
-  //   };
-  // }
+  $effect(() => {
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
+      graph = templates.grid(
+        appSettings.debug.amount.value,
+        appSettings.debug.amount.value,
+      );
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.loadTree.callback = () => {
+      graph = templates.tree(appSettings.debug.amount.value);
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
+      graph = templates.lottaFaces;
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
+      graph = templates.lottaNodes;
+    };
+    //@ts-ignore
+    AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
+      graph = templates.lottaNodesAndFaces;
+    };
+  });
 
   function handleSave(graph: Graph) {
     localStorage.setItem("graph", JSON.stringify(graph));
   }
-  onMount(() => {
-    handleUpdate(graph);
-  });
 </script>
 
-<svelte:document on:keydown={applicationKeymap.handleKeyboardEvent} />
-<div class="wrapper manager-{$managerStatus}">
+<svelte:document onkeydown={applicationKeymap.handleKeyboardEvent} />
+
+<div class="wrapper manager-{manager?.status}">
   <header></header>
   <Grid.Row>
     <Grid.Cell>
@@ -148,93 +159,91 @@
       />
     </Grid.Cell>
     <Grid.Cell>
-      {#key graph}
-        <GraphInterface
-          bind:this={graphInterface}
-          {graph}
-          registry={nodeRegistry}
-          showGrid={appSettings.nodeInterface.showNodeGrid}
-          snapToGrid={appSettings.nodeInterface.snapToGrid}
-          bind:activeNode
-          bind:showHelp={appSettings.nodeInterface.showHelp}
-          bind:settings={graphSettings}
-          bind:settingTypes={graphSettingTypes}
-          onresult={(result) => handleUpdate(result)}
-          onsave={(graph) => handleSave(graph)}
-        />
-        <Sidebar>
-          <Panel id="general" title="General" icon="i-tabler-settings">
-            <NestedSettings
-              id="general"
-              value={appSettings}
-              type={AppSettingTypes}
-            />
-          </Panel>
-          <Panel
-            id="shortcuts"
-            title="Keyboard Shortcuts"
-            icon="i-tabler-keyboard"
-          >
-            <Keymap
-              keymaps={[
-                { keymap: applicationKeymap, title: "Application" },
-                { keymap: graphInterface.keymap, title: "Node-Editor" },
-              ]}
-            />
-          </Panel>
-          <Panel id="exports" title="Exporter" icon="i-tabler-package-export">
-            <ExportSettings {scene} />
-          </Panel>
-          <Panel
-            id="node-store"
-            classes="text-green-400"
-            title="Node Store"
-            icon="i-tabler-database"
-          >
-            <NodeStore registry={nodeRegistry} />
-          </Panel>
-          <Panel
-            id="performance"
-            title="Performance"
-            classes="text-red-400"
-            hidden={!appSettings.debug.showPerformancePanel}
-            icon="i-tabler-brand-speedtest"
-          >
-            {#if $performanceStore}
-              <PerformanceViewer data={$performanceStore} />
-            {/if}
-          </Panel>
-          <Panel
-            id="benchmark"
-            title="Benchmark"
-            classes="text-red-400"
-            hidden={!appSettings.debug.showBenchmarkPanel}
-            icon="i-tabler-graph"
-          >
-            <BenchmarkPanel run={randomGenerate} />
-          </Panel>
-          <Panel
+      <GraphInterface
+        {graph}
+        bind:this={graphInterface}
+        registry={nodeRegistry}
+        showGrid={appSettings.nodeInterface.showNodeGrid}
+        snapToGrid={appSettings.nodeInterface.snapToGrid}
+        bind:activeNode
+        bind:showHelp={appSettings.nodeInterface.showHelp}
+        bind:settings={graphSettings}
+        bind:settingTypes={graphSettingTypes}
+        onresult={(result) => handleUpdate(result)}
+        onsave={(graph) => handleSave(graph)}
+      />
+      <Sidebar>
+        <Panel id="general" title="General" icon="i-tabler-settings">
+          <NestedSettings
+            id="general"
+            value={appSettings}
+            type={AppSettingTypes}
+          />
+        </Panel>
+        <Panel
+          id="shortcuts"
+          title="Keyboard Shortcuts"
+          icon="i-tabler-keyboard"
+        >
+          <Keymap
+            keymaps={[
+              { keymap: applicationKeymap, title: "Application" },
+              { keymap: graphInterface.keymap, title: "Node-Editor" },
+            ]}
+          />
+        </Panel>
+        <Panel id="exports" title="Exporter" icon="i-tabler-package-export">
+          <ExportSettings {scene} />
+        </Panel>
+        <Panel
+          id="node-store"
+          classes="text-green-400"
+          title="Node Store"
+          icon="i-tabler-database"
+        >
+          <NodeStore registry={nodeRegistry} />
+        </Panel>
+        <Panel
+          id="performance"
+          title="Performance"
+          classes="text-red-400"
+          hidden={!appSettings.debug.showPerformancePanel}
+          icon="i-tabler-brand-speedtest"
+        >
+          {#if $performanceStore}
+            <PerformanceViewer data={$performanceStore} />
+          {/if}
+        </Panel>
+        <Panel
+          id="benchmark"
+          title="Benchmark"
+          classes="text-red-400"
+          hidden={!appSettings.debug.showBenchmarkPanel}
+          icon="i-tabler-graph"
+        >
+          <BenchmarkPanel run={randomGenerate} />
+        </Panel>
+        <Panel
+          id="graph-settings"
+          title="Graph Settings"
+          classes="text-blue-400"
+          icon="i-custom-graph"
+        >
+          <NestedSettings
             id="graph-settings"
-            title="Graph Settings"
-            classes="text-blue-400"
-            icon="i-custom-graph"
-          >
-            <NestedSettings
-              id="graph-settings"
-              type={graphSettingTypes}
-              bind:value={graphSettings}
-            />
-          </Panel>
-          <Panel
-            id="active-node"
-            title="Node Settings"
-            classes="text-blue-400"
-            icon="i-tabler-adjustments"
-          >
-            <ActiveNodeSettings {manager} node={activeNode} />
-          </Panel>
-        </Sidebar>
-      {/key}
+            type={graphSettingTypes}
+            bind:value={graphSettings}
+          />
+        </Panel>
+        <Panel
+          id="active-node"
+          title="Node Settings"
+          classes="text-blue-400"
+          icon="i-tabler-adjustments"
+        >
+          <ActiveNodeSettings {manager} node={activeNode} />
+        </Panel>
+      </Sidebar>
     </Grid.Cell>
   </Grid.Row>
 </div>

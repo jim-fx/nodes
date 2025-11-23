@@ -4,17 +4,17 @@ import type {
   Node,
   NodeInput,
   NodeRegistry,
+  NodeType,
   Socket,
 } from "@nodes/types";
 import { fastHashString } from "@nodes/utils";
-import { writable, type Writable } from "svelte/store";
-import EventEmitter from "./helpers/EventEmitter.js";
-import { createLogger } from "./helpers/index.js";
-import throttle from "./helpers/throttle.js";
-import { HistoryManager } from "./history-manager.js";
+import { SvelteMap } from "svelte/reactivity";
+import EventEmitter from "./helpers/EventEmitter";
+import { createLogger } from "./helpers/index";
+import throttle from "./helpers/throttle";
+import { HistoryManager } from "./history-manager";
 
 const logger = createLogger("graph-manager");
-
 logger.mute();
 
 const clone =
@@ -40,24 +40,28 @@ export class GraphManager extends EventEmitter<{
     values: Record<string, unknown>;
   };
 }> {
-  status: Writable<"loading" | "idle" | "error"> = writable("loading");
+  status = $state<"loading" | "idle" | "error">();
   loaded = false;
 
   graph: Graph = { id: 0, nodes: [], edges: [] };
-  id = writable(0);
+  id = $state(0);
 
-  private _nodes: Map<number, Node> = new Map();
-  nodes: Writable<Map<number, Node>> = writable(new Map());
+  nodes = new SvelteMap<number, Node>();
 
-  private _edges: Edge[] = [];
-  edges: Writable<Edge[]> = writable([]);
+  edges = $state<Edge[]>([]);
 
   settingTypes: Record<string, NodeInput> = {};
-  settings: Record<string, unknown> = {};
+  settings = $state<Record<string, unknown>>();
 
   currentUndoGroup: number | null = null;
 
-  inputSockets: Writable<Set<string>> = writable(new Set());
+  inputSockets = $derived.by(() => {
+    const s = new Set<string>();
+    for (const edge of this.edges) {
+      s.add(`${edge[2].id}-${edge[3]}`);
+    }
+    return s;
+  });
 
   history: HistoryManager = new HistoryManager();
   execute = throttle(() => {
@@ -67,28 +71,17 @@ export class GraphManager extends EventEmitter<{
 
   constructor(public registry: NodeRegistry) {
     super();
-    this.nodes.subscribe((nodes) => {
-      this._nodes = nodes;
-    });
-    this.edges.subscribe((edges) => {
-      this._edges = edges;
-      const s = new Set<string>();
-      for (const edge of edges) {
-        s.add(`${edge[2].id}-${edge[3]}`);
-      }
-      this.inputSockets.set(s);
-    });
   }
 
   serialize(): Graph {
     logger.group("serializing graph");
-    const nodes = Array.from(this._nodes.values()).map((node) => ({
+    const nodes = Array.from(this.nodes.values()).map((node) => ({
       id: node.id,
       position: [...node.position],
       type: node.type,
       props: node.props,
     })) as Node[];
-    const edges = this._edges.map((edge) => [
+    const edges = this.edges.map((edge) => [
       edge[0].id,
       edge[1],
       edge[2].id,
@@ -101,12 +94,12 @@ export class GraphManager extends EventEmitter<{
       edges,
     };
     logger.groupEnd();
-
-    return clone(serialized);
+    return clone($state.snapshot(serialized));
   }
 
   private lastSettingsHash = 0;
   setSettings(settings: Record<string, unknown>) {
+    console.log("GraphManager.setSettings", settings);
     let hash = fastHashString(JSON.stringify(settings));
     if (hash === this.lastSettingsHash) return;
     this.lastSettingsHash = hash;
@@ -141,7 +134,7 @@ export class GraphManager extends EventEmitter<{
       const children = node.tmp?.children || [];
       for (const child of children) {
         if (nodes.includes(child)) {
-          const edge = this._edges.find(
+          const edge = this.edges.find(
             (e) => e[0].id === node.id && e[2].id === child.id,
           );
           if (edge) {
@@ -188,8 +181,12 @@ export class GraphManager extends EventEmitter<{
       return [from, edge[1], to, edge[3]] as Edge;
     });
 
-    this.edges.set(edges);
-    this.nodes.set(nodes);
+    this.edges = [...edges];
+
+    this.nodes.clear();
+    for (const [id, node] of nodes) {
+      this.nodes.set(id, node);
+    }
 
     this.execute();
   }
@@ -199,8 +196,8 @@ export class GraphManager extends EventEmitter<{
 
     this.loaded = false;
     this.graph = graph;
-    this.status.set("loading");
-    this.id.set(graph.id);
+    this.status = "loading";
+    this.id = graph.id;
 
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);
@@ -209,7 +206,7 @@ export class GraphManager extends EventEmitter<{
       const nodeType = this.registry.getNode(node.type);
       if (!nodeType) {
         logger.error(`Node type not found: ${node.type}`);
-        this.status.set("error");
+        this.status = "error";
         return;
       }
       node.tmp = node.tmp || {};
@@ -254,7 +251,7 @@ export class GraphManager extends EventEmitter<{
 
     this.save();
 
-    this.status.set("idle");
+    this.status = "idle";
 
     this.loaded = true;
     logger.log(`Graph loaded in ${performance.now() - a}ms`);
@@ -262,18 +259,18 @@ export class GraphManager extends EventEmitter<{
   }
 
   getAllNodes() {
-    return Array.from(this._nodes.values());
+    return Array.from(this.nodes.values());
   }
 
   getNode(id: number) {
-    return this._nodes.get(id);
+    return this.nodes.get(id);
   }
 
   getNodeType(id: string) {
     return this.registry.getNode(id);
   }
 
-  async loadNode(id: string) {
+  async loadNode(id: NodeType) {
     await this.registry.load([id]);
     const nodeType = this.registry.getNode(id);
 
@@ -287,7 +284,8 @@ export class GraphManager extends EventEmitter<{
         if (settingId) {
           settingTypes[settingId] = nodeType.inputs[key];
           if (
-            settingValues[settingId] === undefined &&
+            settingValues &&
+            settingValues?.[settingId] === undefined &&
             "value" in nodeType.inputs[key]
           ) {
             settingValues[settingId] = nodeType.inputs[key].value;
@@ -297,6 +295,7 @@ export class GraphManager extends EventEmitter<{
     }
 
     this.settings = settingValues;
+    console.log("GraphManager.setSettings", settingValues);
     this.settingTypes = settingTypes;
     this.emit("settings", { types: settingTypes, values: settingValues });
   }
@@ -331,8 +330,8 @@ export class GraphManager extends EventEmitter<{
   }
 
   removeNode(node: Node, { restoreEdges = false } = {}) {
-    const edgesToNode = this._edges.filter((edge) => edge[2].id === node.id);
-    const edgesFromNode = this._edges.filter((edge) => edge[0].id === node.id);
+    const edgesToNode = this.edges.filter((edge) => edge[2].id === node.id);
+    const edgesFromNode = this.edges.filter((edge) => edge[0].id === node.id);
     for (const edge of [...edgesToNode, ...edgesFromNode]) {
       this.removeEdge(edge, { applyDeletion: false });
     }
@@ -355,18 +354,13 @@ export class GraphManager extends EventEmitter<{
       }
     }
 
-    this.edges.set(this._edges);
-
-    this.nodes.update((nodes) => {
-      nodes.delete(node.id);
-      return nodes;
-    });
+    this.nodes.delete(node.id);
     this.execute();
     this.save();
   }
 
   createNodeId() {
-    const max = Math.max(...this._nodes.keys());
+    const max = Math.max(0, ...this.nodes.keys());
     return max + 1;
   }
 
@@ -406,13 +400,11 @@ export class GraphManager extends EventEmitter<{
     });
 
     for (const node of nodes) {
-      this._nodes.set(node.id, node);
+      this.nodes.set(node.id, node);
     }
 
-    this._edges.push(..._edges);
+    this.edges.push(..._edges);
 
-    this.nodes.set(this._nodes);
-    this.edges.set(this._edges);
     this.save();
     return nodes;
   }
@@ -440,10 +432,7 @@ export class GraphManager extends EventEmitter<{
       props,
     };
 
-    this.nodes.update((nodes) => {
-      nodes.set(node.id, node);
-      return nodes;
-    });
+    this.nodes.set(node.id, node);
 
     this.save();
   }
@@ -480,7 +469,7 @@ export class GraphManager extends EventEmitter<{
       return;
     }
 
-    const edgeToBeReplaced = this._edges.find(
+    const edgeToBeReplaced = this.edges.find(
       (e) => e[2].id === to.id && e[3] === toSocket,
     );
     if (edgeToBeReplaced) {
@@ -488,9 +477,9 @@ export class GraphManager extends EventEmitter<{
     }
 
     if (applyUpdate) {
-      this._edges.push([from, fromSocket, to, toSocket]);
+      this.edges.push([from, fromSocket, to, toSocket]);
     } else {
-      this._edges.push([from, fromSocket, to, toSocket]);
+      this.edges.push([from, fromSocket, to, toSocket]);
     }
 
     from.tmp = from.tmp || {};
@@ -502,7 +491,6 @@ export class GraphManager extends EventEmitter<{
     to.tmp.parents.push(from);
 
     if (applyUpdate) {
-      this.edges.set(this._edges);
       this.save();
     }
     this.execute();
@@ -630,7 +618,7 @@ export class GraphManager extends EventEmitter<{
     const id2 = edge[2].id;
     const sid2 = edge[3];
 
-    const _edge = this._edges.find(
+    const _edge = this.edges.find(
       (e) =>
         e[0].id === id0 && e[1] === sid0 && e[2].id === id2 && e[3] === sid2,
     );
@@ -651,18 +639,16 @@ export class GraphManager extends EventEmitter<{
     }
 
     if (applyDeletion) {
-      this.edges.update((edges) => {
-        return edges.filter((e) => e !== _edge);
-      });
+      this.edges = this.edges.filter((e) => e !== _edge);
       this.execute();
       this.save();
     } else {
-      this._edges = this._edges.filter((e) => e !== _edge);
+      this.edges = this.edges.filter((e) => e !== _edge);
     }
   }
 
   getEdgesToNode(node: Node) {
-    return this._edges
+    return this.edges
       .filter((edge) => edge[2].id === node.id)
       .map((edge) => {
         const from = this.getNode(edge[0].id);
@@ -674,7 +660,7 @@ export class GraphManager extends EventEmitter<{
   }
 
   getEdgesFromNode(node: Node) {
-    return this._edges
+    return this.edges
       .filter((edge) => edge[0].id === node.id)
       .map((edge) => {
         const from = this.getNode(edge[0].id);

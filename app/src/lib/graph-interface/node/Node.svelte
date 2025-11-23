@@ -17,7 +17,7 @@
     inView: boolean;
     z: number;
   };
-  const { node, inView, z }: Props = $props();
+  let { node = $bindable(), inView, z }: Props = $props();
 
   const isActive = $derived(graphState.activeNodeId === node.id);
   const isSelected = $derived(graphState.selectedNodes.has(node.id));
@@ -41,13 +41,11 @@
   const height = getNodeHeight?.(node.type);
 
   $effect(() => {
-    node.tmp = node.tmp || {};
     node.tmp.mesh = meshRef;
-    updateNodePosition?.(node);
   });
 
   onMount(() => {
-    node.tmp = node.tmp || {};
+    if (!node.tmp) node.tmp = {};
     node.tmp.mesh = meshRef;
     updateNodePosition?.(node);
   });
@@ -79,4 +77,4 @@
   />
 </T.Mesh>
 
-<NodeHtml {node} {inView} {isActive} {isSelected} {z} />
+<NodeHtml bind:node {inView} {isActive} {isSelected} {z} />

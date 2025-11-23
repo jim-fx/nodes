@@ -1,4 +1,4 @@
-import { Graph, NodeDefinition, NodeId } from "./types";
+import { Graph, NodeDefinition, NodeType } from "./types";
 
 export interface NodeRegistry {
   /**
@@ -13,13 +13,13 @@ export interface NodeRegistry {
    * @throws An error if the nodes could not be loaded
    * @remarks This method should be called before calling getNode or getAllNodes
    */
-  load: (nodeIds: NodeId[]) => Promise<NodeDefinition[]>;
+  load: (nodeIds: NodeType[]) => Promise<NodeDefinition[]>;
   /**
    * Get a node by id
    * @param id - The id of the node to get
    * @returns The node with the given id, or undefined if no such node exists
    */
-  getNode: (id: NodeId | string) => NodeDefinition | undefined;
+  getNode: (id: NodeType | string) => NodeDefinition | undefined;
   /**
    * Get all nodes
    * @returns An array of all nodes

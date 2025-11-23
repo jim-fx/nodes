@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { GraphManager } from "./graph-manager.js";
+  import type { GraphManager } from "./graph-manager.svelte";
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
   import type { NodeType } from "@nodes/types";
@@ -10,7 +10,7 @@
 
   let input: HTMLInputElement;
   let value: string = "";
-  let activeNodeId: NodeType = "";
+  let activeNodeId: NodeType | undefined = undefined;
 
   const allNodes = graph.getNodeDefinitions();
 
@@ -20,7 +20,7 @@
 
   $: nodes = value === "" ? allNodes : filterNodes();
   $: if (nodes) {
-    if (activeNodeId === "") {
+    if (activeNodeId === undefined) {
       activeNodeId = nodes[0].id;
     } else if (nodes.length) {
       const node = nodes.find((node) => node.id === activeNodeId);

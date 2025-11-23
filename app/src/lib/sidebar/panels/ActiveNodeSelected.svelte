@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Node, NodeInput } from "@nodes/types";
   import NestedSettings from "$lib/settings/NestedSettings.svelte";
-  import type { GraphManager } from "$lib/graph-interface/graph-manager";
+  import type { GraphManager } from "$lib/graph-interface/graph-manager.svelte";
 
   type Props = {
     manager: GraphManager;

@@ -44,7 +44,7 @@ export type Node = {
 } & z.infer<typeof NodeSchema>;
 
 export const NodeDefinitionSchema = z.object({
-  id: z.string(),
+  id: NodeTypeSchema,
   inputs: z.record(z.string(), NodeInputSchema).optional(),
   outputs: z.array(z.string()).optional(),
   meta: z

@@ -1,73 +1,67 @@
 <script lang="ts">
+  import type { Node, NodeType, Socket } from "@nodes/types";
+  import { GraphSchema } from "@nodes/types";
+  import { getContext, onMount, setContext } from "svelte";
+  import type { OrthographicCamera } from "three";
+  import { createKeyMap } from "../../helpers/createKeyMap";
+  import AddMenu from "../AddMenu.svelte";
+  import Background from "../background/Background.svelte";
+  import BoxSelection from "../BoxSelection.svelte";
+  import Camera from "../Camera.svelte";
+  import FloatingEdge from "../edges/FloatingEdge.svelte";
   import {
     animate,
     lerp,
     snapToGrid as snapPointToGrid,
   } from "../helpers/index.js";
-  import type { OrthographicCamera } from "three";
-  import Background from "../background/Background.svelte";
-  import { getContext, onMount, setContext } from "svelte";
-  import Camera from "../Camera.svelte";
   import GraphView from "./GraphView.svelte";
-  import type { Node, NodeId, Node as NodeType, Socket } from "@nodes/types";
-  import { GraphSchema } from "@nodes/types";
-  import FloatingEdge from "../edges/FloatingEdge.svelte";
   import { getGraphState } from "./state.svelte";
-  import { createKeyMap } from "../../helpers/createKeyMap";
-  import BoxSelection from "../BoxSelection.svelte";
-  import AddMenu from "../AddMenu.svelte";
 
-  import HelpView from "../HelpView.svelte";
-  import FileSaver from "file-saver";
   import { Canvas } from "@threlte/core";
-  import { getGraphManager } from "./context.js";
+  import FileSaver from "file-saver";
+  import HelpView from "../HelpView.svelte";
+  import { getGraphManager } from "./context";
 
+  const graph = getGraphManager();
   const graphState = getGraphState();
 
-  export let snapToGrid = true;
-  export let showGrid = true;
-  export let showHelp = false;
+  const {
+    snapToGrid = $bindable(true),
+    showGrid = $bindable(true),
+    showHelp = $bindable(false),
+  } = $props();
 
   const keymap = getContext<ReturnType<typeof createKeyMap>>("keymap");
 
-  const manager = getGraphManager();
+  let wrapper = $state<HTMLDivElement>(null!);
 
-  const status = manager.status;
-  const nodes = manager.nodes;
-  const edges = manager.edges;
+  const rect: DOMRect = $derived(
+    wrapper ? wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0),
+  );
+  let width = $derived(rect?.width ?? 100);
+  let height = $derived(rect?.height ?? 100);
 
-  let wrapper: HTMLDivElement;
-  let rect: DOMRect;
-  $: rect =
-    wrapper && width
-      ? wrapper.getBoundingClientRect()
-      : ({ x: 0, y: 0, width: 0, height: 0 } as DOMRect);
-
-  let camera: OrthographicCamera;
+  let camera = $state<OrthographicCamera>(null!);
   const minZoom = 1;
   const maxZoom = 40;
-  let mousePosition = [0, 0];
-  let mouseDown: null | [number, number] = null;
+  let mousePosition = $state([0, 0]);
+  let mouseDown = $state<[number, number] | null>(null);
   let mouseDownId = -1;
-  let boxSelection = false;
+  let boxSelection = $state(false);
   const cameraDown = [0, 0];
-  let cameraPosition: [number, number, number] = [0, 0, 4];
-  let addMenuPosition: [number, number] | null = null;
+  let cameraPosition: [number, number, number] = $state([0, 0, 4]);
+  let addMenuPosition = $state<[number, number] | null>(null);
   let clipboard: null | {
     nodes: Node[];
     edges: [number, number, number, string][];
   } = null;
 
-  let width = rect?.width ?? 100;
-  let height = rect?.height ?? 100;
-
-  let cameraBounds = [-1000, 1000, -1000, 1000];
-  $: cameraBounds = [
+  const cameraBounds = $derived([
     cameraPosition[0] - width / cameraPosition[2] / 2,
     cameraPosition[0] + width / cameraPosition[2] / 2,
     cameraPosition[1] - height / cameraPosition[2] / 2,
     cameraPosition[1] + height / cameraPosition[2] / 2,
-  ];
+  ]);
   function setCameraTransform(
     x = cameraPosition[0],
     y = cameraPosition[1],
@@ -82,7 +76,7 @@
     localStorage.setItem("cameraPosition", JSON.stringify(cameraPosition));
   }
 
-  function updateNodePosition(node: NodeType) {
+  function updateNodePosition(node: Node) {
     if (node?.tmp?.ref && node?.tmp?.mesh) {
       if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
         node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
@@ -96,6 +90,7 @@
           delete node.tmp.x;
           delete node.tmp.y;
         }
+        graph.edges = [...graph.edges];
       } else {
         node.tmp.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
         node.tmp.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
@@ -112,7 +107,7 @@
     if (nodeTypeId in nodeHeightCache) {
       return nodeHeightCache[nodeTypeId];
     }
-    const node = manager.getNodeType(nodeTypeId);
+    const node = graph.getNodeType(nodeTypeId);
     if (!node?.inputs) {
       return 5;
     }
@@ -131,7 +126,7 @@
   }
   setContext("getNodeHeight", getNodeHeight);
 
-  setContext("isNodeInView", (node: NodeType) => {
+  setContext("isNodeInView", (node: Node) => {
     const height = getNodeHeight(node.type);
     const width = 20;
     return (
@@ -162,7 +157,7 @@
       // we are going to check if we clicked on a node by coordinates
       if (clickedNodeId === -1) {
         const [downX, downY] = projectScreenToWorld(mx, my);
-        for (const node of $nodes.values()) {
+        for (const node of graph.nodes.values()) {
           const x = node.position[0];
           const y = node.position[1];
           const height = getNodeHeight(node.type);
@@ -183,13 +178,13 @@
 
     // remove existing edge
     if (typeof index === "string") {
-      const edges = manager.getEdgesToNode(node);
+      const edges = graph.getEdgesToNode(node);
       for (const edge of edges) {
         if (edge[3] === index) {
           node = edge[0];
           index = edge[1];
           position = getSocketPosition(node, index);
-          manager.removeEdge(edge);
+          graph.removeEdge(edge);
           break;
         }
       }
@@ -202,7 +197,7 @@
       position,
     };
 
-    graphState.possibleSockets = manager
+    graphState.possibleSockets = graph
       .getPossibleSockets(graphState.activeSocket)
       .map(([node, index]) => {
         return {
@@ -227,7 +222,7 @@
   }
 
   function getSocketPosition(
-    node: NodeType,
+    node: Node,
     index: string | number,
   ): [number, number] {
     if (typeof index === "number") {
@@ -294,7 +289,7 @@
       const x2 = Math.max(mouseD[0], mousePosition[0]);
       const y1 = Math.min(mouseD[1], mousePosition[1]);
       const y2 = Math.max(mouseD[1], mousePosition[1]);
-      for (const node of $nodes.values()) {
+      for (const node of graph.nodes.values()) {
         if (!node?.tmp) continue;
         const x = node.position[0];
         const y = node.position[1];
@@ -310,7 +305,7 @@
 
     // here we are handling dragging of nodes
     if (graphState.activeNodeId !== -1 && mouseDownId !== -1) {
-      const node = manager.getNode(graphState.activeNodeId);
+      const node = graph.getNode(graphState.activeNodeId);
       if (!node || event.buttons !== 1) return;
 
       node.tmp = node.tmp || {};
@@ -341,7 +336,7 @@
 
       if (graphState.selectedNodes?.size) {
         for (const nodeId of graphState.selectedNodes) {
-          const n = manager.getNode(nodeId);
+          const n = graph.getNode(nodeId);
           if (!n?.tmp) continue;
           n.tmp.x = (n?.tmp?.downX || 0) - vecX;
           n.tmp.y = (n?.tmp?.downY || 0) - vecY;
@@ -354,7 +349,6 @@
 
       updateNodePosition(node);
 
-      $edges = $edges;
       return;
     }
 
@@ -436,10 +430,10 @@
         graphState.activeNodeId = clickedNodeId;
         // select the node
       } else if (event.shiftKey) {
-        const activeNode = manager.getNode(graphState.activeNodeId);
-        const newNode = manager.getNode(clickedNodeId);
+        const activeNode = graph.getNode(graphState.activeNodeId);
+        const newNode = graph.getNode(clickedNodeId);
         if (activeNode && newNode) {
-          const edge = manager.getNodesBetween(activeNode, newNode);
+          const edge = graph.getNodesBetween(activeNode, newNode);
           if (edge) {
             graphState.selectedNodes.clear();
             for (const node of edge) {
@@ -456,7 +450,7 @@
       boxSelection = true;
     }
 
-    const node = manager.getNode(graphState.activeNodeId);
+    const node = graph.getNode(graphState.activeNodeId);
     if (!node) return;
     node.tmp = node.tmp || {};
     node.tmp.downX = node.position[0];
@@ -464,7 +458,7 @@
 
     if (graphState.selectedNodes) {
       for (const nodeId of graphState.selectedNodes) {
-        const n = manager.getNode(nodeId);
+        const n = graph.getNode(nodeId);
         if (!n) continue;
         n.tmp = n.tmp || {};
         n.tmp.downX = n.position[0];
@@ -480,10 +474,10 @@
       graphState.activeNodeId,
       ...(graphState.selectedNodes?.values() || []),
     ]
-      .map((id) => manager.getNode(id))
+      .map((id) => graph.getNode(id))
       .filter(Boolean) as Node[];
 
-    const _edges = manager.getEdgesBetweenNodes(_nodes);
+    const _edges = graph.getEdgesBetweenNodes(_nodes);
 
     _nodes = _nodes.map((_node) => {
       const node = globalThis.structuredClone({
@@ -514,7 +508,7 @@
       })
       .filter(Boolean) as Node[];
 
-    const newNodes = manager.createGraph(_nodes, clipboard.edges);
+    const newNodes = graph.createGraph(_nodes, clipboard.edges);
     graphState.selectedNodes.clear();
     for (const node of newNodes) {
       graphState.selectedNodes.add(node.id);
@@ -527,9 +521,9 @@
     key: "l",
     description: "Select linked nodes",
     callback: () => {
-      const activeNode = manager.getNode(graphState.activeNodeId);
+      const activeNode = graph.getNode(graphState.activeNodeId);
       if (activeNode) {
-        const nodes = manager.getLinkedNodes(activeNode);
+        const nodes = graph.getLinkedNodes(activeNode);
         graphState.selectedNodes.clear();
         for (const node of nodes) {
           graphState.selectedNodes.add(node.id);
@@ -542,7 +536,8 @@
     key: "?",
     description: "Toggle Help",
     callback: () => {
-      showHelp = !showHelp;
+      // TODO: fix this
+      // showHelp = !showHelp;
     },
   });
 
@@ -586,12 +581,12 @@
       if (!isBodyFocused()) return;
 
       const average = [0, 0];
-      for (const node of $nodes.values()) {
+      for (const node of graph.nodes.values()) {
         average[0] += node.position[0];
         average[1] += node.position[1];
       }
-      average[0] = average[0] ? average[0] / $nodes.size : 0;
-      average[1] = average[1] ? average[1] / $nodes.size : 0;
+      average[0] = average[0] ? average[0] / graph.nodes.size : 0;
+      average[1] = average[1] ? average[1] / graph.nodes.size : 0;
 
       const camX = cameraPosition[0];
       const camY = cameraPosition[1];
@@ -617,7 +612,7 @@
     description: "Select all nodes",
     callback: () => {
       if (!isBodyFocused()) return;
-      for (const node of $nodes.keys()) {
+      for (const node of graph.nodes.keys()) {
         graphState.selectedNodes.add(node);
       }
     },
@@ -629,8 +624,8 @@
     description: "Undo",
     callback: () => {
       if (!isBodyFocused()) return;
-      manager.undo();
-      for (const node of $nodes.values()) {
+      graph.undo();
+      for (const node of graph.nodes.values()) {
         updateNodePosition(node);
       }
     },
@@ -641,8 +636,8 @@
     ctrl: true,
     description: "Redo",
     callback: () => {
-      manager.redo();
-      for (const node of $nodes.values()) {
+      graph.redo();
+      for (const node of graph.nodes.values()) {
         updateNodePosition(node);
       }
     },
@@ -654,7 +649,7 @@
     description: "Save",
     preventDefault: true,
     callback: () => {
-      const state = manager.serialize();
+      const state = graph.serialize();
       const blob = new Blob([JSON.stringify(state)], {
         type: "application/json;charset=utf-8",
       });
@@ -667,24 +662,24 @@
     description: "Delete selected nodes",
     callback: (event) => {
       if (!isBodyFocused()) return;
-      manager.startUndoGroup();
+      graph.startUndoGroup();
       if (graphState.activeNodeId !== -1) {
-        const node = manager.getNode(graphState.activeNodeId);
+        const node = graph.getNode(graphState.activeNodeId);
         if (node) {
-          manager.removeNode(node, { restoreEdges: event.ctrlKey });
+          graph.removeNode(node, { restoreEdges: event.ctrlKey });
           graphState.activeNodeId = -1;
         }
       }
       if (graphState.selectedNodes) {
         for (const nodeId of graphState.selectedNodes) {
-          const node = manager.getNode(nodeId);
+          const node = graph.getNode(nodeId);
           if (node) {
-            manager.removeNode(node, { restoreEdges: event.ctrlKey });
+            graph.removeNode(node, { restoreEdges: event.ctrlKey });
           }
         }
         graphState.clearSelection();
       }
-      manager.saveUndoGroup();
+      graph.saveUndoGroup();
     },
   });
 
@@ -692,7 +687,7 @@
     isPanning = false;
     if (!mouseDown) return;
 
-    const activeNode = manager.getNode(graphState.activeNodeId);
+    const activeNode = graph.getNode(graphState.activeNodeId);
 
     const clickedNodeId = getNodeIdFromEvent(event);
 
@@ -724,9 +719,9 @@
       }
       const nodes = [
         ...[...(graphState.selectedNodes?.values() || [])].map((id) =>
-          manager.getNode(id),
+          graph.getNode(id),
         ),
-      ] as NodeType[];
+      ] as Node[];
 
       const vec = [
         activeNode.position[0] - (activeNode?.tmp.x || 0),
@@ -758,16 +753,14 @@
             }
           }
         }
-
-        $edges = $edges;
       });
-      manager.save();
+      graph.save();
     } else if (graphState.hoveredSocket && graphState.activeSocket) {
       if (
         typeof graphState.hoveredSocket.index === "number" &&
         typeof graphState.activeSocket.index === "string"
       ) {
-        manager.createEdge(
+        graph.createEdge(
           graphState.hoveredSocket.node,
           graphState.hoveredSocket.index || 0,
           graphState.activeSocket.node,
@@ -777,14 +770,14 @@
         typeof graphState.activeSocket.index == "number" &&
         typeof graphState.hoveredSocket.index === "string"
       ) {
-        manager.createEdge(
+        graph.createEdge(
           graphState.activeSocket.node,
           graphState.activeSocket.index || 0,
           graphState.hoveredSocket.node,
           graphState.hoveredSocket.index,
         );
       }
-      manager.save();
+      graph.save();
     }
 
     // check if camera moved
@@ -807,9 +800,9 @@
     addMenuPosition = null;
   }
 
-  let isPanning = false;
-  let isDragging = false;
-  let hoveredNodeId = -1;
+  let isPanning = $state(false);
+  let isDragging = $state(false);
+  let hoveredNodeId = $state(-1);
 
   function handleMouseLeave() {
     isDragging = false;
@@ -820,7 +813,7 @@
     event.preventDefault();
     isDragging = false;
     if (!event.dataTransfer) return;
-    const nodeId = event.dataTransfer.getData("data/node-id") as NodeId;
+    const nodeId = event.dataTransfer.getData("data/node-id") as NodeType;
     let mx = event.clientX - rect.x;
     let my = event.clientY - rect.y;
 
@@ -841,8 +834,8 @@
       }
 
       const pos = projectScreenToWorld(mx, my);
-      manager.registry.load([nodeId]).then(() => {
-        manager.createNode({
+      graph.registry.load([nodeId]).then(() => {
+        graph.createNode({
           type: nodeId,
           props,
           position: pos,
@@ -856,9 +849,9 @@
         reader.onload = async (e) => {
           const buffer = e.target?.result;
           if (buffer?.constructor === ArrayBuffer) {
-            const nodeType = await manager.registry.register(buffer);
+            const nodeType = await graph.registry.register(buffer);
 
-            manager.createNode({
+            graph.createNode({
               type: nodeType.id,
               props: {},
               position: projectScreenToWorld(mx, my),
@@ -869,10 +862,10 @@
       } else if (file.type === "application/json") {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const buffer = e.target?.result as Buffer;
+          const buffer = e.target?.result as ArrayBuffer;
           if (buffer) {
             const state = GraphSchema.parse(JSON.parse(buffer.toString()));
-            manager.load(state);
+            graph.load(state);
           }
         };
         reader.readAsText(file);
@@ -908,10 +901,10 @@
   });
 </script>
 
-<svelte:window on:mousemove={handleMouseMove} on:mouseup={handleMouseUp} />
+<svelte:window onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
 <div
-  on:wheel={handleMouseScroll}
+  onwheel={handleMouseScroll}
   bind:this={wrapper}
   class="graph-wrapper"
   class:is-panning={isPanning}
@@ -921,21 +914,21 @@
   tabindex="0"
   bind:clientWidth={width}
   bind:clientHeight={height}
-  on:dragenter={handleDragEnter}
-  on:dragover={handlerDragOver}
-  on:dragexit={handleDragEnd}
-  on:drop={handleDrop}
-  on:mouseleave={handleMouseLeave}
-  on:keydown={keymap.handleKeyboardEvent}
-  on:mousedown={handleMouseDown}
+  ondragenter={handleDragEnter}
+  ondragover={handlerDragOver}
+  ondragexit={handleDragEnd}
+  ondrop={handleDrop}
+  onmouseleave={handleMouseLeave}
+  onkeydown={keymap.handleKeyboardEvent}
+  onmousedown={handleMouseDown}
 >
   <input
     type="file"
     accept="application/wasm,application/json"
     id="drop-zone"
     disabled={!isDragging}
-    on:dragend={handleDragEnd}
-    on:dragleave={handleDragEnd}
+    ondragend={handleDragEnd}
+    ondragleave={handleDragEnd}
   />
   <label for="drop-zone"></label>
 
@@ -958,9 +951,9 @@
       />
     {/if}
 
-    {#if $status === "idle"}
+    {#if graph.status === "idle"}
       {#if addMenuPosition}
-        <AddMenu bind:position={addMenuPosition} graph={manager} />
+        <AddMenu bind:position={addMenuPosition} {graph} />
       {/if}
 
       {#if graphState.activeSocket}
@@ -974,17 +967,17 @@
         />
       {/if}
 
-      <GraphView {nodes} {edges} {cameraPosition} />
-    {:else if $status === "loading"}
+      <GraphView nodes={graph.nodes} edges={graph.edges} {cameraPosition} />
+    {:else if graph.status === "loading"}
       <span>Loading</span>
-    {:else if $status === "error"}
+    {:else if graph.status === "error"}
       <span>Error</span>
     {/if}
   </Canvas>
 </div>
 
 {#if showHelp}
-  <HelpView registry={manager.registry} />
+  <HelpView registry={graph.registry} />
 {/if}
 
 <style>

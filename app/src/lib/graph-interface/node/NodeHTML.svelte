@@ -59,7 +59,7 @@
 
   {#each parameters as [key, value], i}
     <NodeParameter
-      bind:node
+      {node}
       id={key}
       input={value}
       isLast={i == parameters.length - 1}

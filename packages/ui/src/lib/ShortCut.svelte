@@ -3,7 +3,7 @@
     ctrl?: boolean;
     shift?: boolean;
     alt?: boolean;
-    key: string;
+    key: string | string[];
   }
 
   let {

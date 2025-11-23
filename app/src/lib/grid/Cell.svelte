@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import type { Writable } from "svelte/store";
 
   let index = -1;
   let wrapper: HTMLDivElement;
@@ -9,7 +8,7 @@
     index = getContext<() => number>("registerCell")();
   }
 
-  const sizes = getContext<Writable<string[]>>("sizes");
+  const sizes = getContext<string[]>("sizes");
 
   let downSizes: string[] = [];
   let downWidth = 0;
@@ -17,7 +16,7 @@
   let startX = 0;
 
   function handleMouseDown(event: MouseEvent) {
-    downSizes = [...$sizes];
+    downSizes = [...sizes];
     mouseDown = true;
     startX = event.clientX;
     downWidth = wrapper.getBoundingClientRect().width;
@@ -26,8 +25,7 @@
   function handleMouseMove(event: MouseEvent) {
     if (mouseDown) {
       const width = downWidth + startX - event.clientX;
-      $sizes[index] = `${width}px`;
-      $sizes = $sizes;
+      sizes[index] = `${width}px`;
     }
   }
 </script>

@@ -3,7 +3,6 @@
   import BackgroundVert from "./Background.vert";
   import BackgroundFrag from "./Background.frag";
   import { colors } from "../graph/colors.svelte";
-  import { Color } from "three";
   import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
@@ -42,10 +41,10 @@
           value: [0, 1, 0],
         },
         backgroundColor: {
-          value: colors["layer-0"].clone(),
+          value: colors["layer-0"],
         },
         lineColor: {
-          value: colors["outline"].clone(),
+          value: colors["outline"],
         },
         zoomLimits: {
           value: [2, 50],
@@ -55,9 +54,8 @@
         },
       }}
       uniforms.camPos.value={cameraPosition}
-      uniforms.backgroundColor.value={appSettings.theme &&
-        colors["layer-0"].clone()}
-      uniforms.lineColor.value={appSettings.theme && colors["outline"].clone()}
+      uniforms.backgroundColor.value={appSettings.theme && colors["layer-0"]}
+      uniforms.lineColor.value={appSettings.theme && colors["outline"]}
       uniforms.zoomLimits.value={[minZoom, maxZoom]}
       uniforms.dimensions.value={[width, height]}
     />

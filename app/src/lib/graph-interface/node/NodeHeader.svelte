@@ -3,7 +3,7 @@
   import type { Node, Socket } from "@nodes/types";
   import { getContext } from "svelte";
 
-  export let node: Node;
+  const { node = $bindable<Node>() } = $props();
 
   const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
   const getSocketPosition =
@@ -33,14 +33,14 @@
     rightBump,
     aspectRatio,
   });
-  const pathDisabled = createNodePath({
-    depth: 0,
-    height: 15,
-    y: 50,
-    cornerTop,
-    rightBump,
-    aspectRatio,
-  });
+  // const pathDisabled = createNodePath({
+  //   depth: 0,
+  //   height: 15,
+  //   y: 50,
+  //   cornerTop,
+  //   rightBump,
+  //   aspectRatio,
+  // });
   const pathHover = createNodePath({
     depth: 8.5,
     height: 50,
@@ -59,7 +59,7 @@
     class="click-target"
     role="button"
     tabindex="0"
-    on:mousedown={handleMouseDown}
+    onmousedown={handleMouseDown}
   ></div>
   <svg
     xmlns="http://www.w3.org/2000/svg"

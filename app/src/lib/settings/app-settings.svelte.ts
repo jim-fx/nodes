@@ -1,7 +1,15 @@
 import { localState } from "$lib/helpers/localState.svelte";
 import type { NodeInput } from "@nodes/types";
 
-const themes = ["dark", "light", "catppuccin", "solarized", "high-contrast", "nord", "dracula"];
+const themes = [
+  "dark",
+  "light",
+  "catppuccin",
+  "solarized",
+  "high-contrast",
+  "nord",
+  "dracula",
+];
 
 export const AppSettingTypes = {
   theme: {
@@ -18,28 +26,33 @@ export const AppSettingTypes = {
   centerCamera: {
     type: "boolean",
     label: "Center Camera",
-    value: true
+    value: true,
   },
   nodeInterface: {
     title: "Node Interface",
     showNodeGrid: {
       type: "boolean",
       label: "Show Grid",
-      value: true
+      value: true,
     },
     snapToGrid: {
       type: "boolean",
       label: "Snap to Grid",
-      value: true
+      value: true,
     },
     showHelp: {
       type: "boolean",
       label: "Show Help",
-      value: false
-    }
+      value: false,
+    },
   },
   debug: {
     title: "Debug",
+    amount: {
+      type: "number",
+      label: "Amount",
+      value: 4,
+    },
     wireframe: {
       type: "boolean",
       label: "Wireframe",
@@ -81,30 +94,30 @@ export const AppSettingTypes = {
         type: "integer",
         min: 2,
         max: 15,
-        value: 4
+        value: 4,
       },
       loadGrid: {
         type: "button",
-        label: "Load Grid"
+        label: "Load Grid",
       },
       loadTree: {
         type: "button",
-        label: "Load Tree"
+        label: "Load Tree",
       },
       lottaFaces: {
         type: "button",
-        label: "Load 'lots of faces'"
+        label: "Load 'lots of faces'",
       },
       lottaNodes: {
         type: "button",
-        label: "Load 'lots of nodes'"
+        label: "Load 'lots of nodes'",
       },
       lottaNodesAndFaces: {
         type: "button",
-        label: "Load 'lots of nodes and faces'"
-      }
+        label: "Load 'lots of nodes and faces'",
+      },
     },
-  }
+  },
 } as const;
 
 type IsInputDefinition<T> = T extends NodeInput ? T : never;
@@ -113,30 +126,29 @@ type HasTitle = { title: string };
 type Widen<T> = T extends boolean
   ? boolean
   : T extends number
-  ? number
-  : T extends string
-  ? string
-  : T;
-
+    ? number
+    : T extends string
+      ? string
+      : T;
 
 type ExtractSettingsValues<T> = {
   -readonly [K in keyof T]: T[K] extends HasTitle
-  ? ExtractSettingsValues<Omit<T[K], 'title'>>
-  : T[K] extends IsInputDefinition<T[K]>
-  ? T[K] extends { value: infer V }
-  ? Widen<V>
-  : never
-  : T[K] extends Record<string, any>
-  ? ExtractSettingsValues<T[K]>
-  : never;
+    ? ExtractSettingsValues<Omit<T[K], "title">>
+    : T[K] extends IsInputDefinition<T[K]>
+      ? T[K] extends { value: infer V }
+        ? Widen<V>
+        : never
+      : T[K] extends Record<string, any>
+        ? ExtractSettingsValues<T[K]>
+        : never;
 };
 
 function settingsToStore<T>(settings: T): ExtractSettingsValues<T> {
   const result = {} as any;
   for (const key in settings) {
     const value = settings[key];
-    if (value && typeof value === 'object') {
-      if ('value' in value) {
+    if (value && typeof value === "object") {
+      if ("value" in value) {
         result[key] = value.value;
       } else {
         result[key] = settingsToStore(value);
@@ -146,7 +158,10 @@ function settingsToStore<T>(settings: T): ExtractSettingsValues<T> {
   return result;
 }
 
-export const appSettings = localState("app-settings", settingsToStore(AppSettingTypes));
+export let appSettings = localState(
+  "app-settings",
+  settingsToStore(AppSettingTypes),
+);
 
 $effect.root(() => {
   $effect(() => {

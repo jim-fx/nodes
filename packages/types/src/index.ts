@@ -9,9 +9,9 @@ export type {
   Node,
   NodeDefinition,
   Socket,
-  NodeType as NodeId,
+  NodeType,
   Edge,
   Graph,
 } from "./types";
-export { NodeSchema, GraphSchema, NodeType } from "./types";
+export { NodeSchema, GraphSchema } from "./types";
 export { NodeDefinitionSchema } from "./types";
