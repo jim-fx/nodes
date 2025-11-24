@@ -10,7 +10,7 @@ import type {
 import { fastHashString } from "@nodes/utils";
 import { SvelteMap } from "svelte/reactivity";
 import EventEmitter from "./helpers/EventEmitter";
-import { createLogger } from "./helpers/index";
+import { createLogger } from "@nodes/utils";
 import throttle from "$lib/helpers/throttle";
 import { HistoryManager } from "./history-manager";
 
@@ -74,7 +74,6 @@ export class GraphManager extends EventEmitter<{
   }
 
   serialize(): Graph {
-    logger.group("serializing graph");
     const nodes = Array.from(this.nodes.values()).map((node) => ({
       id: node.id,
       position: [...node.position],
@@ -93,7 +92,7 @@ export class GraphManager extends EventEmitter<{
       nodes,
       edges,
     };
-    logger.groupEnd();
+    logger.log("serializing graph", serialized);
     return clone($state.snapshot(serialized));
   }
 
@@ -198,8 +197,12 @@ export class GraphManager extends EventEmitter<{
     this.status = "loading";
     this.id = graph.id;
 
+    logger.info("loading graph", graph);
+
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);
+
+    logger.info("loaded node types", this.registry.status);
 
     for (const node of this.graph.nodes) {
       const nodeType = this.registry.getNode(node.type);

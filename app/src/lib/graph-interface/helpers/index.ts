@@ -6,7 +6,10 @@ export function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
 }
 
-export function animate(duration: number, callback: (progress: number) => void | false) {
+export function animate(
+  duration: number,
+  callback: (progress: number) => void | false,
+) {
   const start = performance.now();
   const loop = (time: number) => {
     const progress = (time - start) / duration;
@@ -18,7 +21,7 @@ export function animate(duration: number, callback: (progress: number) => void |
     } else {
       callback(1);
     }
-  }
+  };
   requestAnimationFrame(loop);
 }
 
@@ -33,33 +36,37 @@ export function createNodePath({
   aspectRatio = 1,
 } = {}) {
   return `M0,${cornerTop}
-      ${cornerTop
-      ? ` V${cornerTop}
+      ${
+        cornerTop
+          ? ` V${cornerTop}
               Q0,0 ${cornerTop * aspectRatio},0
               H${100 - cornerTop * aspectRatio}
               Q100,0  100,${cornerTop}
             `
-      : ` V0
+          : ` V0
               H100
             `
-    }
+      }
       V${y - height / 2}
-      ${rightBump
-      ? ` C${100 - depth},${y - height / 2} ${100 - depth},${y + height / 2} 100,${y + height / 2}`
-      : ` H100`
-    }
-      ${cornerBottom
-      ? ` V${100 - cornerBottom}
+      ${
+        rightBump
+          ? ` C${100 - depth},${y - height / 2} ${100 - depth},${y + height / 2} 100,${y + height / 2}`
+          : ` H100`
+      }
+      ${
+        cornerBottom
+          ? ` V${100 - cornerBottom}
               Q100,100 ${100 - cornerBottom * aspectRatio},100
               H${cornerBottom * aspectRatio}
               Q0,100  0,${100 - cornerBottom}
             `
-      : `${leftBump ? `V100 H0` : `V100`}`
-    }
-      ${leftBump
-      ? ` V${y + height / 2} C${depth},${y + height / 2} ${depth},${y - height / 2} 0,${y - height / 2}`
-      : ` H0`
-    }
+          : `${leftBump ? `V100 H0` : `V100`}`
+      }
+      ${
+        leftBump
+          ? ` V${y + height / 2} C${depth},${y + height / 2} ${depth},${y - height / 2} 0,${y - height / 2}`
+          : ` H0`
+      }
       Z`.replace(/\s+/g, " ");
 }
 
@@ -71,35 +78,14 @@ export const debounce = (fn: Function, ms = 300) => {
   };
 };
 
-export const clone: <T>(v: T) => T = "structedClone" in globalThis ? globalThis.structuredClone : (obj) => JSON.parse(JSON.stringify(obj));
-
-export const createLogger = (() => {
-  let maxLength = 5;
-  return (scope: string) => {
-    maxLength = Math.max(maxLength, scope.length);
-    let muted = false;
-    return {
-      log: (...args: any[]) => !muted && console.log(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
-      group: (...args: any[]) => !muted && console.groupCollapsed(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
-      groupEnd: () => !muted && console.groupEnd(),
-      info: (...args: any[]) => !muted && console.info(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
-      warn: (...args: any[]) => !muted && console.warn(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #888", ...args),
-      error: (...args: any[]) => console.error(`[%c${scope.padEnd(maxLength, " ")}]:`, "color: #f88", ...args),
-      mute() {
-        muted = true;
-      },
-      unmute() {
-        muted = false;
-      }
-
-    }
-  }
-})();
-
+export const clone: <T>(v: T) => T =
+  "structedClone" in globalThis
+    ? globalThis.structuredClone
+    : (obj) => JSON.parse(JSON.stringify(obj));
 
 export function withSubComponents<A, B extends Record<string, any>>(
   component: A,
-  subcomponents: B
+  subcomponents: B,
 ): A & B {
   Object.keys(subcomponents).forEach((key) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

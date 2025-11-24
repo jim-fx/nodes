@@ -1,6 +1,7 @@
 import { create, type Delta } from "jsondiffpatch";
 import type { Graph } from "@nodes/types";
-import { createLogger, clone } from "./helpers/index.js";
+import { clone } from "./helpers/index.js";
+import { createLogger } from "@nodes/utils";
 
 const diff = create({
   objectHash: function (obj, index) {
