@@ -197,12 +197,12 @@ export class GraphManager extends EventEmitter<{
     this.status = "loading";
     this.id = graph.id;
 
-    logger.info("loading graph", graph);
+    logger.info("loading graph", $state.snapshot(graph));
 
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);
 
-    logger.info("loaded node types", this.registry.status);
+    logger.info("loaded node types", this.registry.getAllNodes());
 
     for (const node of this.graph.nodes) {
       const nodeType = this.registry.getNode(node.type);
