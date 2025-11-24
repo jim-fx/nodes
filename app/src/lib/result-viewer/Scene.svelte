@@ -1,6 +1,11 @@
 <script lang="ts">
   import { T, useTask, useThrelte } from "@threlte/core";
-  import { MeshLineGeometry, MeshLineMaterial, Text } from "@threlte/extras";
+  import {
+    Grid,
+    MeshLineGeometry,
+    MeshLineMaterial,
+    Text,
+  } from "@threlte/extras";
   import {
     type Group,
     type BufferGeometry,
@@ -70,7 +75,7 @@
   }
 
   $effect(() => {
-    const wireframe = appSettings.debug.wireframe;
+    const wireframe = appSettings.value.debug.wireframe;
     scene.traverse(function (child) {
       if (isMesh(child) && isMatCapMaterial(child.material)) {
         child.material.wireframe = wireframe;
@@ -90,18 +95,25 @@
 
 <Camera {center} {centerCamera} />
 
-{#if appSettings.showGrid}
-  <T.GridHelper
-    args={[20, 20]}
-    colorGrid={colors["outline"]}
-    colorCenterLine={new Color("red")}
+{#if appSettings.value.showGrid}
+  <Grid
+    cellColor={colors["outline"]}
+    cellThickness={0.7}
+    infiniteGrid
+    sectionThickness={0.7}
+    sectionDistance={2}
+    sectionColor={colors["outline"]}
+    fadeDistance={50}
+    fadeStrength={10}
+    fadeOrigin={new Vector3(0, 0, 0)}
   />
+  <!-- <T.GridHelper args={[20, 20]} color5={colors["outline"]} /> -->
 {/if}
 
 <T.Group>
   {#if geometries}
     {#each geometries as geo}
-      {#if appSettings.debug.showIndices}
+      {#if appSettings.value.debug.showIndices}
         {#each geo.attributes.position.array as _, i}
           {#if i % 3 === 0}
             <Text fontSize={0.25} position={getPosition(geo, i)} />
@@ -109,7 +121,7 @@
         {/each}
       {/if}
 
-      {#if appSettings.debug.showVertices}
+      {#if appSettings.value.debug.showVertices}
         <T.Points visible={true}>
           <T is={geo} />
           <T.PointsMaterial size={0.25} />
@@ -121,7 +133,7 @@
   <T.Group bind:ref={scene}></T.Group>
 </T.Group>
 
-{#if appSettings.debug.showStemLines && lines}
+{#if appSettings.value.debug.showStemLines && lines}
   {#each lines as line}
     <T.Mesh>
       <MeshLineGeometry points={line} />

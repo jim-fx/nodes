@@ -19,7 +19,7 @@
   const { invalidate } = useThrelte();
 
   $effect(() => {
-    appSettings.theme;
+    appSettings.value.theme;
     invalidate();
   });
 

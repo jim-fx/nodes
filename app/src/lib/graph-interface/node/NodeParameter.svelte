@@ -17,7 +17,7 @@
     isLast?: boolean;
   };
 
-  const { node, input, id, isLast }: Props = $props();
+  let { node = $bindable(), input, id, isLast }: Props = $props();
 
   const inputType = node?.tmp?.type?.inputs?.[id]!;
 
@@ -87,7 +87,7 @@
         <label for={elementId}>{input.label || id}</label>
       {/if}
       {#if inputType.external !== true}
-        <NodeInput {elementId} {node} {input} {id} />
+        <NodeInput {elementId} bind:node {input} {id} />
       {/if}
     </div>
 

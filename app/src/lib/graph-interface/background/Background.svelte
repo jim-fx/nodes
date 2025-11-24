@@ -54,8 +54,9 @@
         },
       }}
       uniforms.camPos.value={cameraPosition}
-      uniforms.backgroundColor.value={appSettings.theme && colors["layer-0"]}
-      uniforms.lineColor.value={appSettings.theme && colors["outline"]}
+      uniforms.backgroundColor.value={appSettings.value.theme &&
+        colors["layer-0"]}
+      uniforms.lineColor.value={appSettings.value.theme && colors["outline"]}
       uniforms.zoomLimits.value={[minZoom, maxZoom]}
       uniforms.dimensions.value={[width, height]}
     />

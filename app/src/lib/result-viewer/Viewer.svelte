@@ -68,7 +68,7 @@
     const inputs = splitNestedArray(result);
     perf.endPoint();
 
-    if (appSettings.debug.showStemLines) {
+    if (appSettings.value.debug.showStemLines) {
       perf.addPoint("create-lines");
       lines = inputs
         .map((input) => {
@@ -91,7 +91,7 @@
   };
 </script>
 
-{#if appSettings.debug.showPerformancePanel}
+{#if appSettings.value.debug.showPerformancePanel}
   <SmallPerformanceViewer {fps} store={perf} />
 {/if}
 

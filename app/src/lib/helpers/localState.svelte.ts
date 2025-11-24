@@ -1,11 +1,34 @@
-export function localState<T>(key: string, defaultValue: T): T {
-  const stored = localStorage.getItem(key);
-  const state = $state(stored ? JSON.parse(stored) : defaultValue);
-  $effect.root(() => {
-    $effect(() => {
-      const value = $state.snapshot(state);
-      localStorage.setItem(key, JSON.stringify(value));
+import { browser } from "$app/environment";
+
+export class LocalStore<T> {
+  value = $state<T>() as T;
+  key = "";
+
+  constructor(key: string, value: T) {
+    this.key = key;
+    this.value = value;
+
+    if (browser) {
+      const item = localStorage.getItem(key);
+      if (item) this.value = this.deserialize(item);
+    }
+
+    $effect.root(() => {
+      $effect(() => {
+        localStorage.setItem(this.key, this.serialize(this.value));
+      });
     });
-  });
-  return state;
+  }
+
+  serialize(value: T): string {
+    return JSON.stringify(value);
+  }
+
+  deserialize(item: string): T {
+    return JSON.parse(item);
+  }
+}
+
+export function localState<T>(key: string, value: T) {
+  return new LocalStore(key, value);
 }

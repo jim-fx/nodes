@@ -4,31 +4,36 @@
   import { onMount } from "svelte";
   import type { NodeType } from "@nodes/types";
 
-  export let position: [x: number, y: number] | null;
+  type Props = {
+    position: [x: number, y: number] | null;
+    graph: GraphManager;
+  };
 
-  export let graph: GraphManager;
+  let { position = $bindable(), graph }: Props = $props();
 
   let input: HTMLInputElement;
-  let value: string = "";
-  let activeNodeId: NodeType | undefined = undefined;
+  let value = $state<string>();
+  let activeNodeId = $state<NodeType>();
 
   const allNodes = graph.getNodeDefinitions();
 
   function filterNodes() {
-    return allNodes.filter((node) => node.id.includes(value));
+    return allNodes.filter((node) => node.id.includes(value ?? ""));
   }
 
-  $: nodes = value === "" ? allNodes : filterNodes();
-  $: if (nodes) {
-    if (activeNodeId === undefined) {
-      activeNodeId = nodes[0].id;
-    } else if (nodes.length) {
-      const node = nodes.find((node) => node.id === activeNodeId);
-      if (!node) {
+  const nodes = $derived(value === "" ? allNodes : filterNodes());
+  $effect(() => {
+    if (nodes) {
+      if (activeNodeId === undefined) {
         activeNodeId = nodes[0].id;
+      } else if (nodes.length) {
+        const node = nodes.find((node) => node.id === activeNodeId);
+        if (!node) {
+          activeNodeId = nodes[0].id;
+        }
       }
     }
-  }
+  });
 
   function handleKeyDown(event: KeyboardEvent) {
     event.stopImmediatePropagation();
@@ -75,7 +80,7 @@
         role="searchbox"
         placeholder="Search..."
         disabled={false}
-        on:keydown={handleKeyDown}
+        onkeydown={handleKeyDown}
         bind:value
         bind:this={input}
       />
@@ -88,7 +93,7 @@
           role="treeitem"
           tabindex="0"
           aria-selected={node.id === activeNodeId}
-          on:keydown={(event) => {
+          onkeydown={(event) => {
             if (event.key === "Enter") {
               if (position) {
                 graph.createNode({ type: node.id, position, props: {} });
@@ -96,17 +101,17 @@
               }
             }
           }}
-          on:mousedown={() => {
+          onmousedown={() => {
             if (position) {
               graph.createNode({ type: node.id, position, props: {} });
               position = null;
             }
           }}
-          on:focus={() => {
+          onfocus={() => {
             activeNodeId = node.id;
           }}
           class:selected={node.id === activeNodeId}
-          on:mouseover={() => {
+          onmouseover={() => {
             activeNodeId = node.id;
           }}
         >

@@ -8,7 +8,7 @@
     index = getContext<() => number>("registerCell")();
   }
 
-  const sizes = getContext<string[]>("sizes");
+  const sizes = getContext<{ value: string[] }>("sizes");
 
   let downSizes: string[] = [];
   let downWidth = 0;
@@ -16,7 +16,7 @@
   let startX = 0;
 
   function handleMouseDown(event: MouseEvent) {
-    downSizes = [...sizes];
+    downSizes = [...sizes.value];
     mouseDown = true;
     startX = event.clientX;
     downWidth = wrapper.getBoundingClientRect().width;
@@ -25,7 +25,7 @@
   function handleMouseMove(event: MouseEvent) {
     if (mouseDown) {
       const width = downWidth + startX - event.clientX;
-      sizes[index] = `${width}px`;
+      sizes.value[index] = `${width}px`;
     }
   }
 </script>

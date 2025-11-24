@@ -144,7 +144,7 @@ type ExtractSettingsValues<T> = {
         : never;
 };
 
-function settingsToStore<T>(settings: T): ExtractSettingsValues<T> {
+export function settingsToStore<T>(settings: T): ExtractSettingsValues<T> {
   const result = {} as any;
   for (const key in settings) {
     const value = settings[key];
@@ -166,7 +166,7 @@ export let appSettings = localState(
 
 $effect.root(() => {
   $effect(() => {
-    const theme = appSettings.theme;
+    const theme = appSettings.value.theme;
     const classes = document.documentElement.classList;
     const newClassName = `theme-${theme}`;
     if (classes) {

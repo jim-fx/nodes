@@ -77,13 +77,13 @@
 
   let internalValue = $state(getDefaultValue());
 
-  let open = $state(openSections[id]);
+  let open = $state(openSections.value[id]);
 
   // Persist <details> open/closed state for groups
   if (depth > 0 && !isNodeInput(type[key!])) {
     $effect(() => {
       if (open !== undefined) {
-        openSections[id] = open;
+        openSections.value[id] = open;
       }
     });
   }
@@ -110,7 +110,7 @@
   <!-- Leaf input -->
   <div class="input input-{type[key].type}" class:first-level={depth === 1}>
     {#if type[key].type === "button"}
-      <button onclick={() => console.log(type[key])}>
+      <button onclick={() => type[key].callback()}>
         {type[key].label || key}
       </button>
     {:else}
@@ -124,7 +124,7 @@
     <NestedSettings
       id={`${id}.${childKey}`}
       key={childKey}
-      {value}
+      bind:value
       {type}
       depth={depth + 1}
     />
@@ -142,7 +142,7 @@
         <NestedSettings
           id={`${id}.${childKey}`}
           key={childKey}
-          value={value[key] as SettingsValue}
+          bind:value={value[key] as SettingsValue}
           type={type[key] as unknown as SettingsType}
           depth={depth + 1}
         />

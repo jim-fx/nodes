@@ -38,7 +38,7 @@
   memoryRuntime.perf = performanceStore;
 
   const runtime = $derived(
-    appSettings.debug.useWorker ? workerRuntime : memoryRuntime,
+    appSettings.value.debug.useWorker ? workerRuntime : memoryRuntime,
   );
 
   let activeNode = $state<Node | undefined>(undefined);
@@ -69,6 +69,11 @@
     },
   ]);
   let graphSettings = $state<Record<string, any>>({});
+  $effect(() => {
+    if (graphSettings) {
+      manager?.setSettings($state.snapshot(graphSettings));
+    }
+  });
   type BooleanSchema = {
     [key: string]: {
       type: "boolean";
@@ -92,7 +97,7 @@
         );
         let b = performance.now();
 
-        if (appSettings.debug.useWorker) {
+        if (appSettings.value.debug.useWorker) {
           let perfData = await runtime.getPerformanceData();
           let lastRun = perfData?.at(-1);
           if (lastRun?.total) {
@@ -118,13 +123,13 @@
     //@ts-ignore
     AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
       graph = templates.grid(
-        appSettings.debug.amount.value,
-        appSettings.debug.amount.value,
+        appSettings.value.debug.amount.value,
+        appSettings.value.debug.amount.value,
       );
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.loadTree.callback = () => {
-      graph = templates.tree(appSettings.debug.amount.value);
+      graph = templates.tree(appSettings.value.debug.amount.value);
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
@@ -155,7 +160,7 @@
         bind:scene
         bind:this={viewerComponent}
         perf={performanceStore}
-        centerCamera={appSettings.centerCamera}
+        centerCamera={appSettings.value.centerCamera}
       />
     </Grid.Cell>
     <Grid.Cell>
@@ -163,10 +168,10 @@
         {graph}
         bind:this={graphInterface}
         registry={nodeRegistry}
-        showGrid={appSettings.nodeInterface.showNodeGrid}
-        snapToGrid={appSettings.nodeInterface.snapToGrid}
+        showGrid={appSettings.value.nodeInterface.showNodeGrid}
+        snapToGrid={appSettings.value.nodeInterface.snapToGrid}
         bind:activeNode
-        bind:showHelp={appSettings.nodeInterface.showHelp}
+        bind:showHelp={appSettings.value.nodeInterface.showHelp}
         bind:settings={graphSettings}
         bind:settingTypes={graphSettingTypes}
         onresult={(result) => handleUpdate(result)}
@@ -176,7 +181,7 @@
         <Panel id="general" title="General" icon="i-tabler-settings">
           <NestedSettings
             id="general"
-            value={appSettings}
+            bind:value={appSettings.value}
             type={AppSettingTypes}
           />
         </Panel>
@@ -207,7 +212,7 @@
           id="performance"
           title="Performance"
           classes="text-red-400"
-          hidden={!appSettings.debug.showPerformancePanel}
+          hidden={!appSettings.value.debug.showPerformancePanel}
           icon="i-tabler-brand-speedtest"
         >
           {#if $performanceStore}
@@ -218,7 +223,7 @@
           id="benchmark"
           title="Benchmark"
           classes="text-red-400"
-          hidden={!appSettings.debug.showBenchmarkPanel}
+          hidden={!appSettings.value.debug.showBenchmarkPanel}
           icon="i-tabler-graph"
         >
           <BenchmarkPanel run={randomGenerate} />
@@ -250,7 +255,6 @@
 
 <style>
   header {
-    /* border-bottom: solid thin var(--outline); */
     background-color: var(--layer-1);
   }
 

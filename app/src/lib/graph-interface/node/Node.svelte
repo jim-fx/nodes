@@ -23,7 +23,7 @@
   const isSelected = $derived(graphState.selectedNodes.has(node.id));
   let strokeColor = $state(colors.selected);
   $effect(() => {
-    appSettings.theme;
+    appSettings.value.theme;
     strokeColor = isSelected
       ? colors.selected
       : isActive

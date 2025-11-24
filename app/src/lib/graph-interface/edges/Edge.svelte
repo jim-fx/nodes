@@ -7,7 +7,7 @@
   });
   $effect.root(() => {
     $effect(() => {
-      appSettings.theme;
+      appSettings.value.theme;
       circleMaterial.color = colors.edge.clone().convertSRGBToLinear();
     });
   });
@@ -42,7 +42,7 @@
   let geometry: BufferGeometry | null = $state(null);
 
   const lineColor = $derived(
-    appSettings.theme && colors.edge.clone().convertSRGBToLinear(),
+    appSettings.value.theme && colors.edge.clone().convertSRGBToLinear(),
   );
 
   let lastId: number | null = null;
@@ -114,6 +114,9 @@
 
 {#if geometry}
   <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial width={Math.max(z * 0.0001, 0.00001)} color={lineColor} />
+    <MeshLineMaterial
+      width={Math.max(z * 0.00012, 0.00003)}
+      color={lineColor}
+    />
   </T.Mesh>
 {/if}

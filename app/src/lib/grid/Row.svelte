@@ -11,8 +11,8 @@
   setContext("registerCell", function () {
     let index = registerIndex;
     registerIndex++;
-    if (registerIndex > sizes.length) {
-      sizes = [...sizes, "1fr"];
+    if (registerIndex > sizes.value.length) {
+      sizes.value = [...sizes.value, "1fr"];
     }
     return index;
   });
@@ -20,7 +20,7 @@
   setContext("sizes", sizes);
 
   const cols = $derived(
-    sizes.map((size, i) => `${i > 0 ? "1px " : ""}` + size).join(" "),
+    sizes.value.map((size, i) => `${i > 0 ? "1px " : ""}` + size).join(" "),
   );
 </script>
 

@@ -3,7 +3,7 @@
   import type { Node, Socket } from "@nodes/types";
   import { getContext } from "svelte";
 
-  const { node = $bindable<Node>() } = $props();
+  const { node }: { node: Node } = $props();
 
   const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
   const getSocketPosition =
