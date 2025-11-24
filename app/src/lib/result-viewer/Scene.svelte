@@ -14,7 +14,6 @@
     Box3,
     Mesh,
     MeshBasicMaterial,
-    Color,
   } from "three";
   import { appSettings } from "../settings/app-settings.svelte";
   import Camera from "./Camera.svelte";
@@ -107,7 +106,6 @@
     fadeStrength={10}
     fadeOrigin={new Vector3(0, 0, 0)}
   />
-  <!-- <T.GridHelper args={[20, 20]} color5={colors["outline"]} /> -->
 {/if}
 
 <T.Group>

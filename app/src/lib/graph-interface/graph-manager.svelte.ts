@@ -15,7 +15,7 @@ import throttle from "$lib/helpers/throttle";
 import { HistoryManager } from "./history-manager";
 
 const logger = createLogger("graph-manager");
-logger.mute();
+// logger.mute();
 
 const clone =
   "structuredClone" in self

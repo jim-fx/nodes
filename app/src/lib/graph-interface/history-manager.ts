@@ -15,7 +15,7 @@ const diff = create({
 });
 
 const log = createLogger("history");
-log.mute();
+// log.mute();
 
 export class HistoryManager {
   index: number = -1;

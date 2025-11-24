@@ -16,7 +16,7 @@ import {
 } from "@nodes/utils";
 
 const log = createLogger("runtime-executor");
-log.mute();
+// log.mute();
 
 function getValue(input: NodeInput, value?: unknown) {
   if (value === undefined && "value" in input) {
