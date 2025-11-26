@@ -7,7 +7,7 @@ import {
 import { createLogger, createWasmWrapper } from "@nodes/utils";
 
 const log = createLogger("node-registry");
-// log.mute();
+log.mute();
 
 export class RemoteNodeRegistry implements NodeRegistry {
   status: "loading" | "ready" | "error" = "loading";

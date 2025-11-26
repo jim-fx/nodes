@@ -116,7 +116,7 @@
     align-items: center;
     border-bottom: solid thin var(--outline);
     border-left: solid thin var(--outline);
-    background: var(--layer-0);
+    background: var(--layer-1);
   }
 
   .tabs > button > span {
@@ -124,7 +124,7 @@
   }
 
   .tabs > button.active {
-    background: var(--layer-1);
+    background: var(--layer-2);
   }
 
   .tabs > button.active span {

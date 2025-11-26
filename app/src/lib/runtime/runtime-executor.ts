@@ -16,7 +16,7 @@ import {
 } from "@nodes/utils";
 
 const log = createLogger("runtime-executor");
-// log.mute();
+log.mute();
 
 function getValue(input: NodeInput, value?: unknown) {
   if (value === undefined && "value" in input) {
@@ -65,7 +65,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
   constructor(
     private registry: NodeRegistry,
     private cache?: SyncCache<Int32Array>,
-  ) {}
+  ) { }
 
   private async getNodeDefinitions(graph: Graph) {
     if (this.registry.status !== "ready") {

@@ -50,6 +50,7 @@
   let boxSelection = $state(false);
   const cameraDown = [0, 0];
   let cameraPosition: [number, number, number] = $state([0, 0, 4]);
+  let edgeEndPosition = $state<[number, number] | null>();
   let addMenuPosition = $state<[number, number] | null>(null);
   let clipboard: null | {
     nodes: Node[];
@@ -465,6 +466,8 @@
         n.tmp.downY = n.position[1];
       }
     }
+
+    edgeEndPosition = null;
   }
 
   function copyNodes() {
@@ -478,17 +481,15 @@
       .filter(Boolean) as Node[];
 
     const _edges = graph.getEdgesBetweenNodes(_nodes);
-
-    _nodes = _nodes.map((_node) => {
-      const node = globalThis.structuredClone({
+    _nodes = $state.snapshot(
+      _nodes.map((_node) => ({
         ..._node,
         tmp: {
           downX: mousePosition[0] - _node.position[0],
           downY: mousePosition[1] - _node.position[1],
         },
-      });
-      return node;
-    });
+      })),
+    );
 
     clipboard = {
       nodes: _nodes,
@@ -533,6 +534,18 @@
   });
 
   keymap.addShortcut({
+    key: "f",
+    description: "Smart Connect Nodes",
+    callback: () => {
+      const nodes = [...graphState.selectedNodes.values()]
+        .map((g) => graph.getNode(g))
+        .filter((n) => !!n);
+      const edge = graph.smartConnect(nodes[0], nodes[1]);
+      if (!edge) graph.smartConnect(nodes[1], nodes[0]);
+    },
+  });
+
+  keymap.addShortcut({
     key: "?",
     description: "Toggle Help",
     callback: () => {
@@ -561,6 +574,7 @@
     callback: () => {
       graphState.activeNodeId = -1;
       graphState.clearSelection();
+      edgeEndPosition = null;
       (document.activeElement as HTMLElement)?.blur();
     },
   });
@@ -778,6 +792,16 @@
         );
       }
       graph.save();
+    } else if (graphState.activeSocket && event.ctrlKey) {
+      // Handle automatic adding of nodes on ctrl+mouseUp
+      edgeEndPosition = [mousePosition[0], mousePosition[1]];
+
+      if (typeof graphState.activeSocket.index === "number") {
+        addMenuPosition = [mousePosition[0], mousePosition[1] - 3];
+      } else {
+        addMenuPosition = [mousePosition[0] - 20, mousePosition[1] - 3];
+      }
+      return;
     }
 
     // check if camera moved
@@ -953,7 +977,7 @@
 
     {#if graph.status === "idle"}
       {#if addMenuPosition}
-        <AddMenu bind:position={addMenuPosition} {graph} />
+        <AddMenu bind:position={addMenuPosition} />
       {/if}
 
       {#if graphState.activeSocket}
@@ -963,7 +987,10 @@
             x: graphState.activeSocket.position[0],
             y: graphState.activeSocket.position[1],
           }}
-          to={{ x: mousePosition[0], y: mousePosition[1] }}
+          to={{
+            x: edgeEndPosition?.[0] ?? mousePosition[0],
+            y: edgeEndPosition?.[1] ?? mousePosition[1],
+          }}
         />
       {/if}
 

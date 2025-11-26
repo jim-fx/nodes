@@ -25,7 +25,10 @@
 <div class="wrapper">
   <table>
     <tbody>
-      <tr on:click={() => ($open.runtime = !$open.runtime)}>
+      <tr
+        style="cursor:pointer;"
+        on:click={() => ($open.runtime = !$open.runtime)}
+      >
         <td>{$open.runtime ? "-" : "+"} runtime </td>
         <td>{humanizeDuration(runtime || 1000)}</td>
       </tr>
@@ -37,7 +40,7 @@
         </tr>
       {/if}
 
-      <tr on:click={() => ($open.fps = !$open.fps)}>
+      <tr style="cursor:pointer;" on:click={() => ($open.fps = !$open.fps)}>
         <td>{$open.fps ? "-" : "+"} fps </td>
         <td>
           {Math.floor(fps[fps.length - 1])}fps
@@ -73,9 +76,6 @@
     background: var(--layer-0);
     border: solid thin var(--outline);
     border-collapse: collapse;
-  }
-  tr {
-    cursor: pointer;
   }
   td {
     padding: 4px;

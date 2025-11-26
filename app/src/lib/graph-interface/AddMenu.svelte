@@ -1,21 +1,26 @@
 <script lang="ts">
-  import type { GraphManager } from "./graph-manager.svelte";
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
-  import type { NodeType } from "@nodes/types";
+  import type { Node, NodeType } from "@nodes/types";
+  import { getGraphState } from "./graph/state.svelte";
+  import { getGraphManager } from "./graph/context";
 
   type Props = {
     position: [x: number, y: number] | null;
-    graph: GraphManager;
   };
 
-  let { position = $bindable(), graph }: Props = $props();
+  const graph = getGraphManager();
+  const graphState = getGraphState();
+
+  let { position = $bindable() }: Props = $props();
 
   let input: HTMLInputElement;
   let value = $state<string>();
   let activeNodeId = $state<NodeType>();
 
-  const allNodes = graph.getNodeDefinitions();
+  const allNodes = graphState.activeSocket
+    ? graph.getPossibleNodes(graphState.activeSocket)
+    : graph.getNodeDefinitions();
 
   function filterNodes() {
     return allNodes.filter((node) => node.id.includes(value ?? ""));
@@ -25,7 +30,7 @@
   $effect(() => {
     if (nodes) {
       if (activeNodeId === undefined) {
-        activeNodeId = nodes[0].id;
+        activeNodeId = nodes?.[0]?.id;
       } else if (nodes.length) {
         const node = nodes.find((node) => node.id === activeNodeId);
         if (!node) {
@@ -34,6 +39,28 @@
       }
     }
   });
+
+  function handleNodeCreation(nodeType: Node["type"]) {
+    if (!position) return;
+
+    const newNode = graph.createNode({
+      type: nodeType,
+      position,
+      props: {},
+    });
+
+    const edgeInputSocket = graphState.activeSocket;
+    if (edgeInputSocket && newNode) {
+      if (typeof edgeInputSocket.index === "number") {
+        graph.smartConnect(edgeInputSocket.node, newNode);
+      } else {
+        graph.smartConnect(newNode, edgeInputSocket.node);
+      }
+    }
+
+    graphState.activeSocket = null;
+    position = null;
+  }
 
   function handleKeyDown(event: KeyboardEvent) {
     event.stopImmediatePropagation();
@@ -57,8 +84,7 @@
 
     if (event.key === "Enter") {
       if (activeNodeId && position) {
-        graph.createNode({ type: activeNodeId, position, props: {} });
-        position = null;
+        handleNodeCreation(activeNodeId);
       }
       return;
     }
@@ -95,18 +121,10 @@
           aria-selected={node.id === activeNodeId}
           onkeydown={(event) => {
             if (event.key === "Enter") {
-              if (position) {
-                graph.createNode({ type: node.id, position, props: {} });
-                position = null;
-              }
+              handleNodeCreation(node.id);
             }
           }}
-          onmousedown={() => {
-            if (position) {
-              graph.createNode({ type: node.id, position, props: {} });
-              position = null;
-            }
-          }}
+          onmousedown={() => handleNodeCreation(node.id)}
           onfocus={() => {
             activeNodeId = node.id;
           }}

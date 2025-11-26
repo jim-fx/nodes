@@ -4,7 +4,7 @@ import { clone } from "./helpers/index.js";
 import { createLogger } from "@nodes/utils";
 
 const diff = create({
-  objectHash: function (obj, index) {
+  objectHash: function(obj, index) {
     if (obj === null) return obj;
     if ("id" in obj) return obj.id as string;
     if ("_id" in obj) return obj._id as string;
@@ -16,7 +16,7 @@ const diff = create({
 });
 
 const log = createLogger("history");
-// log.mute();
+log.mute();
 
 export class HistoryManager {
   index: number = -1;

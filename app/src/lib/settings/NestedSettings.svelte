@@ -114,7 +114,7 @@
         {type[key].label || key}
       </button>
     {:else}
-      {#if type[key]?.label !== false}
+      {#if type[key].label !== ""}
         <label for={id}>{type[key].label || key}</label>
       {/if}
       <Input {id} input={type[key]} bind:value={internalValue} />
@@ -194,6 +194,10 @@
     padding-left: 1em;
     padding-right: 1em;
     padding-bottom: 1px;
+  }
+
+  button {
+    cursor: pointer;
   }
 
   hr {

@@ -49,6 +49,9 @@
       ? JSON.parse(localStorage.getItem("graph")!)
       : templates.defaultPlant,
   );
+  function handleSave(graph: Graph) {
+    localStorage.setItem("graph", JSON.stringify(graph));
+  }
 
   let graphInterface = $state<ReturnType<typeof GraphInterface>>(null!);
   let viewerComponent = $state<ReturnType<typeof Viewer>>();
@@ -122,32 +125,30 @@
   $effect(() => {
     //@ts-ignore
     AppSettingTypes.debug.stressTest.loadGrid.callback = () => {
-      graph = templates.grid(
-        appSettings.value.debug.amount.value,
-        appSettings.value.debug.amount.value,
+      manager.load(
+        templates.grid(
+          appSettings.value.debug.stressTest.amount,
+          appSettings.value.debug.stressTest.amount,
+        ),
       );
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.loadTree.callback = () => {
-      graph = templates.tree(appSettings.value.debug.amount.value);
+      manager.load(templates.tree(appSettings.value.debug.stressTest.amount));
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.lottaFaces.callback = () => {
-      graph = templates.lottaFaces;
+      manager.load(templates.lottaFaces as unknown as Graph);
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.lottaNodes.callback = () => {
-      graph = templates.lottaNodes;
+      manager.load(templates.lottaNodes as unknown as Graph);
     };
     //@ts-ignore
     AppSettingTypes.debug.stressTest.lottaNodesAndFaces.callback = () => {
-      graph = templates.lottaNodesAndFaces;
+      manager.load(templates.lottaNodesAndFaces as unknown as Graph);
     };
   });
-
-  function handleSave(graph: Graph) {
-    localStorage.setItem("graph", JSON.stringify(graph));
-  }
 </script>
 
 <svelte:document onkeydown={applicationKeymap.handleKeyboardEvent} />

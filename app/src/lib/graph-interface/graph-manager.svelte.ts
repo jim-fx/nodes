@@ -2,6 +2,7 @@ import type {
   Edge,
   Graph,
   Node,
+  NodeDefinition,
   NodeInput,
   NodeRegistry,
   NodeType,
@@ -15,7 +16,7 @@ import throttle from "$lib/helpers/throttle";
 import { HistoryManager } from "./history-manager";
 
 const logger = createLogger("graph-manager");
-// logger.mute();
+logger.mute();
 
 const clone =
   "structuredClone" in self
@@ -361,6 +362,20 @@ export class GraphManager extends EventEmitter<{
     this.save();
   }
 
+  smartConnect(from: Node, to: Node): Edge | undefined {
+    const inputs = Object.entries(to.tmp?.type?.inputs ?? {});
+    const outputs = from.tmp?.type?.outputs ?? [];
+    for (let i = 0; i < inputs.length; i++) {
+      const [inputName, input] = inputs[0];
+      for (let o = 0; o < outputs.length; o++) {
+        const output = outputs[0];
+        if (input.type === output) {
+          return this.createEdge(from, o, to, inputName);
+        }
+      }
+    }
+  }
+
   createNodeId() {
     const max = Math.max(0, ...this.nodes.keys());
     return max + 1;
@@ -370,10 +385,9 @@ export class GraphManager extends EventEmitter<{
     // map old ids to new ids
     const idMap = new Map<number, number>();
 
-    const startId = this.createNodeId();
 
     nodes = nodes.map((node, i) => {
-      const id = startId + i;
+      const id = this.createNodeId();
       idMap.set(node.id, id);
       const type = this.registry.getNode(node.type);
       if (!type) {
@@ -437,6 +451,8 @@ export class GraphManager extends EventEmitter<{
     this.nodes.set(node.id, node);
 
     this.save();
+
+    return node
   }
 
   createEdge(
@@ -445,7 +461,10 @@ export class GraphManager extends EventEmitter<{
     to: Node,
     toSocket: string,
     { applyUpdate = true } = {},
-  ) {
+  ): Edge | undefined {
+
+    console.log("Create Edge", from.type, fromSocket, to.type, toSocket)
+
     const existingEdges = this.getEdgesToNode(to);
 
     // check if this exact edge already exists
@@ -464,6 +483,8 @@ export class GraphManager extends EventEmitter<{
       toSocketType.push(...(to?.tmp?.type?.inputs?.[toSocket]?.accepts || []));
     }
 
+    console.log({ fromSocketType, toSocket, toType: to?.tmp?.type, toSocketType });
+
     if (!areSocketsCompatible(fromSocketType, toSocketType)) {
       logger.error(
         `Socket types do not match: ${fromSocketType} !== ${toSocketType}`,
@@ -478,11 +499,9 @@ export class GraphManager extends EventEmitter<{
       this.removeEdge(edgeToBeReplaced, { applyDeletion: false });
     }
 
-    if (applyUpdate) {
-      this.edges.push([from, fromSocket, to, toSocket]);
-    } else {
-      this.edges.push([from, fromSocket, to, toSocket]);
-    }
+    const edge = [from, fromSocket, to, toSocket] as Edge;
+
+    this.edges.push(edge);
 
     from.tmp = from.tmp || {};
     from.tmp.children = from.tmp.children || [];
@@ -496,6 +515,8 @@ export class GraphManager extends EventEmitter<{
       this.save();
     }
     this.execute();
+
+    return edge;
   }
 
   undo() {
@@ -545,6 +566,33 @@ export class GraphManager extends EventEmitter<{
       stack.push(...(parent.tmp?.parents || []));
     }
     return parents.reverse();
+  }
+
+  getPossibleNodes(socket: Socket): NodeDefinition[] {
+    const allDefinitions = this.getNodeDefinitions();
+
+    const nodeType = socket.node.tmp?.type;
+    if (!nodeType) {
+      return [];
+    }
+
+    if (typeof socket.index === "string") {
+      // if index is a string, we are an input looking for outputs
+      return allDefinitions.filter(s => {
+        return s.outputs?.find(_s => Object
+          .values(nodeType?.inputs || {})
+          .map(s => s.type)
+          .includes(_s as NodeInput["type"])
+        )
+      })
+    } else {
+      // if index is a number, we are an output looking for inputs
+      return allDefinitions.filter(s => Object
+        .values(s.inputs ?? {})
+        .map(s => s.type)
+        .find(s => nodeType?.outputs?.includes(s))
+      )
+    }
   }
 
   getPossibleSockets({ node, index }: Socket): [Node, string | number][] {

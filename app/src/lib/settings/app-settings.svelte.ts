@@ -1,6 +1,4 @@
 import { localState } from "$lib/helpers/localState.svelte";
-import type { NodeInput } from "@nodes/types";
-import type { SettingsType } from ".";
 
 const themes = [
   "dark",
@@ -10,7 +8,7 @@ const themes = [
   "high-contrast",
   "nord",
   "dracula",
-];
+] as const;
 
 export const AppSettingTypes = {
   theme: {
@@ -49,11 +47,6 @@ export const AppSettingTypes = {
   },
   debug: {
     title: "Debug",
-    amount: {
-      type: "number",
-      label: "Amount",
-      value: 4,
-    },
     wireframe: {
       type: "boolean",
       label: "Wireframe",
@@ -89,14 +82,6 @@ export const AppSettingTypes = {
       label: "Show Stem Lines",
       value: false,
     },
-    logging: {
-      title: "Logging",
-      logLevel: {
-        type: "select",
-        label: false,
-        options: ["info","warning","error"]
-      }
-    },
     stressTest: {
       title: "Stress Test",
       amount: {
@@ -127,32 +112,23 @@ export const AppSettingTypes = {
       },
     },
   },
-} as const satisfies SettingsType;
+} as const;
 
-type IsInputDefinition<T> = T extends NodeInput ? T : never;
-type HasTitle = { title: string };
+type SettingsToStore<T> =
+  T extends { value: infer V }
+  ? V extends readonly string[]
+  ? V[number]
+  : V
+  : T extends any[]
+  ? {}
+  : T extends object
+  ? {
+    [K in keyof T as T[K] extends object ? K : never]:
+    SettingsToStore<T[K]>
+  }
+  : never;
 
-type Widen<T> = T extends boolean
-  ? boolean
-  : T extends number
-    ? number
-    : T extends string
-      ? string
-      : T;
-
-type ExtractSettingsValues<T> = {
-  -readonly [K in keyof T]: T[K] extends HasTitle
-    ? ExtractSettingsValues<Omit<T[K], "title">>
-    : T[K] extends IsInputDefinition<T[K]>
-      ? T[K] extends { value: infer V }
-        ? Widen<V>
-        : never
-      : T[K] extends Record<string, any>
-        ? ExtractSettingsValues<T[K]>
-        : never;
-};
-
-export function settingsToStore<T>(settings: T): ExtractSettingsValues<T> {
+export function settingsToStore<T>(settings: T): SettingsToStore<T> {
   const result = {} as any;
   for (const key in settings) {
     const value = settings[key];
