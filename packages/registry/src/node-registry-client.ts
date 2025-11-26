@@ -56,16 +56,17 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   private async fetchNodeWasm(nodeId: `${string}/${string}/${string}`) {
-    const res = await Promise.race([
-      this.fetchArrayBuffer(`nodes/${nodeId}.wasm`),
-      this.cache?.get(nodeId),
-    ]);
-
-    if (!res) {
-      throw new Error(`Failed to load node wasm ${nodeId}`);
+    const cachedNode = this.cache?.get(nodeId);
+    if(cachedNode){
+      return cachedNode;
     }
 
-    return res;
+    const node = this.fetchArrayBuffer(`nodes/${nodeId}.wasm`);
+    if (node) {
+      return node;
+    }
+
+    throw new Error(`Failed to load node wasm ${nodeId}`);
   }
 
   async load(nodeIds: `${string}/${string}/${string}`[]) {
