@@ -1,4 +1,6 @@
 precision highp float;
+// For WebGL1 make sure this extension is enabled in your material:
+// #extension GL_OES_standard_derivatives : enable
 
 varying vec2 vUv;
 
@@ -10,33 +12,45 @@ uniform vec2 zoomLimits;
 uniform vec3 backgroundColor;
 uniform vec3 lineColor;
 
+// Anti-aliased step: threshold in the same units as `value`
+float aaStep(float threshold, float value, float deriv) {
+    float w = deriv * 0.5; // ~one pixel
+    return smoothstep(threshold - w, threshold + w, value);
+}
+
 float grid(float x, float y, float divisions, float thickness) {
-    x = fract(x * divisions);
-    x = min(x, 1.0 - x);
+    // Continuous grid coordinates
+    float gx = x * divisions;
+    float gy = y * divisions;
 
-    float xdelta = fwidth(x);
-    x = smoothstep(x - xdelta, x + xdelta, thickness);
+    // Distance to nearest grid line (0 at the line)
+    float fx = fract(gx);
+    fx = min(fx, 1.0 - fx);
+    float fy = fract(gy);
+    fy = min(fy, 1.0 - fy);
 
-    y = fract(y * divisions);
-    y = min(y, 1.0 - y);
+    // Derivatives in screen space – use the continuous coords here
+    float dx = fwidth(gx);
+    float dy = fwidth(gy);
 
-    float ydelta = fwidth(y);
-    y = smoothstep(y - ydelta, y + ydelta, thickness);
+    // Keep the original semantics: thickness is the threshold in the [0, 0.5] distance domain
+    float lineX = 1.0 - aaStep(thickness, fx, dx);
+    float lineY = 1.0 - aaStep(thickness, fy, dy);
 
-    return clamp(x + y, 0.0, 1.0);
+    return clamp(lineX + lineY, 0.0, 1.0);
 }
 
 float circle_grid(float x, float y, float divisions, float circleRadius) {
+    float gridX = mod(x + divisions * 0.5, divisions) - divisions * 0.5;
+    float gridY = mod(y + divisions * 0.5, divisions) - divisions * 0.5;
 
-    float gridX = mod(x + divisions/2.0, divisions) - divisions / 2.0;
-    float gridY = mod(y + divisions/2.0, divisions) - divisions / 2.0;
+    vec2 g = vec2(gridX, gridY);
+    float d = length(g);
 
-    // Calculate the distance from the center of the grid
-    float gridDistance = length(vec2(gridX, gridY));
+    // Screen-space derivative for AA on the circle edge
+    float w = fwidth(d);
 
-    // Use smoothstep to create a smooth transition at the edges of the circle
-    float circle = 1.0 - smoothstep(circleRadius - 0.5, circleRadius + 0.5, gridDistance);
-
+    float circle = 1.0 - smoothstep(circleRadius - w, circleRadius + w, d);
     return circle;
 }
 
@@ -56,44 +70,43 @@ void main(void) {
     float minZ = zoomLimits.x;
     float maxZ = zoomLimits.y;
 
-    float divisions = 0.1/cz;
-    float thickness = 0.05/cz;
-    float delta = 0.1 / 2.0;
+    float divisions = 0.1 / cz;
+    float thickness = 0.05 / cz;
 
     float nz = (cz - minZ) / (maxZ - minZ);
 
-    float ux = (vUv.x-0.5) * width + cx*cz;
-    float uy = (vUv.y-0.5) * height - cy*cz;
+    float ux = (vUv.x - 0.5) * width + cx * cz;
+    float uy = (vUv.y - 0.5) * height - cy * cz;
 
-
-    //extra small grid
-    float m1 = grid(ux, uy, divisions*4.0, thickness*4.0) * 0.9;
-    float m2 = grid(ux, uy, divisions*16.0, thickness*16.0) * 0.5;
+    // extra small grid
+    float m1 = grid(ux, uy, divisions * 4.0,  thickness * 4.0)  * 0.9;
+    float m2 = grid(ux, uy, divisions * 16.0, thickness * 16.0) * 0.5;
     float xsmall = max(m1, m2);
     
-    float s3 = circle_grid(ux, uy, cz/1.6, 1.0) * 0.5;
+    float s3 = circle_grid(ux, uy, cz / 1.6, 1.0) * 0.5;
     xsmall = max(xsmall, s3);
 
     // small grid
-    float c1 = grid(ux, uy, divisions, thickness) * 0.6;
-    float c2 = grid(ux, uy, divisions*2.0, thickness) * 0.5;
+    float c1 = grid(ux, uy, divisions,        thickness)        * 0.6;
+    float c2 = grid(ux, uy, divisions * 2.0,  thickness * 2.0)  * 0.5;
     float small = max(c1, c2);
 
-    float s1 = circle_grid(ux, uy, cz*10.0, 2.0) * 0.5;
+    float s1 = circle_grid(ux, uy, cz * 10.0, 2.0) * 0.5;
     small = max(small, s1);
 
     // large grid
-    float c3 = grid(ux, uy, divisions/8.0, thickness/8.0) * 0.5;
-    float c4 = grid(ux, uy, divisions/2.0, thickness/4.0) * 0.4;
+    float c3 = grid(ux, uy, divisions / 8.0,  thickness / 8.0)  * 0.5;
+    float c4 = grid(ux, uy, divisions / 2.0,  thickness / 4.0)  * 0.4;
     float large = max(c3, c4);
 
-    float s2 = circle_grid(ux, uy, cz*20.0, 1.0) * 0.4;
+    float s2 = circle_grid(ux, uy, cz * 20.0, 1.0) * 0.4;
     large = max(large, s2);
 
-    float c = mix(large, small, min(nz*2.0+0.05, 1.0));
-    c = mix(c, xsmall, max(min((nz-0.3)/0.7, 1.0), 0.0));
+    float c = mix(large, small, min(nz * 2.0 + 0.05, 1.0));
+    c = mix(c, xsmall, clamp((nz - 0.3) / 0.7, 0.0, 1.0));
 
     vec3 color = mix(backgroundColor, lineColor, c); 
 
     gl_FragColor = vec4(color, 1.0);
 }
+
