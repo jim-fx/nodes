@@ -88,7 +88,7 @@ export class GraphManager extends EventEmitter<{
     ]) as Graph["edges"];
     const serialized = {
       id: this.graph.id,
-      settings: this.settings,
+      settings: $state.snapshot(this.settings),
       nodes,
       edges,
     };

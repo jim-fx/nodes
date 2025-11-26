@@ -37,7 +37,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   constructor(
     private url: string,
     private cache?: AsyncCache<ArrayBuffer>,
-  ) {}
+  ) { }
 
   async fetchUsers() {
     return this.fetchJson(`nodes/users.json`);
@@ -56,17 +56,17 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   private async fetchNodeWasm(nodeId: `${string}/${string}/${string}`) {
-    const cachedNode = this.cache?.get(nodeId);
-    if(cachedNode){
+    const cachedNode = await this.cache?.get(nodeId);
+    if (cachedNode) {
       return cachedNode;
     }
 
-    const node = this.fetchArrayBuffer(`nodes/${nodeId}.wasm`);
-    if (node) {
-      return node;
+    const node = await this.fetchArrayBuffer(`nodes/${nodeId}.wasm`);
+    if (!node) {
+      throw new Error(`Failed to load node wasm ${nodeId}`);
     }
 
-    throw new Error(`Failed to load node wasm ${nodeId}`);
+    return node;
   }
 
   async load(nodeIds: `${string}/${string}/${string}`[]) {

@@ -4,7 +4,7 @@
   import type { NodeInput } from "@nodes/types";
   import Input from "@nodes/ui";
 
-  type Button = { type: "button"; label?: string };
+  type Button = { type: "button"; callback: () => void; label?: string };
 
   type InputType = NodeInput | Button;
 
@@ -99,7 +99,7 @@
       Array.isArray((node as any).options) &&
       typeof internalValue === "number"
     ) {
-      value[key] = (node as any).options[internalValue] as any;
+      value[key] = (node as any)?.options?.[internalValue] as any;
     } else {
       value[key] = internalValue as any;
     }
@@ -110,11 +110,13 @@
   <!-- Leaf input -->
   <div class="input input-{type[key].type}" class:first-level={depth === 1}>
     {#if type[key].type === "button"}
-      <button onclick={() => type[key].callback()}>
+      <button onclick={() => "callback" in type[key] && type[key].callback()}>
         {type[key].label || key}
       </button>
     {:else}
-      <label for={id}>{type[key].label || key}</label>
+      {#if type[key]?.label !== false}
+        <label for={id}>{type[key].label || key}</label>
+      {/if}
       <Input {id} input={type[key]} bind:value={internalValue} />
     {/if}
   </div>

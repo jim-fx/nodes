@@ -89,6 +89,14 @@ export const AppSettingTypes = {
       label: "Show Stem Lines",
       value: false,
     },
+    logging: {
+      title: "Logging",
+      logLevel: {
+        type: "select",
+        label: false,
+        options: ["info","warning","error"]
+      }
+    },
     stressTest: {
       title: "Stress Test",
       amount: {
