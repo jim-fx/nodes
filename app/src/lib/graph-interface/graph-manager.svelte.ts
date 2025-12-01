@@ -397,17 +397,17 @@ export class GraphManager extends EventEmitter<{
   }
 
   createNodeId() {
-    const max = Math.max(0, ...this.nodes.keys());
-    return max + 1;
+    return Math.max(0, ...this.nodes.keys()) + 1;
   }
 
   createGraph(nodes: Node[], edges: [number, number, number, string][]) {
     // map old ids to new ids
     const idMap = new Map<number, number>();
 
+    let startId = this.createNodeId()
 
     nodes = nodes.map((node) => {
-      const id = this.createNodeId();
+      const id = startId++;
       idMap.set(node.id, id);
       const type = this.registry.getNode(node.type);
       if (!type) {

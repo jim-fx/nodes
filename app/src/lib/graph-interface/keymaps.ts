@@ -37,14 +37,14 @@ export function setupKeymaps(keymap: Keymap, graph: GraphManager, graphState: Gr
     key: "c",
     ctrl: true,
     description: "Copy active nodes",
-    callback: graphState.copyNodes,
+    callback: () => graphState.copyNodes(),
   });
 
   keymap.addShortcut({
     key: "v",
     ctrl: true,
     description: "Paste nodes",
-    callback: graphState.pasteNodes,
+    callback: () => graphState.pasteNodes(),
   });
 
   keymap.addShortcut({

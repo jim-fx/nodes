@@ -192,43 +192,42 @@ export class GraphState {
   copyNodes() {
     if (this.activeNodeId === -1 && !this.selectedNodes?.size)
       return;
-    let _nodes = [
+    let nodes = [
       this.activeNodeId,
       ...(this.selectedNodes?.values() || []),
     ]
       .map((id) => this.graph.getNode(id))
-      .filter(Boolean) as Node[];
+      .filter(b => !!b);
 
-    const _edges = this.graph.getEdgesBetweenNodes(_nodes);
-    _nodes = $state.snapshot(
-      _nodes.map((_node) => ({
-        ..._node,
-        tmp: {
-          downX: this.mousePosition[0] - _node.position[0],
-          downY: this.mousePosition[1] - _node.position[1],
-        },
-      })),
-    );
+    const edges = this.graph.getEdgesBetweenNodes(nodes);
+    nodes = nodes.map((node) => ({
+      ...node,
+      position: [
+        this.mousePosition[0] - node.position[0],
+        this.mousePosition[1] - node.position[1],
+      ],
+      tmp: undefined,
+    }));
 
     this.clipboard = {
-      nodes: _nodes,
-      edges: _edges,
+      nodes: nodes,
+      edges: edges,
     };
   }
 
   pasteNodes() {
     if (!this.clipboard) return;
 
-    const _nodes = this.clipboard.nodes
+    const nodes = this.clipboard.nodes
       .map((node) => {
         node.tmp = node.tmp || {};
-        node.position[0] = this.mousePosition[0] - (node?.tmp?.downX || 0);
-        node.position[1] = this.mousePosition[1] - (node?.tmp?.downY || 0);
+        node.position[0] = this.mousePosition[0] - node.position[0];
+        node.position[1] = this.mousePosition[1] - node.position[1];
         return node;
       })
       .filter(Boolean) as Node[];
 
-    const newNodes = this.graph.createGraph(_nodes, this.clipboard.edges);
+    const newNodes = this.graph.createGraph(nodes, this.clipboard.edges);
     this.selectedNodes.clear();
     for (const node of newNodes) {
       this.selectedNodes.add(node.id);
