@@ -82,6 +82,11 @@ export const AppSettingTypes = {
       label: "Show Stem Lines",
       value: false,
     },
+    showGraphJson: {
+      type: "boolean",
+      label: "Show Graph Source",
+      value: false,
+    },
     stressTest: {
       title: "Stress Test",
       amount: {

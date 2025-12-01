@@ -2,12 +2,11 @@ import { MemoryRuntimeExecutor } from "./runtime-executor";
 import { RemoteNodeRegistry, IndexDBCache } from "@nodarium/registry";
 import type { Graph } from "@nodarium/types";
 import { createPerformanceStore } from "@nodarium/utils";
-import { MemoryRuntimeCache } from "./runtime-executor-cache";
 
-const cache = new MemoryRuntimeCache();
 const indexDbCache = new IndexDBCache("node-registry");
 const nodeRegistry = new RemoteNodeRegistry("", indexDbCache);
-const executor = new MemoryRuntimeExecutor(nodeRegistry, cache);
+
+const executor = new MemoryRuntimeExecutor(nodeRegistry);
 
 const performanceStore = createPerformanceStore();
 executor.perf = performanceStore;

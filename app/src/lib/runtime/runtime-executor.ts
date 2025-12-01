@@ -64,7 +64,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   constructor(
     private registry: NodeRegistry,
-    private cache?: SyncCache<Int32Array>,
+    // private cache?: SyncCache<Int32Array>,
   ) { }
 
   private async getNodeDefinitions(graph: Graph) {

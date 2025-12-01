@@ -610,9 +610,6 @@ export class GraphManager extends EventEmitter<{
           return s.accepts?.find(a => nodeType.outputs?.includes(a))
         }))
 
-    console.log(definitions.map(d => Object.values(d?.inputs ?? {})))
-    console.log(definitions)
-
     return definitions
 
   }

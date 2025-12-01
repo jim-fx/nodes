@@ -27,6 +27,7 @@
   import { createPerformanceStore } from "@nodarium/utils";
   import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
+  import GraphSource from "$lib/sidebar/panels/GraphSource.svelte";
 
   let performanceStore = createPerformanceStore();
 
@@ -88,39 +89,37 @@
   });
 
   let runIndex = 0;
-  const handleUpdate = debounceAsyncFunction(
-    async (g: Graph, s: Record<string, any> = graphSettings) => {
-      runIndex++;
-      performanceStore.startRun();
-      try {
-        let a = performance.now();
-        const graphResult = await runtime.execute(
-          $state.snapshot(g),
-          $state.snapshot(s),
-        );
-        let b = performance.now();
 
-        if (appSettings.value.debug.useWorker) {
-          let perfData = await runtime.getPerformanceData();
-          let lastRun = perfData?.at(-1);
-          if (lastRun?.total) {
-            lastRun.runtime = lastRun.total;
-            delete lastRun.total;
-            performanceStore.mergeData(lastRun);
-            performanceStore.addPoint(
-              "worker-transfer",
-              b - a - lastRun.runtime[0],
-            );
-          }
+  async function update(g: Graph, s: Record<string, any> = graphSettings) {
+    runIndex++;
+    performanceStore.startRun();
+    try {
+      let a = performance.now();
+      const graphResult = await runtime.execute(g, s);
+      let b = performance.now();
+
+      if (appSettings.value.debug.useWorker) {
+        let perfData = await runtime.getPerformanceData();
+        let lastRun = perfData?.at(-1);
+        if (lastRun?.total) {
+          lastRun.runtime = lastRun.total;
+          delete lastRun.total;
+          performanceStore.mergeData(lastRun);
+          performanceStore.addPoint(
+            "worker-transfer",
+            b - a - lastRun.runtime[0],
+          );
         }
-        viewerComponent?.update(graphResult);
-      } catch (error) {
-        console.log("errors", error);
-      } finally {
-        performanceStore.stopRun();
       }
-    },
-  );
+      viewerComponent?.update(graphResult);
+    } catch (error) {
+      console.log("errors", error);
+    } finally {
+      performanceStore.stopRun();
+    }
+  }
+
+  const handleUpdate = debounceAsyncFunction(update);
 
   $effect(() => {
     //@ts-ignore
@@ -219,6 +218,14 @@
           {#if $performanceStore}
             <PerformanceViewer data={$performanceStore} />
           {/if}
+        </Panel>
+        <Panel
+          id="graph-source"
+          title="Graph Source"
+          hidden={!appSettings.value.debug.showGraphJson}
+          icon="i-tabler-code"
+        >
+          <GraphSource {graph} />
         </Panel>
         <Panel
           id="benchmark"
