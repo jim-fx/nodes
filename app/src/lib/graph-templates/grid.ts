@@ -1,4 +1,4 @@
-import type { Graph } from "@nodes/types";
+import type { Graph } from "@nodarium/types";
 
 export function grid(width: number, height: number) {
 

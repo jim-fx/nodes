@@ -1,23 +1,19 @@
 <script lang="ts">
+  import { getGraphState } from "../graph/state.svelte.js";
   import { createNodePath } from "../helpers/index.js";
-  import type { Node, Socket } from "@nodes/types";
-  import { getContext } from "svelte";
+  import type { Node } from "@nodarium/types";
+
+  const graphState = getGraphState();
 
   const { node }: { node: Node } = $props();
-
-  const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
-  const getSocketPosition =
-    getContext<(node: Node, index: number) => [number, number]>(
-      "getSocketPosition",
-    );
 
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    setDownSocket?.({
+    graphState.setDownSocket?.({
       node,
       index: 0,
-      position: getSocketPosition?.(node, 0),
+      position: graphState.getSocketPosition?.(node, 0),
     });
   }
 

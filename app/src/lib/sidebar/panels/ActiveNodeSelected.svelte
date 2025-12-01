@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Node, NodeInput } from "@nodes/types";
+  import type { Node, NodeInput } from "@nodarium/types";
   import NestedSettings from "$lib/settings/NestedSettings.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager.svelte";
 
@@ -8,9 +8,8 @@
     node: Node;
   };
 
-  const { manager, node }: Props = $props();
+  const { manager, node = $bindable() }: Props = $props();
 
-  const nodeDefinition = filterInputs(node.tmp?.type?.inputs);
   function filterInputs(inputs?: Record<string, NodeInput>) {
     const _inputs = $state.snapshot(inputs);
     return Object.fromEntries(
@@ -27,6 +26,7 @@
         }),
     );
   }
+  const nodeDefinition = filterInputs(node.tmp?.type?.inputs);
 
   type Store = Record<string, number | number[]>;
   let store = $state<Store>(createStore(node?.props, nodeDefinition));
@@ -75,8 +75,12 @@
   });
 </script>
 
-<NestedSettings
-  id="activeNodeSettings"
-  bind:value={store}
-  type={nodeDefinition}
-/>
+{#if Object.keys(nodeDefinition).length}
+  <NestedSettings
+    id="activeNodeSettings"
+    bind:value={store}
+    type={nodeDefinition}
+  />
+{:else}
+  <p class="mx-4">Node has no settings</p>
+{/if}

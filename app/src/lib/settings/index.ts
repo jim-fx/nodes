@@ -1,4 +1,4 @@
-import type { NodeInput } from "@nodes/types";
+import type { NodeInput } from "@nodarium/types";
 
 type Button = { type: "button"; label?: string };
 

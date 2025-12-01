@@ -2,7 +2,7 @@
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
   import * as templates from "$lib/graph-templates";
-  import type { Graph, Node } from "@nodes/types";
+  import type { Graph, Node } from "@nodarium/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import {
     appSettings,
@@ -23,8 +23,8 @@
     WorkerRuntimeExecutor,
     MemoryRuntimeExecutor,
   } from "$lib/runtime";
-  import { IndexDBCache, RemoteNodeRegistry } from "@nodes/registry";
-  import { createPerformanceStore } from "@nodes/utils";
+  import { IndexDBCache, RemoteNodeRegistry } from "@nodarium/registry";
+  import { createPerformanceStore } from "@nodarium/utils";
   import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
 
@@ -194,7 +194,7 @@
           <Keymap
             keymaps={[
               { keymap: applicationKeymap, title: "Application" },
-              { keymap: graphInterface.keymap, title: "Node-Editor" },
+              { keymap: graphInterface?.keymap, title: "Node-Editor" },
             ]}
           />
         </Panel>

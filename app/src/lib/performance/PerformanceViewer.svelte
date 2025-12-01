@@ -1,9 +1,9 @@
 <script lang="ts">
   import Monitor from "./Monitor.svelte";
   import { humanizeNumber } from "$lib/helpers";
-  import { Checkbox } from "@nodes/ui";
+  import { Checkbox } from "@nodarium/ui";
   import localStore from "$lib/helpers/localStore";
-  import { type PerformanceData } from "@nodes/utils";
+  import { type PerformanceData } from "@nodarium/utils";
   import BarSplit from "./BarSplit.svelte";
 
   export let data: PerformanceData;

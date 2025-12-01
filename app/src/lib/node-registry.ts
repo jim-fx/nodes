@@ -1,4 +1,4 @@
-import { createWasmWrapper } from "@nodes/utils";
+import { createWasmWrapper } from "@nodarium/utils";
 import fs from "fs/promises";
 import path from "path";
 

@@ -1,10 +1,10 @@
 import { create, type Delta } from "jsondiffpatch";
-import type { Graph } from "@nodes/types";
+import type { Graph } from "@nodarium/types";
 import { clone } from "./helpers/index.js";
-import { createLogger } from "@nodes/utils";
+import { createLogger } from "@nodarium/utils";
 
 const diff = create({
-  objectHash: function(obj, index) {
+  objectHash: function (obj, index) {
     if (obj === null) return obj;
     if ("id" in obj) return obj.id as string;
     if ("_id" in obj) return obj._id as string;

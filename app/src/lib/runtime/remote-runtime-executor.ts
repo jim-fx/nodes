@@ -1,4 +1,4 @@
-import type { Graph, RuntimeExecutor } from "@nodes/types";
+import type { Graph, RuntimeExecutor } from "@nodarium/types";
 
 export class RemoteRuntimeExecutor implements RuntimeExecutor {
 

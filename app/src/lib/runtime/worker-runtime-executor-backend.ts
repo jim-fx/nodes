@@ -1,7 +1,7 @@
 import { MemoryRuntimeExecutor } from "./runtime-executor";
-import { RemoteNodeRegistry, IndexDBCache } from "@nodes/registry";
-import type { Graph } from "@nodes/types";
-import { createPerformanceStore } from "@nodes/utils";
+import { RemoteNodeRegistry, IndexDBCache } from "@nodarium/registry";
+import type { Graph } from "@nodarium/types";
+import { createPerformanceStore } from "@nodarium/utils";
 import { MemoryRuntimeCache } from "./runtime-executor-cache";
 
 const cache = new MemoryRuntimeCache();

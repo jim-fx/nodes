@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { NodeDefinition, NodeRegistry } from "@nodes/types";
-  import { onDestroy, onMount } from "svelte";
+  import type { NodeDefinition, NodeRegistry } from "@nodarium/types";
+  import { onMount } from "svelte";
 
   let mx = $state(0);
   let my = $state(0);

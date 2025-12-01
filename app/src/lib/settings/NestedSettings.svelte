@@ -1,8 +1,8 @@
 <script lang="ts">
   import NestedSettings from "./NestedSettings.svelte";
   import { localState } from "$lib/helpers/localState.svelte";
-  import type { NodeInput } from "@nodes/types";
-  import Input from "@nodes/ui";
+  import type { NodeInput } from "@nodarium/types";
+  import Input from "@nodarium/ui";
 
   type Button = { type: "button"; callback: () => void; label?: string };
 

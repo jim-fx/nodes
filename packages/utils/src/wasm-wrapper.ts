@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { NodeDefinition } from "@nodes/types";
+import { NodeDefinition } from "@nodarium/types";
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
@@ -10,16 +10,16 @@ const cachedTextEncoder = new TextEncoder();
 const encodeString =
   typeof cachedTextEncoder.encodeInto === "function"
     ? function (arg, view) {
-        return cachedTextEncoder.encodeInto(arg, view);
-      }
+      return cachedTextEncoder.encodeInto(arg, view);
+    }
     : function (arg, view) {
-        const buf = cachedTextEncoder.encode(arg);
-        view.set(buf);
-        return {
-          read: arg.length,
-          written: buf.length,
-        };
+      const buf = cachedTextEncoder.encode(arg);
+      view.set(buf);
+      return {
+        read: arg.length,
+        written: buf.length,
       };
+    };
 
 function createWrapper() {
   let wasm: any;

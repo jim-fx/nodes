@@ -1,13 +1,14 @@
 <script lang="ts">
-  import type { Node, NodeInput } from "@nodes/types";
-  import { getGraphManager } from "../graph/context.js";
-  import { Input } from "@nodes/ui";
+  import type { Node, NodeInput } from "@nodarium/types";
+  import { Input } from "@nodarium/ui";
+  import type { GraphManager } from "../graph-manager.svelte";
 
   type Props = {
     node: Node;
     input: NodeInput;
     id: string;
     elementId?: string;
+    graph?: GraphManager;
   };
 
   const {
@@ -15,9 +16,8 @@
     input,
     id,
     elementId = `input-${Math.random().toString(36).substring(7)}`,
+    graph,
   }: Props = $props();
-
-  const graph = getGraphManager();
 
   function getDefaultValue() {
     if (node?.props?.[id] !== undefined) return node?.props?.[id] as number;

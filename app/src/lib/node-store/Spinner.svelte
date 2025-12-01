@@ -1,6 +1,3 @@
-<script lang="ts">
-</script>
-
 <span class="spinner"></span>
 
 <style>

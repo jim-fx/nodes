@@ -12,7 +12,7 @@
     });
   });
 
-  const lineCache = new Map<number, BufferGeometry>();
+  // const lineCache = new Map<number, BufferGeometry>();
 
   const curve = new CubicBezierCurve(
     new Vector2(0, 0),
@@ -25,7 +25,7 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { MeshLineMaterial } from "@threlte/extras";
-  import { BufferGeometry, MeshBasicMaterial, Vector3 } from "three";
+  import { Mesh, MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { createEdgeGeometry } from "./createEdgeGeometry.js";
@@ -39,7 +39,7 @@
 
   const { from, to, z }: Props = $props();
 
-  let geometry: BufferGeometry | null = $state(null);
+  let mesh = $state<Mesh>();
 
   const lineColor = $derived(
     appSettings.value.theme && colors.edge.clone().convertSRGBToLinear(),
@@ -58,13 +58,6 @@
       return;
     }
 
-    const mid = new Vector2(new_x / 2, new_y / 2);
-
-    if (lineCache.has(curveId)) {
-      geometry = lineCache.get(curveId)!;
-      return;
-    }
-
     const length = Math.floor(
       Math.sqrt(Math.pow(new_x, 2) + Math.pow(new_y, 2)) / 4,
     );
@@ -72,8 +65,8 @@
     const samples = Math.max(length * 16, 10);
 
     curve.v0.set(0, 0);
-    curve.v1.set(mid.x, 0);
-    curve.v2.set(mid.x, new_y);
+    curve.v1.set(new_x / 2, 0);
+    curve.v2.set(new_x / 2, new_y);
     curve.v3.set(new_x, new_y);
 
     const points = curve
@@ -81,8 +74,9 @@
       .map((p) => new Vector3(p.x, 0, p.y))
       .flat();
 
-    geometry = createEdgeGeometry(points);
-    lineCache.set(curveId, geometry);
+    if (mesh) {
+      mesh.geometry = createEdgeGeometry(points);
+    }
   }
 
   $effect(() => {
@@ -112,11 +106,11 @@
   <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
 
-{#if geometry}
-  <T.Mesh position.x={from.x} position.z={from.y} position.y={0.1} {geometry}>
-    <MeshLineMaterial
-      width={Math.max(z * 0.00012, 0.00003)}
-      color={lineColor}
-    />
-  </T.Mesh>
-{/if}
+<T.Mesh
+  bind:ref={mesh}
+  position.x={from.x}
+  position.z={from.y}
+  position.y={0.1}
+>
+  <MeshLineMaterial width={Math.max(z * 0.00012, 0.00003)} color={lineColor} />
+</T.Mesh>

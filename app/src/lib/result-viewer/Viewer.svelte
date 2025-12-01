@@ -2,8 +2,8 @@
   import { Canvas } from "@threlte/core";
   import Scene from "./Scene.svelte";
   import { Vector3 } from "three";
-  import { decodeFloat, splitNestedArray } from "@nodes/utils";
-  import type { PerformanceStore } from "@nodes/utils";
+  import { decodeFloat, splitNestedArray } from "@nodarium/utils";
+  import type { PerformanceStore } from "@nodarium/utils";
   import { appSettings } from "$lib/settings/app-settings.svelte";
   import SmallPerformanceViewer from "$lib/performance/SmallPerformanceViewer.svelte";
   import { MeshMatcapMaterial, TextureLoader, type Group } from "three";

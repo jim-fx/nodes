@@ -4,7 +4,7 @@
 	import Integer from './elements/Integer.svelte';
 	import Select from './elements/Select.svelte';
 
-	import type { NodeInput } from '@nodes/types';
+	import type { NodeInput } from '@nodarium/types';
 	import Vec3 from './elements/Vec3.svelte';
 
 	interface Props {
@@ -27,4 +27,3 @@
 {:else if input.type === 'vec3'}
 	<Vec3 {id} bind:value />
 {/if}
-

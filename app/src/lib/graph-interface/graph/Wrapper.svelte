@@ -1,14 +1,10 @@
 <script lang="ts">
-  import type { Graph, Node, NodeRegistry } from "@nodes/types";
+  import type { Graph, Node, NodeRegistry } from "@nodarium/types";
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.svelte";
-  import { setContext } from "svelte";
-  import { debounce } from "$lib/helpers";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { GraphState } from "./state.svelte";
-
-  const graphState = new GraphState();
-  setContext("graphState", graphState);
+  import { GraphState, setGraphManager, setGraphState } from "./state.svelte";
+  import { setupKeymaps } from "../keymaps";
 
   type Props = {
     graph: Graph;
@@ -31,8 +27,8 @@
     registry,
     settings = $bindable(),
     activeNode = $bindable(),
-    showGrid,
-    snapToGrid,
+    showGrid = $bindable(true),
+    snapToGrid = $bindable(true),
     showHelp = $bindable(false),
     settingTypes = $bindable(),
     onsave,
@@ -40,10 +36,14 @@
   }: Props = $props();
 
   export const keymap = createKeyMap([]);
-  setContext("keymap", keymap);
 
   export const manager = new GraphManager(registry);
-  setContext("graphManager", manager);
+  setGraphManager(manager);
+
+  const graphState = new GraphState(manager);
+  setGraphState(graphState);
+
+  setupKeymaps(keymap, manager, graphState);
 
   $effect(() => {
     if (graphState.activeNodeId !== -1) {
@@ -53,13 +53,16 @@
     }
   });
 
-  const updateSettings = debounce((s: Record<string, any>) => {
-    manager.setSettings(s);
-  }, 200);
+  $effect(() => {
+    if (!graphState.addMenuPosition) {
+      graphState.edgeEndPosition = null;
+      graphState.activeSocket = null;
+    }
+  });
 
   $effect(() => {
     if (settingTypes && settings) {
-      updateSettings(settings);
+      manager.setSettings(settings);
     }
   });
 
@@ -75,4 +78,4 @@
   manager.load(graph);
 </script>
 
-<GraphEl bind:showGrid bind:snapToGrid bind:showHelp />
+<GraphEl {keymap} bind:showGrid bind:snapToGrid bind:showHelp />

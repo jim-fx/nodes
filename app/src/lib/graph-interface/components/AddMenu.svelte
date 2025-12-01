@@ -1,18 +1,11 @@
 <script lang="ts">
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
-  import type { Node, NodeType } from "@nodes/types";
-  import { getGraphState } from "./graph/state.svelte";
-  import { getGraphManager } from "./graph/context";
-
-  type Props = {
-    position: [x: number, y: number] | null;
-  };
+  import type { Node, NodeType } from "@nodarium/types";
+  import { getGraphManager, getGraphState } from "../graph/state.svelte";
 
   const graph = getGraphManager();
   const graphState = getGraphState();
-
-  let { position = $bindable() }: Props = $props();
 
   let input: HTMLInputElement;
   let value = $state<string>();
@@ -41,11 +34,11 @@
   });
 
   function handleNodeCreation(nodeType: Node["type"]) {
-    if (!position) return;
+    if (!graphState.addMenuPosition) return;
 
     const newNode = graph.createNode({
       type: nodeType,
-      position,
+      position: graphState.addMenuPosition,
       props: {},
     });
 
@@ -59,14 +52,14 @@
     }
 
     graphState.activeSocket = null;
-    position = null;
+    graphState.addMenuPosition = null;
   }
 
   function handleKeyDown(event: KeyboardEvent) {
     event.stopImmediatePropagation();
 
     if (event.key === "Escape") {
-      position = null;
+      graphState.addMenuPosition = null;
       return;
     }
 
@@ -83,7 +76,7 @@
     }
 
     if (event.key === "Enter") {
-      if (activeNodeId && position) {
+      if (activeNodeId && graphState.addMenuPosition) {
         handleNodeCreation(activeNodeId);
       }
       return;
@@ -96,7 +89,11 @@
   });
 </script>
 
-<HTML position.x={position?.[0]} position.z={position?.[1]} transform={false}>
+<HTML
+  position.x={graphState.addMenuPosition?.[0]}
+  position.z={graphState.addMenuPosition?.[1]}
+  transform={false}
+>
   <div class="add-menu-wrapper">
     <div class="header">
       <input

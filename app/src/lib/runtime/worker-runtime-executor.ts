@@ -1,5 +1,5 @@
 /// <reference types="vite-plugin-comlink/client" />
-import type { Graph, RuntimeExecutor } from "@nodes/types";
+import type { Graph, RuntimeExecutor } from "@nodarium/types";
 
 
 export class WorkerRuntimeExecutor implements RuntimeExecutor {

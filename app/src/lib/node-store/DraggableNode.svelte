@@ -1,6 +1,6 @@
 <script lang="ts">
   import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
-  import type { NodeDefinition } from "@nodes/types";
+  import type { NodeDefinition } from "@nodarium/types";
 
   export let node: NodeDefinition;
 

@@ -37,8 +37,6 @@ export function createEdgeGeometry(points: Vector3[]) {
   let indices: number[] = []
   let indicesIndex = 0
 
-
-
   for (let j = 0; j < pointCount; j++) {
     const c = j / points.length
     counters[counterIndex + 0] = c
@@ -72,8 +70,6 @@ export function createEdgeGeometry(points: Vector3[]) {
   geometry.setAttribute('width', new BufferAttribute(new Float32Array(widthArray), 1))
   geometry.setAttribute('uv', new BufferAttribute(new Float32Array(uvArray), 2))
   geometry.setIndex(new BufferAttribute(new Uint16Array(indices), 1))
-
-
 
   let positions: number[] = []
   let previous: number[] = []

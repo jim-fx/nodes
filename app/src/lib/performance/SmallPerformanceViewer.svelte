@@ -2,7 +2,7 @@
   import { humanizeDuration, humanizeNumber } from "$lib/helpers";
   import localStore from "$lib/helpers/localStore";
   import SmallGraph from "./SmallGraph.svelte";
-  import type { PerformanceData, PerformanceStore } from "@nodes/utils";
+  import type { PerformanceData, PerformanceStore } from "@nodarium/utils";
 
   export let store: PerformanceStore;
 

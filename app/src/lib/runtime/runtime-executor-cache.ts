@@ -1,4 +1,4 @@
-import { type SyncCache } from "@nodes/types";
+import { type SyncCache } from "@nodarium/types";
 
 export class MemoryRuntimeCache implements SyncCache {
 

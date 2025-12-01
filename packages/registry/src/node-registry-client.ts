@@ -3,8 +3,8 @@ import {
   type AsyncCache,
   type NodeDefinition,
   type NodeRegistry,
-} from "@nodes/types";
-import { createLogger, createWasmWrapper } from "@nodes/utils";
+} from "@nodarium/types";
+import { createLogger, createWasmWrapper } from "@nodarium/utils";
 
 const log = createLogger("node-registry");
 log.mute();

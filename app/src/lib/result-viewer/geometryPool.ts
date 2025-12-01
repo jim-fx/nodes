@@ -1,4 +1,4 @@
-import { fastHashArrayBuffer } from "@nodes/utils";
+import { fastHashArrayBuffer } from "@nodarium/utils";
 import {
   BufferAttribute,
   BufferGeometry,
@@ -206,19 +206,16 @@ export function createInstancedGeometryPool(
       existingInstance &&
       instanceCount > existingInstance.geometry.userData.count
     ) {
-      console.log("recreating instance");
       scene.remove(existingInstance);
       instances.splice(instances.indexOf(existingInstance), 1);
       existingInstance = new InstancedMesh(geometry, material, instanceCount);
       scene.add(existingInstance);
       instances.push(existingInstance);
     } else if (!existingInstance) {
-      console.log("creating instance");
       existingInstance = new InstancedMesh(geometry, material, instanceCount);
       scene.add(existingInstance);
       instances.push(existingInstance);
     } else {
-      console.log("updating instance");
       existingInstance.count = instanceCount;
     }
 

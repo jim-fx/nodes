@@ -7,11 +7,11 @@ import type {
   NodeRegistry,
   NodeType,
   Socket,
-} from "@nodes/types";
-import { fastHashString } from "@nodes/utils";
+} from "@nodarium/types";
+import { fastHashString } from "@nodarium/utils";
 import { SvelteMap } from "svelte/reactivity";
 import EventEmitter from "./helpers/EventEmitter";
-import { createLogger } from "@nodes/utils";
+import { createLogger } from "@nodarium/utils";
 import throttle from "$lib/helpers/throttle";
 import { HistoryManager } from "./history-manager";
 
@@ -31,6 +31,27 @@ function areSocketsCompatible(
     return inputs.includes(output);
   }
   return inputs === output;
+}
+
+function areEdgesEqual(firstEdge: Edge, secondEdge: Edge) {
+
+  if (firstEdge[0].id !== secondEdge[0].id) {
+    return false;
+  }
+
+  if (firstEdge[1] !== secondEdge[1]) {
+    return false
+  }
+
+  if (firstEdge[2].id !== secondEdge[2].id) {
+    return false
+  }
+
+  if (firstEdge[3] !== secondEdge[3]) {
+    return false
+  }
+
+  return true
 }
 
 export class GraphManager extends EventEmitter<{
@@ -119,7 +140,7 @@ export class GraphManager extends EventEmitter<{
       const n = stack.pop();
       if (!n) continue;
       nodes.add(n);
-      const children = this.getChildrenOfNode(n);
+      const children = this.getChildren(n);
       const parents = this.getParentsOfNode(n);
       const newNodes = [...children, ...parents].filter((n) => !nodes.has(n));
       stack.push(...newNodes);
@@ -273,7 +294,7 @@ export class GraphManager extends EventEmitter<{
     return this.registry.getNode(id);
   }
 
-  async loadNode(id: NodeType) {
+  async loadNodeType(id: NodeType) {
     await this.registry.load([id]);
     const nodeType = this.registry.getNode(id);
 
@@ -298,12 +319,11 @@ export class GraphManager extends EventEmitter<{
     }
 
     this.settings = settingValues;
-    console.log("GraphManager.setSettings", settingValues);
     this.settingTypes = settingTypes;
     this.emit("settings", { types: settingTypes, values: settingValues });
   }
 
-  getChildrenOfNode(node: Node) {
+  getChildren(node: Node) {
     const children = [];
     const stack = node.tmp?.children?.slice(0);
     while (stack?.length) {
@@ -321,10 +341,10 @@ export class GraphManager extends EventEmitter<{
     //  < - - - - from - - - - to
     const fromParents = this.getParentsOfNode(from);
     if (toParents.includes(from)) {
-      const fromChildren = this.getChildrenOfNode(from);
+      const fromChildren = this.getChildren(from);
       return toParents.filter((n) => fromChildren.includes(n));
     } else if (fromParents.includes(to)) {
-      const toChildren = this.getChildrenOfNode(to);
+      const toChildren = this.getChildren(to);
       return fromParents.filter((n) => toChildren.includes(n));
     } else {
       // these two nodes are not connected
@@ -386,7 +406,7 @@ export class GraphManager extends EventEmitter<{
     const idMap = new Map<number, number>();
 
 
-    nodes = nodes.map((node, i) => {
+    nodes = nodes.map((node) => {
       const id = this.createNodeId();
       idMap.set(node.id, id);
       const type = this.registry.getNode(node.type);
@@ -463,8 +483,6 @@ export class GraphManager extends EventEmitter<{
     { applyUpdate = true } = {},
   ): Edge | undefined {
 
-    console.log("Create Edge", from.type, fromSocket, to.type, toSocket)
-
     const existingEdges = this.getEdgesToNode(to);
 
     // check if this exact edge already exists
@@ -482,8 +500,6 @@ export class GraphManager extends EventEmitter<{
     if (to.tmp?.type?.inputs?.[toSocket]?.accepts) {
       toSocketType.push(...(to?.tmp?.type?.inputs?.[toSocket]?.accepts || []));
     }
-
-    console.log({ fromSocketType, toSocket, toType: to?.tmp?.type, toSocketType });
 
     if (!areSocketsCompatible(fromSocketType, toSocketType)) {
       logger.error(
@@ -576,23 +592,29 @@ export class GraphManager extends EventEmitter<{
       return [];
     }
 
-    if (typeof socket.index === "string") {
-      // if index is a string, we are an input looking for outputs
-      return allDefinitions.filter(s => {
+    const definitions = typeof socket.index === "string"
+      ? allDefinitions.filter(s => {
         return s.outputs?.find(_s => Object
           .values(nodeType?.inputs || {})
           .map(s => s.type)
           .includes(_s as NodeInput["type"])
         )
       })
-    } else {
-      // if index is a number, we are an output looking for inputs
-      return allDefinitions.filter(s => Object
+      : allDefinitions.filter(s => Object
         .values(s.inputs ?? {})
-        .map(s => s.type)
-        .find(s => nodeType?.outputs?.includes(s))
-      )
-    }
+        .find(s => {
+          if (s.hidden) return false;
+          if (nodeType.outputs?.includes(s.type)) {
+            return true
+          }
+          return s.accepts?.find(a => nodeType.outputs?.includes(a))
+        }))
+
+    console.log(definitions.map(d => Object.values(d?.inputs ?? {})))
+    console.log(definitions)
+
+    return definitions
+
   }
 
   getPossibleSockets({ node, index }: Socket): [Node, string | number][] {
@@ -604,7 +626,7 @@ export class GraphManager extends EventEmitter<{
     // if index is a string, we are an input looking for outputs
     if (typeof index === "string") {
       // filter out self and child nodes
-      const children = new Set(this.getChildrenOfNode(node).map((n) => n.id));
+      const children = new Set(this.getChildren(node).map((n) => n.id));
       const nodes = this.getAllNodes().filter(
         (n) => n.id !== node.id && !children.has(n.id),
       );
@@ -672,6 +694,7 @@ export class GraphManager extends EventEmitter<{
       (e) =>
         e[0].id === id0 && e[1] === sid0 && e[2].id === id2 && e[3] === sid2,
     );
+
     if (!_edge) return;
 
     edge[0].tmp = edge[0].tmp || {};
@@ -688,13 +711,12 @@ export class GraphManager extends EventEmitter<{
       );
     }
 
+    this.edges = this.edges.filter((e) => !areEdgesEqual(e, edge));
     if (applyDeletion) {
-      this.edges = this.edges.filter((e) => e !== _edge);
       this.execute();
       this.save();
-    } else {
-      this.edges = this.edges.filter((e) => e !== _edge);
     }
+
   }
 
   getEdgesToNode(node: Node) {

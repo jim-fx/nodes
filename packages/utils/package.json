@@ -1,5 +1,5 @@
 {
-  "name": "@nodes/utils",
+  "name": "@nodarium/utils",
   "version": "0.0.1",
   "description": "",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nodes/types": "link:../types"
+    "@nodarium/types": "link:../types"
   },
   "devDependencies": {
     "vite": "^7.2.4",

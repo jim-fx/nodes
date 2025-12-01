@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Select } from "@nodes/ui";
+  import { Select } from "@nodarium/ui";
   import type { Writable } from "svelte/store";
 
   let activeStore = 0;

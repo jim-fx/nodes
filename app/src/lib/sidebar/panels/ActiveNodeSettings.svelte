@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Node } from "@nodes/types";
+  import type { Node } from "@nodarium/types";
   import type { GraphManager } from "$lib/graph-interface/graph-manager.svelte";
   import ActiveNodeSelected from "./ActiveNodeSelected.svelte";
 

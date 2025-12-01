@@ -6,14 +6,14 @@ import type {
   NodeRegistry,
   RuntimeExecutor,
   SyncCache,
-} from "@nodes/types";
+} from "@nodarium/types";
 import {
   concatEncodedArrays,
   createLogger,
   encodeFloat,
   fastHashArrayBuffer,
   type PerformanceStore,
-} from "@nodes/utils";
+} from "@nodarium/utils";
 
 const log = createLogger("runtime-executor");
 log.mute();

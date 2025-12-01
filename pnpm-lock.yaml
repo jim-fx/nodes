@@ -10,13 +10,13 @@ importers:
 
   app:
     dependencies:
-      '@nodes/registry':
+      '@nodarium/registry':
         specifier: link:../packages/registry
         version: link:../packages/registry
-      '@nodes/ui':
+      '@nodarium/ui':
         specifier: link:../packages/ui
         version: link:../packages/ui
-      '@nodes/utils':
+      '@nodarium/utils':
         specifier: link:../packages/utils
         version: link:../packages/utils
       '@sveltejs/kit':
@@ -53,7 +53,7 @@ importers:
       '@iconify-json/tabler':
         specifier: ^1.2.23
         version: 1.2.23
-      '@nodes/types':
+      '@nodarium/types':
         specifier: link:../packages/types
         version: link:../packages/types
       '@sveltejs/adapter-static':
@@ -130,10 +130,10 @@ importers:
 
   packages/registry:
     dependencies:
-      '@nodes/types':
+      '@nodarium/types':
         specifier: link:../types
         version: link:../types
-      '@nodes/utils':
+      '@nodarium/utils':
         specifier: link:../utils
         version: link:../utils
       idb:
@@ -165,7 +165,7 @@ importers:
         specifier: ^9.7.0
         version: 9.7.0(@types/three@0.181.0)(svelte@5.43.14)(three@0.181.2)
     devDependencies:
-      '@nodes/types':
+      '@nodarium/types':
         specifier: link:../types
         version: link:../types
       '@storybook/addon-essentials':
@@ -240,7 +240,7 @@ importers:
 
   packages/utils:
     dependencies:
-      '@nodes/types':
+      '@nodarium/types':
         specifier: link:../types
         version: link:../types
     devDependencies:

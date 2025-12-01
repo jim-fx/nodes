@@ -2,7 +2,7 @@
   import { writable } from "svelte/store";
   import BreadCrumbs from "./BreadCrumbs.svelte";
   import DraggableNode from "./DraggableNode.svelte";
-  import type { RemoteNodeRegistry } from "@nodes/registry";
+  import type { RemoteNodeRegistry } from "@nodarium/registry";
 
   export let registry: RemoteNodeRegistry;
 

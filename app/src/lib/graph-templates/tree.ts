@@ -1,4 +1,4 @@
-import type { Graph, Node } from "@nodes/types";
+import type { Graph, Node } from "@nodarium/types";
 
 export function tree(depth: number): Graph {
 

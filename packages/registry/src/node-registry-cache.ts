@@ -1,4 +1,4 @@
-import type { AsyncCache } from '@nodes/types';
+import type { AsyncCache } from '@nodarium/types';
 import { openDB, type IDBPDatabase } from 'idb';
 
 export class IndexDBCache implements AsyncCache<ArrayBuffer> {

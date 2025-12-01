@@ -1,14 +1,11 @@
 <script lang="ts">
   import type {
     NodeInput as NodeInputType,
-    Socket,
     Node as NodeType,
-  } from "@nodes/types";
-  import { getContext } from "svelte";
+  } from "@nodarium/types";
   import { createNodePath } from "../helpers/index.js";
-  import { getGraphManager } from "../graph/context.js";
   import NodeInput from "./NodeInput.svelte";
-  import { getGraphState } from "../graph/state.svelte.js";
+  import { getGraphManager, getGraphState } from "../graph/state.svelte.js";
 
   type Props = {
     node: NodeType;
@@ -17,31 +14,26 @@
     isLast?: boolean;
   };
 
+  const graph = getGraphManager();
+
   let { node = $bindable(), input, id, isLast }: Props = $props();
 
   const inputType = node?.tmp?.type?.inputs?.[id]!;
 
   const socketId = `${node.id}-${id}`;
 
-  const graph = getGraphManager();
   const graphState = getGraphState();
   const graphId = graph?.id;
 
   const elementId = `input-${Math.random().toString(36).substring(7)}`;
 
-  const setDownSocket = getContext<(socket: Socket) => void>("setDownSocket");
-  const getSocketPosition =
-    getContext<(node: NodeType, index: string) => [number, number]>(
-      "getSocketPosition",
-    );
-
   function handleMouseDown(ev: MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
-    setDownSocket?.({
+    graphState.setDownSocket({
       node,
       index: id,
-      position: getSocketPosition?.(node, id),
+      position: graphState.getSocketPosition?.(node, id),
     });
   }
 
@@ -87,7 +79,7 @@
         <label for={elementId}>{input.label || id}</label>
       {/if}
       {#if inputType.external !== true}
-        <NodeInput {elementId} bind:node {input} {id} />
+        <NodeInput {graph} {elementId} bind:node {input} {id} />
       {/if}
     </div>
 

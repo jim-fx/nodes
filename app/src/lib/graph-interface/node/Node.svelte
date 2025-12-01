@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Node } from "@nodes/types";
-  import { getContext, onMount } from "svelte";
-  import { getGraphState } from "../graph/state.svelte";
+  import type { Node } from "@nodarium/types";
+  import { onMount } from "svelte";
+  import { getGraphManager, getGraphState } from "../graph/state.svelte";
   import { T } from "@threlte/core";
   import { type Mesh } from "three";
   import NodeFrag from "./Node.frag";
@@ -10,6 +10,7 @@
   import { colors } from "../graph/colors.svelte";
   import { appSettings } from "$lib/settings/app-settings.svelte";
 
+  const graph = getGraphManager();
   const graphState = getGraphState();
 
   type Props = {
@@ -17,7 +18,7 @@
     inView: boolean;
     z: number;
   };
-  let { node = $bindable(), inView, z }: Props = $props();
+  let { node, inView, z }: Props = $props();
 
   const isActive = $derived(graphState.activeNodeId === node.id);
   const isSelected = $derived(graphState.selectedNodes.has(node.id));
@@ -31,14 +32,9 @@
         : colors.outline;
   });
 
-  const updateNodePosition =
-    getContext<(n: Node) => void>("updateNodePosition");
-
-  const getNodeHeight = getContext<(n: string) => number>("getNodeHeight");
-
   let meshRef: Mesh | undefined = $state();
 
-  const height = getNodeHeight?.(node.type);
+  const height = graphState.getNodeHeight(node.type);
 
   $effect(() => {
     if (!node?.tmp) node.tmp = {};
@@ -48,7 +44,7 @@
   onMount(() => {
     if (!node.tmp) node.tmp = {};
     node.tmp.mesh = meshRef;
-    updateNodePosition?.(node);
+    graphState.updateNodePosition(node);
   });
 </script>
 
@@ -78,4 +74,4 @@
   />
 </T.Mesh>
 
-<NodeHtml bind:node {inView} {isActive} {isSelected} {z} />
+<NodeHtml {node} {inView} {isActive} {isSelected} {z} />

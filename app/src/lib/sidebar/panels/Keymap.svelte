@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { ShortCut } from "@nodes/ui";
+  import { ShortCut } from "@nodarium/ui";
   import { get } from "svelte/store";
 
   type Props = {
@@ -11,7 +11,6 @@
   };
 
   let { keymaps }: Props = $props();
-  console.log({ keymaps });
 </script>
 
 <table class="wrapper">

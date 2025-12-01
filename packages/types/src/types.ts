@@ -9,6 +9,9 @@ export const NodeTypeSchema = z
 export type NodeType = z.infer<typeof NodeTypeSchema>;
 
 export type Node = {
+  /**
+   * .tmp only exists at runtime
+   */
   tmp?: {
     depth?: number;
     mesh?: any;

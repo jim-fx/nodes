@@ -1,6 +1,6 @@
 <script lang="ts">
   import localStore from "$lib/helpers/localStore";
-  import { Integer } from "@nodes/ui";
+  import { Integer } from "@nodarium/ui";
   import { writable } from "svelte/store";
   import { humanizeDuration } from "$lib/helpers";
   import Monitor from "$lib/performance/Monitor.svelte";

@@ -1,10 +1,13 @@
 <script lang="ts">
-  import type { Node } from "@nodes/types";
+  import type { Node } from "@nodarium/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
-  import { getContext, onMount } from "svelte";
+  import { onMount } from "svelte";
+  import { getGraphState } from "../graph/state.svelte";
 
   let ref: HTMLDivElement;
+
+  const graphState = getGraphState();
 
   type Props = {
     node: Node;
@@ -32,13 +35,10 @@
       p[1].type !== "seed" && !("setting" in p[1]) && p[1]?.hidden !== true,
   );
 
-  const updateNodePosition =
-    getContext<(n: Node) => void>("updateNodePosition");
-
   onMount(() => {
     node.tmp = node.tmp || {};
     node.tmp.ref = ref;
-    updateNodePosition?.(node);
+    graphState?.updateNodePosition(node);
   });
 </script>
 
