@@ -405,12 +405,12 @@
       if (typeof graphState.activeSocket.index === "number") {
         graphState.addMenuPosition = [
           graphState.mousePosition[0],
-          graphState.mousePosition[1] - 3,
+          graphState.mousePosition[1] - 25 / graphState.cameraPosition[2],
         ];
       } else {
         graphState.addMenuPosition = [
-          graphState.mousePosition[0] - 20,
-          graphState.mousePosition[1] - 3,
+          graphState.mousePosition[0] - 155 / graphState.cameraPosition[2],
+          graphState.mousePosition[1] - 25 / graphState.cameraPosition[2],
         ];
       }
       return;
