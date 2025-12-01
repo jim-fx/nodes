@@ -26,15 +26,16 @@ export class GraphState {
 
   constructor(private graph: GraphManager) { }
 
-  cameraPosition: [number, number, number] = $state([0, 0, 4]);
-  wrapper = $state<HTMLDivElement>(null!);
+  width = $state(100);
+  height = $state(100);
 
+  wrapper = $state<HTMLDivElement>(null!);
   rect: DOMRect = $derived(
-    this.wrapper ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0),
+    (this.wrapper && this.width && this.height) ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0),
   );
-  width = $derived(this.rect?.width ?? 100);
-  height = $derived(this.rect?.height ?? 100);
+
   camera = $state<OrthographicCamera>(null!);
+  cameraPosition: [number, number, number] = $state([0, 0, 4]);
 
   clipboard: null | {
     nodes: Node[];
