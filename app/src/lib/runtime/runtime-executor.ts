@@ -58,7 +58,7 @@ function getValue(input: NodeInput, value?: unknown) {
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
   private definitionMap: Map<string, NodeDefinition> = new Map();
 
-  private randomSeed = Math.floor(Math.random() * 100000000);
+  private seed = Math.floor(Math.random() * 100000000);
 
   perf?: PerformanceStore;
 
@@ -181,6 +181,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // here we store the intermediate results of the nodes
     const results: Record<string, Int32Array> = {};
 
+    if (settings["randomSeed"]) {
+      this.seed = Math.floor(Math.random() * 100000000);
+    }
+
     for (const node of sortedNodes) {
       const node_type = this.definitionMap.get(node.type)!;
 
@@ -195,10 +199,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       const inputs = Object.entries(node_type.inputs || {}).map(
         ([key, input]) => {
           if (input.type === "seed") {
-            if (settings["randomSeed"] === true) {
-              this.randomSeed = Math.floor(Math.random() * 100000000);
-            }
-            return this.randomSeed;
+            return this.seed;
           }
 
           // If the input is linked to a setting, we use that value

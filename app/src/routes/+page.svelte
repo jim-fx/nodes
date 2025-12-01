@@ -69,7 +69,7 @@
     {
       key: "r",
       description: "Regenerate the plant model",
-      callback: randomGenerate,
+      callback: () => randomGenerate(),
     },
   ]);
   let graphSettings = $state<Record<string, any>>({});
