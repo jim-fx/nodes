@@ -5,14 +5,13 @@
     color: colors.edge.clone(),
     toneMapped: false,
   });
+
   $effect.root(() => {
     $effect(() => {
       appSettings.value.theme;
       circleMaterial.color = colors.edge.clone().convertSRGBToLinear();
     });
   });
-
-  // const lineCache = new Map<number, BufferGeometry>();
 
   const curve = new CubicBezierCurve(
     new Vector2(0, 0),

@@ -64,8 +64,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   constructor(
     private registry: NodeRegistry,
-    // private cache?: SyncCache<Int32Array>,
-  ) { }
+    private cache?: SyncCache<Int32Array>,
+  ) {
+    this.cache = undefined;
+  }
 
   private async getNodeDefinitions(graph: Graph) {
     if (this.registry.status !== "ready") {
@@ -194,10 +196,9 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         ([key, input]) => {
           if (input.type === "seed") {
             if (settings["randomSeed"] === true) {
-              return Math.floor(Math.random() * 100000000);
-            } else {
-              return this.randomSeed;
+              this.randomSeed = Math.floor(Math.random() * 100000000);
             }
+            return this.randomSeed;
           }
 
           // If the input is linked to a setting, we use that value
