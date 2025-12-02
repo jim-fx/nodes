@@ -10,7 +10,6 @@
   import { colors } from "../graph/colors.svelte";
   import { appSettings } from "$lib/settings/app-settings.svelte";
 
-  const graph = getGraphManager();
   const graphState = getGraphState();
 
   type Props = {
@@ -37,14 +36,11 @@
   const height = graphState.getNodeHeight(node.type);
 
   $effect(() => {
-    if (!node?.tmp) node.tmp = {};
-    node.tmp.mesh = meshRef;
-  });
-
-  onMount(() => {
     if (!node.tmp) node.tmp = {};
-    node.tmp.mesh = meshRef;
-    graphState.updateNodePosition(node);
+    if (meshRef && !node.tmp?.mesh) {
+      node.tmp.mesh = meshRef;
+      graphState.updateNodePosition(node);
+    }
   });
 </script>
 

@@ -45,18 +45,17 @@
 
   let mesh = $state<Mesh>();
 
-  let lastId: number | null = null;
-
-  const primeA = 31;
-  const primeB = 37;
+  let lastId: string | null = null;
 
   function update() {
     const new_x = to.x - from.x;
     const new_y = to.y - from.y;
-    const curveId = new_x * primeA + new_y * primeB;
+    const curveId = `${from.x}-${from.y}-${to.x}-${to.y}`;
+
     if (lastId === curveId) {
       return;
     }
+    lastId = curveId;
 
     const length = Math.floor(
       Math.sqrt(Math.pow(new_x, 2) + Math.pow(new_y, 2)) / 4,
