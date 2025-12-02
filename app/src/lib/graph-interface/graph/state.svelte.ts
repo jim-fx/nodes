@@ -53,6 +53,16 @@ export class GraphState {
   edgeEndPosition = $state<[number, number] | null>();
   addMenuPosition = $state<[number, number] | null>(null);
 
+  snapToGrid = $state(false);
+  showGrid = $state(true)
+  showHelp = $state(false)
+
+  cameraDown = [0, 0];
+  mouseDownNodeId = -1;
+
+  isPanning = $state(false);
+  isDragging = $state(false);
+  hoveredNodeId = $state(-1);
   mousePosition = $state([0, 0]);
   mouseDown = $state<[number, number] | null>(null);
   activeNodeId = $state(-1);

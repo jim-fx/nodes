@@ -41,6 +41,12 @@
   setGraphManager(manager);
 
   const graphState = new GraphState(manager);
+  $effect(() => {
+    graphState.showGrid = showGrid;
+    graphState.snapToGrid = snapToGrid;
+    graphState.showHelp = showHelp;
+  });
+
   setGraphState(graphState);
 
   setupKeymaps(keymap, manager, graphState);
@@ -78,4 +84,4 @@
   manager.load(graph);
 </script>
 
-<GraphEl {keymap} bind:showGrid bind:snapToGrid bind:showHelp />
+<GraphEl {keymap} />
