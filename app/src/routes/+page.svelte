@@ -90,7 +90,10 @@
 
   let runIndex = 0;
 
-  async function update(g: Graph, s: Record<string, any> = graphSettings) {
+  async function update(
+    g: Graph,
+    s: Record<string, any> = $state.snapshot(graphSettings),
+  ) {
     runIndex++;
     performanceStore.startRun();
     try {
