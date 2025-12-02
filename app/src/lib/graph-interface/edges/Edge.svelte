@@ -6,10 +6,13 @@
     toneMapped: false,
   });
 
+  let lineColor = $state(colors.edge.clone().convertSRGBToLinear());
+
   $effect.root(() => {
     $effect(() => {
       appSettings.value.theme;
       circleMaterial.color = colors.edge.clone().convertSRGBToLinear();
+      lineColor = colors.edge.clone().convertSRGBToLinear();
     });
   });
 
@@ -38,11 +41,9 @@
 
   const { from, to, z }: Props = $props();
 
-  let mesh = $state<Mesh>();
+  const thickness = $derived(Math.max(0.001, 0.00082 * Math.exp(0.055 * z)));
 
-  const lineColor = $derived(
-    appSettings.value.theme && colors.edge.clone().convertSRGBToLinear(),
-  );
+  let mesh = $state<Mesh>();
 
   let lastId: number | null = null;
 
@@ -111,5 +112,5 @@
   position.z={from.y}
   position.y={0.1}
 >
-  <MeshLineMaterial width={Math.max(z * 0.00012, 0.00003)} color={lineColor} />
+  <MeshLineMaterial width={thickness} color={lineColor} />
 </T.Mesh>
