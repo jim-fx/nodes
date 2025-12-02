@@ -4,6 +4,12 @@
   import type { Node, NodeType } from "@nodarium/types";
   import { getGraphManager, getGraphState } from "../graph/state.svelte";
 
+  type Props = {
+    onnode: (n: Node) => void;
+  };
+
+  const { onnode }: Props = $props();
+
   const graph = getGraphManager();
   const graphState = getGraphState();
 
@@ -35,24 +41,12 @@
 
   function handleNodeCreation(nodeType: Node["type"]) {
     if (!graphState.addMenuPosition) return;
-
-    const newNode = graph.createNode({
+    onnode?.({
+      id: -1,
       type: nodeType,
-      position: graphState.addMenuPosition,
+      position: [...graphState.addMenuPosition],
       props: {},
     });
-
-    const edgeInputSocket = graphState.activeSocket;
-    if (edgeInputSocket && newNode) {
-      if (typeof edgeInputSocket.index === "number") {
-        graph.smartConnect(edgeInputSocket.node, newNode);
-      } else {
-        graph.smartConnect(newNode, edgeInputSocket.node);
-      }
-    }
-
-    graphState.activeSocket = null;
-    graphState.addMenuPosition = null;
   }
 
   function handleKeyDown(event: KeyboardEvent) {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Node } from "@nodarium/types";
   import { onMount } from "svelte";
-  import { getGraphManager, getGraphState } from "../graph/state.svelte";
+  import { getGraphState } from "../graph/state.svelte";
   import { T } from "@threlte/core";
   import { type Mesh } from "three";
   import NodeFrag from "./Node.frag";
@@ -21,15 +21,14 @@
 
   const isActive = $derived(graphState.activeNodeId === node.id);
   const isSelected = $derived(graphState.selectedNodes.has(node.id));
-  let strokeColor = $state(colors.selected);
-  $effect(() => {
-    appSettings.value.theme;
-    strokeColor = isSelected
-      ? colors.selected
-      : isActive
-        ? colors.active
-        : colors.outline;
-  });
+  const strokeColor = $derived(
+    appSettings.value.theme &&
+      (isSelected
+        ? colors.selected
+        : isActive
+          ? colors.active
+          : colors.outline),
+  );
 
   let meshRef: Mesh | undefined = $state();
 

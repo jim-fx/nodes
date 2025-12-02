@@ -34,12 +34,14 @@
   import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
-    from: { x: number; y: number };
-    to: { x: number; y: number };
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
     z: number;
   };
 
-  const { from, to, z }: Props = $props();
+  const { x1, y1, x2, y2, z }: Props = $props();
 
   const thickness = $derived(Math.max(0.001, 0.00082 * Math.exp(0.055 * z)));
 
@@ -48,10 +50,9 @@
   let lastId: string | null = null;
 
   function update() {
-    const new_x = to.x - from.x;
-    const new_y = to.y - from.y;
-    const curveId = `${from.x}-${from.y}-${to.x}-${to.y}`;
-
+    const new_x = x2 - x1;
+    const new_y = y2 - y1;
+    const curveId = `${x1}-${y1}-${x2}-${y2}`;
     if (lastId === curveId) {
       return;
     }
@@ -79,15 +80,15 @@
   }
 
   $effect(() => {
-    if (from || to) {
+    if (x1 || x2 || y1 || y2) {
       update();
     }
   });
 </script>
 
 <T.Mesh
-  position.x={from.x}
-  position.z={from.y}
+  position.x={x1}
+  position.z={y1}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
   material={circleMaterial}
@@ -96,8 +97,8 @@
 </T.Mesh>
 
 <T.Mesh
-  position.x={to.x}
-  position.z={to.y}
+  position.x={x2}
+  position.z={y2}
   position.y={0.8}
   rotation.x={-Math.PI / 2}
   material={circleMaterial}
@@ -105,11 +106,6 @@
   <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
 
-<T.Mesh
-  bind:ref={mesh}
-  position.x={from.x}
-  position.z={from.y}
-  position.y={0.1}
->
+<T.Mesh bind:ref={mesh} position.x={x1} position.z={y1} position.y={0.1}>
   <MeshLineMaterial width={thickness} color={lineColor} />
 </T.Mesh>

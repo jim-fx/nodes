@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Edge } from "@nodarium/types";
+  import type { Edge, Node } from "@nodarium/types";
   import { onMount } from "svelte";
   import { createKeyMap } from "../../helpers/createKeyMap";
   import AddMenu from "../components/AddMenu.svelte";
@@ -8,7 +8,6 @@
   import EdgeEl from "../edges/Edge.svelte";
   import NodeEl from "../node/Node.svelte";
   import Camera from "../components/Camera.svelte";
-  import FloatingEdge from "../edges/FloatingEdge.svelte";
   import { Canvas } from "@threlte/core";
   import HelpView from "../components/HelpView.svelte";
   import { getGraphManager, getGraphState } from "./state.svelte";
@@ -27,10 +26,6 @@
   const fileDropEvents = new FileDropEventManager(graph, graphState);
   const mouseEvents = new MouseEventManager(graph, graphState);
 
-  function getEdgeId(edge: Edge) {
-    return `${edge[0].id}-${edge[1]}-${edge[2].id}-${edge[3]}`;
-  }
-
   function getEdgePosition(edge: Edge) {
     const fromNode = graph.nodes.get(edge[0].id);
     const toNode = graph.nodes.get(edge[2].id);
@@ -43,6 +38,60 @@
     const pos1 = graphState.getSocketPosition(fromNode, edge[1]);
     const pos2 = graphState.getSocketPosition(toNode, edge[3]);
     return [pos1[0], pos1[1], pos2[0], pos2[1]];
+  }
+
+  function handleNodeCreation(node: Node) {
+    const newNode = graph.createNode({
+      type: node.type,
+      position: node.position,
+      props: node.props,
+    });
+    if (!newNode) return;
+
+    if (graphState.activeSocket) {
+      if (typeof graphState.activeSocket.index === "number") {
+        const socketType =
+          graphState.activeSocket.node.tmp?.type?.outputs?.[
+            graphState.activeSocket.index
+          ];
+
+        const input = Object.entries(newNode?.tmp?.type?.inputs || {}).find(
+          (inp) => inp[1].type === socketType,
+        );
+
+        if (input) {
+          graph.createEdge(
+            graphState.activeSocket.node,
+            graphState.activeSocket.index,
+            newNode,
+            input[0],
+          );
+        }
+      } else {
+        const socketType =
+          graphState.activeSocket.node.tmp?.type?.inputs?.[
+            graphState.activeSocket.index
+          ];
+
+        const output = newNode.tmp?.type?.outputs?.find((out) => {
+          if (socketType?.type === out) return true;
+          if (socketType?.accepts?.includes(out as any)) return true;
+          return false;
+        });
+
+        if (output) {
+          graph.createEdge(
+            newNode,
+            output.indexOf(output),
+            graphState.activeSocket.node,
+            graphState.activeSocket.index,
+          );
+        }
+      }
+    }
+
+    graphState.activeSocket = null;
+    graphState.addMenuPosition = null;
   }
 
   onMount(() => {
@@ -120,36 +169,22 @@
 
     {#if graph.status === "idle"}
       {#if graphState.addMenuPosition}
-        <AddMenu />
+        <AddMenu onnode={handleNodeCreation} />
       {/if}
 
       {#if graphState.activeSocket}
-        <FloatingEdge
+        <EdgeEl
           z={graphState.cameraPosition[2]}
-          from={{
-            x: graphState.activeSocket.position[0],
-            y: graphState.activeSocket.position[1],
-          }}
-          to={{
-            x: graphState.edgeEndPosition?.[0] ?? graphState.mousePosition[0],
-            y: graphState.edgeEndPosition?.[1] ?? graphState.mousePosition[1],
-          }}
+          x1={graphState.activeSocket.position[0]}
+          y1={graphState.activeSocket.position[1]}
+          x2={graphState.edgeEndPosition?.[0] ?? graphState.mousePosition[0]}
+          y2={graphState.edgeEndPosition?.[1] ?? graphState.mousePosition[1]}
         />
       {/if}
 
-      {#each graph.edges as edge (getEdgeId(edge))}
+      {#each graph.edges as edge}
         {@const [x1, y1, x2, y2] = getEdgePosition(edge)}
-        <EdgeEl
-          z={graphState.cameraPosition[2]}
-          from={{
-            x: x1,
-            y: y1,
-          }}
-          to={{
-            x: x2,
-            y: y2,
-          }}
-        />
+        <EdgeEl z={graphState.cameraPosition[2]} {x1} {y1} {x2} {y2} />
       {/each}
 
       <HTML transform={false}>
