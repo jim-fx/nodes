@@ -84,13 +84,7 @@
     </div>
 
     {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}
-      <div
-        data-node-socket
-        class="large target"
-        onmousedown={handleMouseDown}
-        role="button"
-        tabindex="0"
-      ></div>
+      <div data-node-socket class="large target"></div>
       <div
         data-node-socket
         class="small target"
