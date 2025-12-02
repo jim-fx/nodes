@@ -27,7 +27,8 @@
     z = 2,
   }: Props = $props();
 
-  const zOffset = (node.tmp?.random || 0) * 0.5;
+  // If we dont have a random offset, all nodes becom visible at the same zoom level -> stuttering
+  const zOffset = Math.random() - 0.5;
   const zLimit = 2 - zOffset;
 
   const parameters = Object.entries(node?.tmp?.type?.inputs || {}).filter(

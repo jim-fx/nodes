@@ -15,7 +15,6 @@ export type Node = {
   tmp?: {
     depth?: number;
     mesh?: any;
-    random?: number;
     parents?: Node[];
     children?: Node[];
     inputNodes?: Record<string, Node>;
