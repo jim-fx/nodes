@@ -1,16 +1,12 @@
 <script lang="ts">
-  import type {
-    NodeInput as NodeInputType,
-    NodeInstance,
-    SerializedNode,
-  } from "@nodarium/types";
+  import type { NodeInput, NodeInstance } from "@nodarium/types";
   import { createNodePath } from "../helpers/index.js";
-  import NodeInput from "./NodeInput.svelte";
+  import NodeInputEl from "./NodeInput.svelte";
   import { getGraphManager, getGraphState } from "../graph/state.svelte.js";
 
   type Props = {
-    node: NodeInstance | SerializedNode;
-    input: NodeInputType;
+    node: NodeInstance;
+    input: NodeInput;
     id: string;
     isLast?: boolean;
   };
@@ -80,7 +76,7 @@
         <label for={elementId}>{input.label || id}</label>
       {/if}
       {#if inputType.external !== true}
-        <NodeInput {graph} {elementId} bind:node {input} {id} />
+        <NodeInputEl {graph} {elementId} bind:node {input} {id} />
       {/if}
     </div>
 

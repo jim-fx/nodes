@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { NodeInstance, SerializedNode } from "@nodarium/types";
+  import type { NodeInstance } from "@nodarium/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
   import { getGraphState } from "../graph/state.svelte";
@@ -9,7 +9,7 @@
   const graphState = getGraphState();
 
   type Props = {
-    node: SerializedNode | NodeInstance;
+    node: NodeInstance;
     position?: "absolute" | "fixed" | "relative";
     isActive?: boolean;
     isSelected?: boolean;
@@ -30,15 +30,10 @@
   const zOffset = Math.random() - 0.5;
   const zLimit = 2 - zOffset;
 
-  const parameters =
-    "state" in node
-      ? Object.entries(node.state?.type?.inputs || {}).filter(
-          (p) =>
-            p[1].type !== "seed" &&
-            !("setting" in p[1]) &&
-            p[1]?.hidden !== true,
-        )
-      : [];
+  const parameters = Object.entries(node.state?.type?.inputs || {}).filter(
+    (p) =>
+      p[1].type !== "seed" && !("setting" in p[1]) && p[1]?.hidden !== true,
+  );
 
   $effect(() => {
     if ("state" in node && !node.state.ref) {

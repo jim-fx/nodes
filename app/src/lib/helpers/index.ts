@@ -126,7 +126,7 @@ export function humanizeDuration(durationInMilliseconds: number) {
   }
 
   if (millis > 0 || durationString === '') {
-    durationString += millis + 'ms';
+    durationString += Math.floor(millis) + 'ms';
   }
 
   return durationString.trim();

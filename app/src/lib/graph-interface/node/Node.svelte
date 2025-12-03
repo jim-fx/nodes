@@ -16,7 +16,7 @@
     inView: boolean;
     z: number;
   };
-  let { node, inView, z }: Props = $props();
+  let { node = $bindable(), inView, z }: Props = $props();
 
   const isActive = $derived(graphState.activeNodeId === node.id);
   const isSelected = $derived(graphState.selectedNodes.has(node.id));
@@ -67,4 +67,4 @@
   />
 </T.Mesh>
 
-<NodeHtml {node} {inView} {isActive} {isSelected} {z} />
+<NodeHtml bind:node {inView} {isActive} {isSelected} {z} />

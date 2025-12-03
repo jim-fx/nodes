@@ -1,17 +1,17 @@
 <script lang="ts">
   import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
-  import type { SerializedNode } from "@nodarium/types";
+  import type { NodeDefinition, NodeId, NodeInstance } from "@nodarium/types";
 
-  const { node }: { node: SerializedNode } = $props();
+  const { node }: { node: NodeDefinition } = $props();
 
   let dragging = $state(false);
 
-  let nodeData = $state({
+  let nodeData = $state<NodeInstance>({
     id: 0,
-    type: node?.id,
+    type: node.id as unknown as NodeId,
     position: [0, 0] as [number, number],
     props: {},
-    tmp: {
+    state: {
       type: node,
     },
   });
@@ -46,7 +46,7 @@
     tabindex="0"
     ondragstart={handleDragStart}
   >
-    <NodeHtml inView={true} position={"relative"} z={5} bind:node={nodeData} />
+    <NodeHtml bind:node={nodeData} inView={true} position={"relative"} z={5} />
   </div>
 </div>
 

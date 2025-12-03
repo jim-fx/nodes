@@ -88,13 +88,10 @@
     randomSeed: { type: "boolean", value: false },
   });
 
-  let runIndex = 0;
-
   async function update(
     g: Graph,
     s: Record<string, any> = $state.snapshot(graphSettings),
   ) {
-    runIndex++;
     performanceStore.startRun();
     try {
       let a = performance.now();

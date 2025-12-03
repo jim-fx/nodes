@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { fastHashArray, fastHashString } from './fastHash';
+import { fastHashArrayBuffer, fastHashString } from './fastHash';
 
 test('fastHashString doesnt produce clashes', () => {
   const hashA = fastHashString('abcdef');
@@ -14,10 +14,10 @@ test("fastHashArray doesnt product collisions", () => {
 
   const a = new Int32Array(1000);
 
-  const hash_a = fastHashArray(a.buffer);
+  const hash_a = fastHashArrayBuffer(a);
   a[0] = 1;
 
-  const hash_b = fastHashArray(a.buffer);
+  const hash_b = fastHashArrayBuffer(a);
 
   expect(hash_a).not.toEqual(hash_b);
 
@@ -28,13 +28,13 @@ test('fastHashArray is fast(ish) < 20ms', () => {
   const a = new Int32Array(10_000);
 
   const t0 = performance.now();
-  fastHashArray(a.buffer);
+  fastHashArrayBuffer(a);
 
   const t1 = performance.now();
 
   a[0] = 1;
 
-  fastHashArray(a.buffer);
+  fastHashArrayBuffer(a);
 
   const t2 = performance.now();
 
@@ -48,7 +48,7 @@ test('fastHashArray is deterministic', () => {
   a[42] = 69;
   const b = new Int32Array(1000);
   b[42] = 69;
-  const hashA = fastHashArray(a.buffer);
-  const hashB = fastHashArray(b.buffer);
+  const hashA = fastHashArrayBuffer(a);
+  const hashB = fastHashArrayBuffer(b);
   expect(hashA).toEqual(hashB);
 });

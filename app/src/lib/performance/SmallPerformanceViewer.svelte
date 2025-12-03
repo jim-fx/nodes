@@ -1,25 +1,23 @@
 <script lang="ts">
   import { humanizeDuration, humanizeNumber } from "$lib/helpers";
-  import localStore from "$lib/helpers/localStore";
+  import { localState } from "$lib/helpers/localState.svelte";
   import SmallGraph from "./SmallGraph.svelte";
   import type { PerformanceData, PerformanceStore } from "@nodarium/utils";
 
-  export let store: PerformanceStore;
+  const { store, fps }: { store: PerformanceStore; fps: number[] } = $props();
 
-  const open = localStore("node.performance.small.open", {
+  const open = localState("node.performance.small.open", {
     runtime: false,
     fps: false,
   });
 
-  $: vertices = $store?.at(-1)?.["total-vertices"]?.[0] || 0;
-  $: faces = $store?.at(-1)?.["total-faces"]?.[0] || 0;
-  $: runtime = $store?.at(-1)?.["runtime"]?.[0] || 0;
+  const vertices = $derived($store?.at(-1)?.["total-vertices"]?.[0] || 0);
+  const faces = $derived($store?.at(-1)?.["total-faces"]?.[0] || 0);
+  const runtime = $derived($store?.at(-1)?.["runtime"]?.[0] || 0);
 
   function getPoints(data: PerformanceData, key: string) {
     return data?.map((run) => run[key]?.[0] || 0) || [];
   }
-
-  export let fps: number[] = [];
 </script>
 
 <div class="wrapper">
@@ -27,12 +25,12 @@
     <tbody>
       <tr
         style="cursor:pointer;"
-        on:click={() => ($open.runtime = !$open.runtime)}
+        onclick={() => (open.value.runtime = !open.value.runtime)}
       >
-        <td>{$open.runtime ? "-" : "+"} runtime </td>
+        <td>{open.value.runtime ? "-" : "+"} runtime </td>
         <td>{humanizeDuration(runtime || 1000)}</td>
       </tr>
-      {#if $open.runtime}
+      {#if open.value.runtime}
         <tr>
           <td colspan="2">
             <SmallGraph points={getPoints($store, "runtime")} />
@@ -40,13 +38,16 @@
         </tr>
       {/if}
 
-      <tr style="cursor:pointer;" on:click={() => ($open.fps = !$open.fps)}>
-        <td>{$open.fps ? "-" : "+"} fps </td>
+      <tr
+        style="cursor:pointer;"
+        onclick={() => (open.value.fps = !open.value.fps)}
+      >
+        <td>{open.value.fps ? "-" : "+"} fps </td>
         <td>
           {Math.floor(fps[fps.length - 1])}fps
         </td>
       </tr>
-      {#if $open.fps}
+      {#if open.value.fps}
         <tr>
           <td colspan="2">
             <SmallGraph points={fps} />

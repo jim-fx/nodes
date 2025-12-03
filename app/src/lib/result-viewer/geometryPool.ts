@@ -11,7 +11,7 @@ import {
 } from "three";
 
 function fastArrayHash(arr: Int32Array) {
-  const sampleDistance = Math.max(Math.floor(arr.length / 100), 1);
+  const sampleDistance = Math.max(Math.floor(arr.length / 1000), 1);
   const sampleCount = Math.floor(arr.length / sampleDistance);
 
   let hash = new Int32Array(sampleCount);
@@ -40,6 +40,9 @@ export function createGeometryPool(parentScene: Group, material: Material) {
     let hash = fastArrayHash(data);
 
     let geometry = existingMesh ? existingMesh.geometry : new BufferGeometry();
+    if (existingMesh) {
+      existingMesh.visible = true;
+    }
 
     // Extract data from the encoded array
     // const geometryType = encodedData[index++];
@@ -121,7 +124,6 @@ export function createGeometryPool(parentScene: Group, material: Material) {
           updateSingleGeometry(input, existingMesh || null);
         } else if (existingMesh) {
           existingMesh.visible = false;
-          scene.remove(existingMesh);
         }
       }
       return { totalVertices, totalFaces };
@@ -258,7 +260,6 @@ export function createInstancedGeometryPool(
           updateSingleInstance(input, existingMesh || null);
         } else if (existingMesh) {
           existingMesh.visible = false;
-          scene.remove(existingMesh);
         }
       }
       return { totalVertices, totalFaces };

@@ -1,11 +1,11 @@
 <script lang="ts">
   import { getGraphState } from "../graph/state.svelte.js";
   import { createNodePath } from "../helpers/index.js";
-  import type { NodeInstance, SerializedNode } from "@nodarium/types";
+  import type { NodeInstance } from "@nodarium/types";
 
   const graphState = getGraphState();
 
-  const { node }: { node: NodeInstance | SerializedNode } = $props();
+  const { node }: { node: NodeInstance } = $props();
 
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
@@ -20,8 +20,7 @@
   }
 
   const cornerTop = 10;
-  const rightBump =
-    "state" in node ? !!node?.state?.type?.outputs?.length : false;
+  const rightBump = !!node?.state?.type?.outputs?.length;
   const aspectRatio = 0.25;
 
   const path = createNodePath({
