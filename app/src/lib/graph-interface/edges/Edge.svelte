@@ -27,7 +27,7 @@
 <script lang="ts">
   import { T } from "@threlte/core";
   import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
-  import { Mesh, MeshBasicMaterial, Vector3 } from "three";
+  import { MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { appSettings } from "$lib/settings/app-settings.svelte";

@@ -16,9 +16,6 @@ export function grid(width: number, height: number) {
 
     graph.nodes.push({
       id: i,
-      tmp: {
-        visible: false,
-      },
       position: [x * 30, y * 40],
       props: i == 0 ? { value: 0 } : { op_type: 0, a: 1, b: 0.05 },
       type: i == 0 ? "max/plantarium/float" : "max/plantarium/math",
@@ -29,9 +26,6 @@ export function grid(width: number, height: number) {
 
   graph.nodes.push({
     id: amount,
-    tmp: {
-      visible: false,
-    },
     position: [width * 30, (height - 1) * 40],
     type: "max/plantarium/output",
     props: {},

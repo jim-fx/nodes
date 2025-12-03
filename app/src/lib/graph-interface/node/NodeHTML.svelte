@@ -1,8 +1,7 @@
 <script lang="ts">
-  import type { Node } from "@nodarium/types";
+  import type { NodeInstance, SerializedNode } from "@nodarium/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
-  import { onMount } from "svelte";
   import { getGraphState } from "../graph/state.svelte";
 
   let ref: HTMLDivElement;
@@ -10,7 +9,7 @@
   const graphState = getGraphState();
 
   type Props = {
-    node: Node;
+    node: SerializedNode | NodeInstance;
     position?: "absolute" | "fixed" | "relative";
     isActive?: boolean;
     isSelected?: boolean;
@@ -31,15 +30,21 @@
   const zOffset = Math.random() - 0.5;
   const zLimit = 2 - zOffset;
 
-  const parameters = Object.entries(node?.tmp?.type?.inputs || {}).filter(
-    (p) =>
-      p[1].type !== "seed" && !("setting" in p[1]) && p[1]?.hidden !== true,
-  );
+  const parameters =
+    "state" in node
+      ? Object.entries(node.state?.type?.inputs || {}).filter(
+          (p) =>
+            p[1].type !== "seed" &&
+            !("setting" in p[1]) &&
+            p[1]?.hidden !== true,
+        )
+      : [];
 
-  onMount(() => {
-    node.tmp = node.tmp || {};
-    node.tmp.ref = ref;
-    graphState?.updateNodePosition(node);
+  $effect(() => {
+    if ("state" in node && !node.state.ref) {
+      node.state.ref = ref;
+      graphState?.updateNodePosition(node);
+    }
   });
 </script>
 

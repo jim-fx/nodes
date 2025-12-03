@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Edge, Node } from "@nodarium/types";
+  import type { Edge, NodeInstance } from "@nodarium/types";
   import { onMount } from "svelte";
   import { createKeyMap } from "../../helpers/createKeyMap";
   import AddMenu from "../components/AddMenu.svelte";
@@ -40,7 +40,7 @@
     return [pos1[0], pos1[1], pos2[0], pos2[1]];
   }
 
-  function handleNodeCreation(node: Node) {
+  function handleNodeCreation(node: NodeInstance) {
     const newNode = graph.createNode({
       type: node.type,
       position: node.position,
@@ -51,11 +51,11 @@
     if (graphState.activeSocket) {
       if (typeof graphState.activeSocket.index === "number") {
         const socketType =
-          graphState.activeSocket.node.tmp?.type?.outputs?.[
+          graphState.activeSocket.node.state?.type?.outputs?.[
             graphState.activeSocket.index
           ];
 
-        const input = Object.entries(newNode?.tmp?.type?.inputs || {}).find(
+        const input = Object.entries(newNode?.state?.type?.inputs || {}).find(
           (inp) => inp[1].type === socketType,
         );
 
@@ -69,11 +69,11 @@
         }
       } else {
         const socketType =
-          graphState.activeSocket.node.tmp?.type?.inputs?.[
+          graphState.activeSocket.node.state?.type?.inputs?.[
             graphState.activeSocket.index
           ];
 
-        const output = newNode.tmp?.type?.outputs?.find((out) => {
+        const output = newNode.state?.type?.outputs?.find((out) => {
           if (socketType?.type === out) return true;
           if (socketType?.accepts?.includes(out as any)) return true;
           return false;

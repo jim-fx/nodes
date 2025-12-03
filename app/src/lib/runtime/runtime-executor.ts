@@ -1,6 +1,5 @@
 import type {
   Graph,
-  Node,
   NodeDefinition,
   NodeInput,
   NodeRegistry,
@@ -14,6 +13,7 @@ import {
   fastHashArrayBuffer,
   type PerformanceStore,
 } from "@nodarium/utils";
+import type { RuntimeNode } from "./types";
 
 const log = createLogger("runtime-executor");
 log.mute();
@@ -92,18 +92,27 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     // First, lets check if all nodes have a definition
     this.definitionMap = await this.getNodeDefinitions(graph);
 
-    const outputNode = graph.nodes.find((node) =>
+    const graphNodes = graph.nodes.map(node => {
+      const n = node as RuntimeNode;
+      n.state = {
+        depth: 0,
+        children: [],
+        parents: [],
+        inputNodes: {},
+      }
+      return n
+    })
+
+
+    const outputNode = graphNodes.find((node) =>
       node.type.endsWith("/output"),
-    ) as Node;
+    );
     if (!outputNode) {
       throw new Error("No output node found");
     }
 
-    outputNode.tmp = outputNode.tmp || {};
-    outputNode.tmp.depth = 0;
-
-    const nodeMap = new Map<number, Node>(
-      graph.nodes.map((node) => [node.id, node]),
+    const nodeMap = new Map(
+      graphNodes.map((node) => [node.id, node]),
     );
 
     // loop through all edges and assign the parent and child nodes to each node
@@ -112,14 +121,9 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       const parent = nodeMap.get(parentId);
       const child = nodeMap.get(childId);
       if (parent && child) {
-        parent.tmp = parent.tmp || {};
-        parent.tmp.children = parent.tmp.children || [];
-        parent.tmp.children.push(child);
-        child.tmp = child.tmp || {};
-        child.tmp.parents = child.tmp.parents || [];
-        child.tmp.parents.push(parent);
-        child.tmp.inputNodes = child.tmp.inputNodes || {};
-        child.tmp.inputNodes[childInput] = parent;
+        parent.state.children.push(child);
+        child.state.parents.push(parent);
+        child.state.inputNodes[childInput] = parent;
       }
     }
 
@@ -130,20 +134,10 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     while (stack.length) {
       const node = stack.pop();
       if (!node) continue;
-      node.tmp = node.tmp || {};
-      if (node?.tmp?.depth === undefined) {
-        node.tmp.depth = 0;
-      }
-      if (node?.tmp?.parents !== undefined) {
-        for (const parent of node.tmp.parents) {
-          parent.tmp = parent.tmp || {};
-          if (parent.tmp?.depth === undefined) {
-            parent.tmp.depth = node.tmp.depth + 1;
-            stack.push(parent);
-          } else {
-            parent.tmp.depth = Math.max(parent.tmp.depth, node.tmp.depth + 1);
-          }
-        }
+      for (const parent of node.state.parents) {
+        parent.state = parent.state || {};
+        parent.state.depth = node.state.depth + 1;
+        stack.push(parent);
       }
       nodes.push(node);
     }
@@ -175,7 +169,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     // we execute the nodes from the bottom up
     const sortedNodes = nodes.sort(
-      (a, b) => (b.tmp?.depth || 0) - (a.tmp?.depth || 0),
+      (a, b) => (b.state?.depth || 0) - (a.state?.depth || 0),
     );
 
     // here we store the intermediate results of the nodes
@@ -188,7 +182,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     for (const node of sortedNodes) {
       const node_type = this.definitionMap.get(node.type)!;
 
-      if (!node_type || !node.tmp || !node_type.execute) {
+      if (!node_type || !node.state || !node_type.execute) {
         log.warn(`Node ${node.id} has no definition`);
         continue;
       }
@@ -208,7 +202,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           }
 
           // check if the input is connected to another node
-          const inputNode = node.tmp?.inputNodes?.[key];
+          const inputNode = node.state.inputNodes[key];
           if (inputNode) {
             if (results[inputNode.id] === undefined) {
               throw new Error(

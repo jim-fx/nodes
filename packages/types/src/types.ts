@@ -1,36 +1,35 @@
 import { z } from "zod";
 import { NodeInputSchema } from "./inputs";
 
-export const NodeTypeSchema = z
+export const NodeIdSchema = z
   .string()
   .regex(/^[^/]+\/[^/]+\/[^/]+$/, "Invalid NodeId format")
   .transform((value) => value as `${string}/${string}/${string}`);
 
-export type NodeType = z.infer<typeof NodeTypeSchema>;
+export type NodeId = z.infer<typeof NodeIdSchema>;
 
-export type Node = {
-  /**
-   * .tmp only exists at runtime
-   */
-  tmp?: {
-    depth?: number;
-    mesh?: any;
-    parents?: Node[];
-    children?: Node[];
-    inputNodes?: Record<string, Node>;
-    type?: NodeDefinition;
-    downX?: number;
-    downY?: number;
-    x?: number;
-    y?: number;
-    ref?: HTMLElement;
-    visible?: boolean;
-    isMoving?: boolean;
-  };
-} & z.infer<typeof NodeSchema>;
+export type NodeRuntimeState = {
+  depth?: number;
+  mesh?: any;
+  parents?: NodeInstance[];
+  children?: NodeInstance[];
+  inputNodes?: Record<string, NodeInstance>;
+  type?: NodeDefinition;
+  downX?: number;
+  downY?: number;
+  x?: number;
+  y?: number;
+  ref?: HTMLElement;
+  visible?: boolean;
+  isMoving?: boolean;
+};
+
+export type NodeInstance = {
+  state: NodeRuntimeState;
+} & SerializedNode;
 
 export const NodeDefinitionSchema = z.object({
-  id: NodeTypeSchema,
+  id: NodeIdSchema,
   inputs: z.record(z.string(), NodeInputSchema).optional(),
   outputs: z.array(z.string()).optional(),
   meta: z
@@ -43,7 +42,7 @@ export const NodeDefinitionSchema = z.object({
 
 export const NodeSchema = z.object({
   id: z.number(),
-  type: NodeTypeSchema,
+  type: NodeIdSchema,
   props: z
     .record(z.string(), z.union([z.number(), z.array(z.number())]))
     .optional(),
@@ -56,17 +55,20 @@ export const NodeSchema = z.object({
   position: z.tuple([z.number(), z.number()]),
 });
 
+
+export type SerializedNode = z.infer<typeof NodeSchema>;
+
 export type NodeDefinition = z.infer<typeof NodeDefinitionSchema> & {
   execute(input: Int32Array): Int32Array;
 };
 
 export type Socket = {
-  node: Node;
+  node: NodeInstance;
   index: number | string;
   position: [number, number];
 };
 
-export type Edge = [Node, number, Node, string];
+export type Edge = [NodeInstance, number, NodeInstance, string];
 
 export const GraphSchema = z.object({
   id: z.number(),
@@ -81,4 +83,4 @@ export const GraphSchema = z.object({
   edges: z.array(z.tuple([z.number(), z.number(), z.number(), z.string()])),
 });
 
-export type Graph = z.infer<typeof GraphSchema> & { nodes: Node[] };
+export type Graph = z.infer<typeof GraphSchema>;

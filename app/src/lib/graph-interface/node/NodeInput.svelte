@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { Node, NodeInput } from "@nodarium/types";
+  import type { NodeInstance, NodeInput } from "@nodarium/types";
   import { Input } from "@nodarium/ui";
   import type { GraphManager } from "../graph-manager.svelte";
 
   type Props = {
-    node: Node;
+    node: NodeInstance;
     input: NodeInput;
     id: string;
     elementId?: string;

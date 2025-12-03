@@ -1,11 +1,11 @@
 <script lang="ts">
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
-  import type { Node, NodeType } from "@nodarium/types";
+  import type { NodeInstance, NodeId } from "@nodarium/types";
   import { getGraphManager, getGraphState } from "../graph/state.svelte";
 
   type Props = {
-    onnode: (n: Node) => void;
+    onnode: (n: NodeInstance) => void;
   };
 
   const { onnode }: Props = $props();
@@ -15,7 +15,7 @@
 
   let input: HTMLInputElement;
   let value = $state<string>();
-  let activeNodeId = $state<NodeType>();
+  let activeNodeId = $state<NodeId>();
 
   const allNodes = graphState.activeSocket
     ? graph.getPossibleNodes(graphState.activeSocket)
@@ -39,13 +39,14 @@
     }
   });
 
-  function handleNodeCreation(nodeType: Node["type"]) {
+  function handleNodeCreation(nodeType: NodeInstance["type"]) {
     if (!graphState.addMenuPosition) return;
     onnode?.({
       id: -1,
       type: nodeType,
       position: [...graphState.addMenuPosition],
       props: {},
+      state: {},
     });
   }
 

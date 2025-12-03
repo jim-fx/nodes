@@ -1,12 +1,12 @@
 <script lang="ts">
   import NodeHtml from "$lib/graph-interface/node/NodeHTML.svelte";
-  import type { NodeDefinition } from "@nodarium/types";
+  import type { SerializedNode } from "@nodarium/types";
 
-  export let node: NodeDefinition;
+  const { node }: { node: SerializedNode } = $props();
 
-  let dragging = false;
+  let dragging = $state(false);
 
-  let nodeData = {
+  let nodeData = $state({
     id: 0,
     type: node?.id,
     position: [0, 0] as [number, number],
@@ -14,14 +14,14 @@
     tmp: {
       type: node,
     },
-  };
+  });
 
   function handleDragStart(e: DragEvent) {
     dragging = true;
     const box = (e?.target as HTMLElement)?.getBoundingClientRect();
     if (e.dataTransfer === null) return;
     e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("data/node-id", node.id);
+    e.dataTransfer.setData("data/node-id", node.id.toString());
     if (nodeData.props) {
       e.dataTransfer.setData("data/node-props", JSON.stringify(nodeData.props));
     }
@@ -38,13 +38,13 @@
 
 <div class="node-wrapper" class:dragging>
   <div
-    on:dragend={() => {
+    ondragend={() => {
       dragging = false;
     }}
     draggable={true}
     role="button"
     tabindex="0"
-    on:dragstart={handleDragStart}
+    ondragstart={handleDragStart}
   >
     <NodeHtml inView={true} position={"relative"} z={5} bind:node={nodeData} />
   </div>

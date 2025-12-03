@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { Node, NodeInput } from "@nodarium/types";
+  import type { NodeInstance, NodeInput } from "@nodarium/types";
   import NestedSettings from "$lib/settings/NestedSettings.svelte";
   import type { GraphManager } from "$lib/graph-interface/graph-manager.svelte";
 
   type Props = {
     manager: GraphManager;
-    node: Node;
+    node: NodeInstance;
   };
 
   const { manager, node = $bindable() }: Props = $props();
@@ -19,19 +19,19 @@
         })
         .map(([key, value]) => {
           //@ts-ignore
-          value.__node_type = node?.tmp?.type.id;
+          value.__node_type = node.state?.type.id;
           //@ts-ignore
           value.__node_input = key;
           return [key, value];
         }),
     );
   }
-  const nodeDefinition = filterInputs(node.tmp?.type?.inputs);
+  const nodeDefinition = filterInputs(node.state?.type?.inputs);
 
   type Store = Record<string, number | number[]>;
   let store = $state<Store>(createStore(node?.props, nodeDefinition));
   function createStore(
-    props: Node["props"],
+    props: NodeInstance["props"],
     inputs: Record<string, NodeInput>,
   ): Store {
     const store: Store = {};

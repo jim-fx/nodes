@@ -1,8 +1,8 @@
-import type { Graph, Node } from "@nodarium/types";
+import type { Graph, SerializedNode } from "@nodarium/types";
 
 export function tree(depth: number): Graph {
 
-  const nodes: Node[] = [
+  const nodes: SerializedNode[] = [
     {
       id: 0,
       type: "max/plantarium/output",

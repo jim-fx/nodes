@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { Node } from "@nodarium/types";
-  import { onMount } from "svelte";
+  import type { NodeInstance } from "@nodarium/types";
   import { getGraphState } from "../graph/state.svelte";
   import { T } from "@threlte/core";
   import { type Mesh } from "three";
@@ -13,7 +12,7 @@
   const graphState = getGraphState();
 
   type Props = {
-    node: Node;
+    node: NodeInstance;
     inView: boolean;
     z: number;
   };
@@ -35,9 +34,8 @@
   const height = graphState.getNodeHeight(node.type);
 
   $effect(() => {
-    if (!node.tmp) node.tmp = {};
-    if (meshRef && !node.tmp?.mesh) {
-      node.tmp.mesh = meshRef;
+    if (meshRef && !node.state?.mesh) {
+      node.state.mesh = meshRef;
       graphState.updateNodePosition(node);
     }
   });

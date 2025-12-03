@@ -1,24 +1,27 @@
 <script lang="ts">
   import { getGraphState } from "../graph/state.svelte.js";
   import { createNodePath } from "../helpers/index.js";
-  import type { Node } from "@nodarium/types";
+  import type { NodeInstance, SerializedNode } from "@nodarium/types";
 
   const graphState = getGraphState();
 
-  const { node }: { node: Node } = $props();
+  const { node }: { node: NodeInstance | SerializedNode } = $props();
 
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
-    graphState.setDownSocket?.({
-      node,
-      index: 0,
-      position: graphState.getSocketPosition?.(node, 0),
-    });
+    if ("state" in node) {
+      graphState.setDownSocket?.({
+        node,
+        index: 0,
+        position: graphState.getSocketPosition?.(node, 0),
+      });
+    }
   }
 
   const cornerTop = 10;
-  const rightBump = !!node?.tmp?.type?.outputs?.length;
+  const rightBump =
+    "state" in node ? !!node?.state?.type?.outputs?.length : false;
   const aspectRatio = 0.25;
 
   const path = createNodePath({
@@ -29,14 +32,6 @@
     rightBump,
     aspectRatio,
   });
-  // const pathDisabled = createNodePath({
-  //   depth: 0,
-  //   height: 15,
-  //   y: 50,
-  //   cornerTop,
-  //   rightBump,
-  //   aspectRatio,
-  // });
   const pathHover = createNodePath({
     depth: 8.5,
     height: 50,

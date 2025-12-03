@@ -6,10 +6,11 @@ export type {
   AsyncCache,
 } from "./components";
 export type {
-  Node,
+  SerializedNode,
+  NodeInstance,
   NodeDefinition,
   Socket,
-  NodeType,
+  NodeId,
   Edge,
   Graph,
 } from "./types";

@@ -1,4 +1,4 @@
-import type { Node, Socket } from "@nodarium/types";
+import type { NodeInstance, Socket } from "@nodarium/types";
 import { getContext, setContext } from "svelte";
 import { SvelteSet } from "svelte/reactivity";
 import type { GraphManager } from "../graph-manager.svelte";
@@ -38,7 +38,7 @@ export class GraphState {
   cameraPosition: [number, number, number] = $state([0, 0, 4]);
 
   clipboard: null | {
-    nodes: Node[];
+    nodes: NodeInstance[];
     edges: [number, number, number, string][];
   } = null;
 
@@ -95,26 +95,26 @@ export class GraphState {
   }
 
 
-  updateNodePosition(node: Node) {
-    if (node?.tmp?.ref && node?.tmp?.mesh) {
-      if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
-        node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
-        node.tmp.mesh.position.x = node.tmp.x + 10;
-        node.tmp.mesh.position.z = node.tmp.y + this.getNodeHeight(node.type) / 2;
+  updateNodePosition(node: NodeInstance) {
+    if (node.state.ref && node.state.mesh) {
+      if (node.state["x"] !== undefined && node.state["y"] !== undefined) {
+        node.state.ref.style.setProperty("--nx", `${node.state.x * 10}px`);
+        node.state.ref.style.setProperty("--ny", `${node.state.y * 10}px`);
+        node.state.mesh.position.x = node.state.x + 10;
+        node.state.mesh.position.z = node.state.y + this.getNodeHeight(node.type) / 2;
         if (
-          node.tmp.x === node.position[0] &&
-          node.tmp.y === node.position[1]
+          node.state.x === node.position[0] &&
+          node.state.y === node.position[1]
         ) {
-          delete node.tmp.x;
-          delete node.tmp.y;
+          delete node.state.x;
+          delete node.state.y;
         }
         this.graph.edges = [...this.graph.edges];
       } else {
-        node.tmp.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
-        node.tmp.mesh.position.x = node.position[0] + 10;
-        node.tmp.mesh.position.z =
+        node.state.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
+        node.state.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
+        node.state.mesh.position.x = node.position[0] + 10;
+        node.state.mesh.position.z =
           node.position[1] + this.getNodeHeight(node.type) / 2;
       }
     }
@@ -134,19 +134,19 @@ export class GraphState {
   }
 
   getSocketPosition(
-    node: Node,
+    node: NodeInstance,
     index: string | number,
   ): [number, number] {
     if (typeof index === "number") {
       return [
-        (node?.tmp?.x ?? node.position[0]) + 20,
-        (node?.tmp?.y ?? node.position[1]) + 2.5 + 10 * index,
+        (node?.state?.x ?? node.position[0]) + 20,
+        (node?.state?.y ?? node.position[1]) + 2.5 + 10 * index,
       ];
     } else {
-      const _index = Object.keys(node.tmp?.type?.inputs || {}).indexOf(index);
+      const _index = Object.keys(node.state?.type?.inputs || {}).indexOf(index);
       return [
-        node?.tmp?.x ?? node.position[0],
-        (node?.tmp?.y ?? node.position[1]) + 10 + 10 * _index,
+        node?.state?.x ?? node.position[0],
+        (node?.state?.y ?? node.position[1]) + 10 + 10 * _index,
       ];
     }
   }
@@ -173,32 +173,6 @@ export class GraphState {
     this.nodeHeightCache[nodeTypeId] = height;
     return height;
   }
-
-  setNodePosition(node: Node) {
-    if (node?.tmp?.ref && node?.tmp?.mesh) {
-      if (node.tmp["x"] !== undefined && node.tmp["y"] !== undefined) {
-        node.tmp.ref.style.setProperty("--nx", `${node.tmp.x * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.tmp.y * 10}px`);
-        node.tmp.mesh.position.x = node.tmp.x + 10;
-        node.tmp.mesh.position.z = node.tmp.y + this.getNodeHeight(node.type) / 2;
-        if (
-          node.tmp.x === node.position[0] &&
-          node.tmp.y === node.position[1]
-        ) {
-          delete node.tmp.x;
-          delete node.tmp.y;
-        }
-        this.graph.edges = [...this.graph.edges];
-      } else {
-        node.tmp.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
-        node.tmp.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
-        node.tmp.mesh.position.x = node.position[0] + 10;
-        node.tmp.mesh.position.z =
-          node.position[1] + this.getNodeHeight(node.type) / 2;
-      }
-    }
-  }
-
 
   copyNodes() {
     if (this.activeNodeId === -1 && !this.selectedNodes?.size)
@@ -231,12 +205,11 @@ export class GraphState {
 
     const nodes = this.clipboard.nodes
       .map((node) => {
-        node.tmp = node.tmp || {};
         node.position[0] = this.mousePosition[0] - node.position[0];
         node.position[1] = this.mousePosition[1] - node.position[1];
         return node;
       })
-      .filter(Boolean) as Node[];
+      .filter(Boolean) as NodeInstance[];
 
     const newNodes = this.graph.createGraph(nodes, this.clipboard.edges);
     this.selectedNodes.clear();
@@ -327,7 +300,7 @@ export class GraphState {
     return clickedNodeId;
   }
 
-  isNodeInView(node: Node) {
+  isNodeInView(node: NodeInstance) {
     const height = this.getNodeHeight(node.type);
     const width = 20;
     return (
