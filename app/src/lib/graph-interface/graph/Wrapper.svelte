@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Graph, Node, NodeRegistry } from "@nodarium/types";
+  import type { Graph, NodeInstance, NodeRegistry } from "@nodarium/types";
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
@@ -12,7 +12,7 @@
 
     settings?: Record<string, any>;
 
-    activeNode?: Node;
+    activeNode?: NodeInstance;
     showGrid?: boolean;
     snapToGrid?: boolean;
     showHelp?: boolean;

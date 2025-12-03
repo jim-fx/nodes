@@ -1,4 +1,4 @@
-import { GraphSchema, type NodeType, type Node } from "@nodarium/types";
+import { GraphSchema, type NodeId, type NodeInstance } from "@nodarium/types";
 import type { GraphManager } from "../graph-manager.svelte";
 import type { GraphState } from "./state.svelte";
 import { animate, lerp } from "$lib/helpers";
@@ -17,7 +17,7 @@ export class FileDropEventManager {
     event.preventDefault();
     this.state.isDragging = false;
     if (!event.dataTransfer) return;
-    const nodeId = event.dataTransfer.getData("data/node-id") as NodeType;
+    const nodeId = event.dataTransfer.getData("data/node-id") as NodeId;
     let mx = event.clientX - this.state.rect.x;
     let my = event.clientY - this.state.rect.y;
 
@@ -131,45 +131,45 @@ export class MouseEventManager {
 
     if (clickedNodeId !== -1) {
       if (activeNode) {
-        if (!activeNode?.tmp?.isMoving && !event.ctrlKey && !event.shiftKey) {
+        if (!activeNode?.state?.isMoving && !event.ctrlKey && !event.shiftKey) {
           this.state.activeNodeId = clickedNodeId;
           this.state.clearSelection();
         }
       }
     }
 
-    if (activeNode?.tmp?.isMoving) {
-      activeNode.tmp = activeNode.tmp || {};
-      activeNode.tmp.isMoving = false;
+    if (activeNode?.state?.isMoving) {
+      activeNode.state = activeNode.state || {};
+      activeNode.state.isMoving = false;
       if (this.state.snapToGrid) {
         const snapLevel = this.state.getSnapLevel();
         activeNode.position[0] = snapPointToGrid(
-          activeNode?.tmp?.x ?? activeNode.position[0],
+          activeNode?.state?.x ?? activeNode.position[0],
           5 / snapLevel,
         );
         activeNode.position[1] = snapPointToGrid(
-          activeNode?.tmp?.y ?? activeNode.position[1],
+          activeNode?.state?.y ?? activeNode.position[1],
           5 / snapLevel,
         );
       } else {
-        activeNode.position[0] = activeNode?.tmp?.x ?? activeNode.position[0];
-        activeNode.position[1] = activeNode?.tmp?.y ?? activeNode.position[1];
+        activeNode.position[0] = activeNode?.state?.x ?? activeNode.position[0];
+        activeNode.position[1] = activeNode?.state?.y ?? activeNode.position[1];
       }
       const nodes = [
         ...[...(this.state.selectedNodes?.values() || [])].map((id) =>
           this.graph.getNode(id),
         ),
-      ] as Node[];
+      ] as NodeInstance[];
 
       const vec = [
-        activeNode.position[0] - (activeNode?.tmp.x || 0),
-        activeNode.position[1] - (activeNode?.tmp.y || 0),
+        activeNode.position[0] - (activeNode?.state.x || 0),
+        activeNode.position[1] - (activeNode?.state.y || 0),
       ];
 
       for (const node of nodes) {
         if (!node) continue;
-        node.tmp = node.tmp || {};
-        const { x, y } = node.tmp;
+        node.state = node.state || {};
+        const { x, y } = node.state;
         if (x !== undefined && y !== undefined) {
           node.position[0] = x + vec[0];
           node.position[1] = y + vec[1];
@@ -179,14 +179,14 @@ export class MouseEventManager {
       animate(500, (a: number) => {
         for (const node of nodes) {
           if (
-            node?.tmp &&
-            node.tmp["x"] !== undefined &&
-            node.tmp["y"] !== undefined
+            node?.state &&
+            node.state["x"] !== undefined &&
+            node.state["y"] !== undefined
           ) {
-            node.tmp.x = lerp(node.tmp.x, node.position[0], a);
-            node.tmp.y = lerp(node.tmp.y, node.position[1], a);
+            node.state.x = lerp(node.state.x, node.position[0], a);
+            node.state.y = lerp(node.state.y, node.position[1], a);
             this.state.updateNodePosition(node);
-            if (node?.tmp?.isMoving) {
+            if (node?.state?.isMoving) {
               return false;
             }
           }
@@ -318,17 +318,17 @@ export class MouseEventManager {
 
     const node = this.graph.getNode(this.state.activeNodeId);
     if (!node) return;
-    node.tmp = node.tmp || {};
-    node.tmp.downX = node.position[0];
-    node.tmp.downY = node.position[1];
+    node.state = node.state || {};
+    node.state.downX = node.position[0];
+    node.state.downY = node.position[1];
 
     if (this.state.selectedNodes) {
       for (const nodeId of this.state.selectedNodes) {
         const n = this.graph.getNode(nodeId);
         if (!n) continue;
-        n.tmp = n.tmp || {};
-        n.tmp.downX = n.position[0];
-        n.tmp.downY = n.position[1];
+        n.state = n.state || {};
+        n.state.downX = n.position[0];
+        n.state.downY = n.position[1];
       }
     }
 
@@ -382,7 +382,7 @@ export class MouseEventManager {
       const y1 = Math.min(mouseD[1], this.state.mousePosition[1]);
       const y2 = Math.max(mouseD[1], this.state.mousePosition[1]);
       for (const node of this.graph.nodes.values()) {
-        if (!node?.tmp) continue;
+        if (!node?.state) continue;
         const x = node.position[0];
         const y = node.position[1];
         const height = this.state.getNodeHeight(node.type);
@@ -400,10 +400,10 @@ export class MouseEventManager {
       const node = this.graph.getNode(this.state.activeNodeId);
       if (!node || event.buttons !== 1) return;
 
-      node.tmp = node.tmp || {};
+      node.state = node.state || {};
 
-      const oldX = node.tmp.downX || 0;
-      const oldY = node.tmp.downY || 0;
+      const oldX = node.state.downX || 0;
+      const oldY = node.state.downY || 0;
 
       let newX =
         oldX + (mx - this.state.mouseDown[0]) / this.state.cameraPosition[2];
@@ -418,10 +418,10 @@ export class MouseEventManager {
         }
       }
 
-      if (!node.tmp.isMoving) {
+      if (!node.state.isMoving) {
         const dist = Math.sqrt((oldX - newX) ** 2 + (oldY - newY) ** 2);
         if (dist > 0.2) {
-          node.tmp.isMoving = true;
+          node.state.isMoving = true;
         }
       }
 
@@ -431,15 +431,15 @@ export class MouseEventManager {
       if (this.state.selectedNodes?.size) {
         for (const nodeId of this.state.selectedNodes) {
           const n = this.graph.getNode(nodeId);
-          if (!n?.tmp) continue;
-          n.tmp.x = (n?.tmp?.downX || 0) - vecX;
-          n.tmp.y = (n?.tmp?.downY || 0) - vecY;
+          if (!n?.state) continue;
+          n.state.x = (n?.state?.downX || 0) - vecX;
+          n.state.y = (n?.state?.downY || 0) - vecY;
           this.state.updateNodePosition(n);
         }
       }
 
-      node.tmp.x = newX;
-      node.tmp.y = newY;
+      node.state.x = newX;
+      node.state.y = newY;
 
       this.state.updateNodePosition(node);
 

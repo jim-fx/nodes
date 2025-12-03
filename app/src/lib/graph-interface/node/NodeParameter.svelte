@@ -1,14 +1,15 @@
 <script lang="ts">
   import type {
     NodeInput as NodeInputType,
-    Node as NodeType,
+    NodeInstance,
+    SerializedNode,
   } from "@nodarium/types";
   import { createNodePath } from "../helpers/index.js";
   import NodeInput from "./NodeInput.svelte";
   import { getGraphManager, getGraphState } from "../graph/state.svelte.js";
 
   type Props = {
-    node: NodeType;
+    node: NodeInstance | SerializedNode;
     input: NodeInputType;
     id: string;
     isLast?: boolean;
@@ -18,7 +19,7 @@
 
   let { node = $bindable(), input, id, isLast }: Props = $props();
 
-  const inputType = node?.tmp?.type?.inputs?.[id]!;
+  const inputType = node?.state?.type?.inputs?.[id]!;
 
   const socketId = `${node.id}-${id}`;
 
@@ -37,7 +38,7 @@
     });
   }
 
-  const leftBump = node.tmp?.type?.inputs?.[id].internal !== true;
+  const leftBump = node.state?.type?.inputs?.[id].internal !== true;
   const cornerBottom = isLast ? 5 : 0;
   const aspectRatio = 0.5;
 
@@ -83,7 +84,7 @@
       {/if}
     </div>
 
-    {#if node?.tmp?.type?.inputs?.[id]?.internal !== true}
+    {#if node?.state?.type?.inputs?.[id]?.internal !== true}
       <div data-node-socket class="large target"></div>
       <div
         data-node-socket

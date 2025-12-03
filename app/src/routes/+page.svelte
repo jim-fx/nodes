@@ -2,7 +2,7 @@
   import Grid from "$lib/grid";
   import GraphInterface from "$lib/graph-interface";
   import * as templates from "$lib/graph-templates";
-  import type { Graph, Node } from "@nodarium/types";
+  import type { Graph, NodeInstance } from "@nodarium/types";
   import Viewer from "$lib/result-viewer/Viewer.svelte";
   import {
     appSettings,
@@ -42,7 +42,7 @@
     appSettings.value.debug.useWorker ? workerRuntime : memoryRuntime,
   );
 
-  let activeNode = $state<Node | undefined>(undefined);
+  let activeNode = $state<NodeInstance | undefined>(undefined);
   let scene = $state<Group>(null!);
 
   let graph = $state(
