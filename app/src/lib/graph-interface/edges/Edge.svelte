@@ -26,11 +26,10 @@
 
 <script lang="ts">
   import { T } from "@threlte/core";
-  import { MeshLineMaterial } from "@threlte/extras";
+  import { MeshLineGeometry, MeshLineMaterial } from "@threlte/extras";
   import { Mesh, MeshBasicMaterial, Vector3 } from "three";
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
-  import { createEdgeGeometry } from "./createEdgeGeometry.js";
   import { appSettings } from "$lib/settings/app-settings.svelte";
 
   type Props = {
@@ -45,7 +44,7 @@
 
   const thickness = $derived(Math.max(0.001, 0.00082 * Math.exp(0.055 * z)));
 
-  let mesh = $state<Mesh>();
+  let points = $state<Vector3[]>([]);
 
   let lastId: string | null = null;
 
@@ -69,14 +68,10 @@
     curve.v2.set(new_x / 2, new_y);
     curve.v3.set(new_x, new_y);
 
-    const points = curve
+    points = curve
       .getPoints(samples)
       .map((p) => new Vector3(p.x, 0, p.y))
       .flat();
-
-    if (mesh) {
-      mesh.geometry = createEdgeGeometry(points);
-    }
   }
 
   $effect(() => {
@@ -106,6 +101,7 @@
   <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
 
-<T.Mesh bind:ref={mesh} position.x={x1} position.z={y1} position.y={0.1}>
+<T.Mesh position.x={x1} position.z={y1} position.y={0.1}>
+  <MeshLineGeometry {points} />
   <MeshLineMaterial width={thickness} color={lineColor} />
 </T.Mesh>
