@@ -13,31 +13,62 @@ export class RemoteNodeRegistry implements NodeRegistry {
   status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeDefinition> = new Map();
 
-  async fetchJson(url: string) {
-    const response = await fetch(`${this.url}/${url}`);
-
-    if (!response.ok) {
-      log.error(`Failed to load ${url}`, { response, url, host: this.url });
-      throw new Error(`Failed to load ${url}`);
-    }
-
-    return response.json();
-  }
-
-  async fetchArrayBuffer(url: string) {
-    const response = await fetch(`${this.url}/${url}`);
-    if (!response.ok) {
-      log.error(`Failed to load ${url}`, { response, url, host: this.url });
-      throw new Error(`Failed to load ${url}`);
-    }
-
-    return response.arrayBuffer();
-  }
 
   constructor(
     private url: string,
-    private cache?: AsyncCache<ArrayBuffer>,
+    private cache?: AsyncCache<ArrayBuffer | string>,
   ) { }
+
+  async fetchJson(url: string, skipCache = false) {
+
+    const finalUrl = `${this.url}/${url}`;
+
+    if (!skipCache && this.cache) {
+      const cachedValue = await this.cache?.get<string>(finalUrl);
+      if (cachedValue) {
+        // fetch again in the background, maybe implement that only refetch after a certain time
+        this.fetchJson(url, true)
+        return JSON.parse(cachedValue);
+      }
+    }
+
+    const response = await fetch(finalUrl);
+
+    if (!response.ok) {
+      log.error(`Failed to load ${url}`, { response, url, host: this.url });
+      throw new Error(`Failed to load ${url}`);
+    }
+
+    const result = await response.json();
+
+    this.cache?.set(finalUrl, JSON.stringify(result));
+
+    return result;
+  }
+
+  async fetchArrayBuffer(url: string, skipCache = false) {
+
+    const finalUrl = `${this.url}/${url}`;
+
+    if (!skipCache && this.cache) {
+      const cachedNode = await this.cache?.get<ArrayBuffer>(finalUrl);
+      if (cachedNode) {
+        // fetch again in the background, maybe implement that only refetch after a certain time
+        this.fetchArrayBuffer(url, true)
+        return cachedNode;
+      }
+    }
+
+    const response = await fetch(finalUrl);
+    if (!response.ok) {
+      log.error(`Failed to load ${url}`, { response, url, host: this.url });
+      throw new Error(`Failed to load ${url}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    this.cache?.set(finalUrl, buffer);
+    return buffer;
+  }
 
   async fetchUsers() {
     return this.fetchJson(`nodes/users.json`);
@@ -48,7 +79,8 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async fetchCollection(userCollectionId: `${string}/${string}`) {
-    return this.fetchJson(`nodes/${userCollectionId}.json`);
+    const col = await this.fetchJson(`nodes/${userCollectionId}.json`);
+    return col
   }
 
   async fetchNodeDefinition(nodeId: `${string}/${string}/${string}`) {
@@ -56,10 +88,6 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   private async fetchNodeWasm(nodeId: `${string}/${string}/${string}`) {
-    const cachedNode = await this.cache?.get(nodeId);
-    if (cachedNode) {
-      return cachedNode;
-    }
 
     const node = await this.fetchArrayBuffer(`nodes/${nodeId}.wasm`);
     if (!node) {

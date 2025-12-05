@@ -83,7 +83,7 @@ export interface AsyncCache<T = unknown> {
    * @param key - The key to get the value for
    * @returns The value for the given key, or undefined if no such value exists
    */
-  get: (key: string) => Promise<T | undefined>;
+  get: <A = T>(key: string) => Promise<A | undefined>;
   /**
    * Set the value for the given key
    * @param key - The key to set the value for
