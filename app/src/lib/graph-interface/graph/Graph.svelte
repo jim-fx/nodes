@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Edge, NodeInstance } from "@nodarium/types";
-  import { onMount } from "svelte";
   import { createKeyMap } from "../../helpers/createKeyMap";
   import AddMenu from "../components/AddMenu.svelte";
   import Background from "../background/Background.svelte";
@@ -93,15 +92,6 @@
     graphState.activeSocket = null;
     graphState.addMenuPosition = null;
   }
-
-  onMount(() => {
-    if (localStorage.getItem("cameraPosition")) {
-      const cPosition = JSON.parse(localStorage.getItem("cameraPosition")!);
-      if (Array.isArray(cPosition)) {
-        graphState.setCameraTransform(cPosition[0], cPosition[1], cPosition[2]);
-      }
-    }
-  });
 </script>
 
 <svelte:window

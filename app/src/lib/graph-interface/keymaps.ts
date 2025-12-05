@@ -88,11 +88,9 @@ export function setupKeymaps(keymap: Keymap, graph: GraphManager, graphState: Gr
       const ease = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 
       animate(500, (a: number) => {
-        graphState.setCameraTransform(
-          lerp(camX, average[0], ease(a)),
-          lerp(camY, average[1], ease(a)),
-          lerp(camZ, 2, ease(a)),
-        );
+        graphState.cameraPosition[0] = lerp(camX, average[0], ease(a));
+        graphState.cameraPosition[1] = lerp(camY, average[1], ease(a));
+        graphState.cameraPosition[2] = lerp(camZ, 2, ease(a))
         if (graphState.mouseDown) return false;
       });
     },

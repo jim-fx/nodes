@@ -24,7 +24,24 @@ export function setGraphManager(manager: GraphManager) {
 
 export class GraphState {
 
-  constructor(private graph: GraphManager) { }
+  constructor(private graph: GraphManager) {
+    $effect.root(() => {
+      $effect(() => {
+        localStorage.setItem("cameraPosition", `[${this.cameraPosition[0]},${this.cameraPosition[1]},${this.cameraPosition[2]}]`)
+      })
+    })
+    const storedPosition = localStorage.getItem("cameraPosition")
+    if (storedPosition) {
+      try {
+        const d = JSON.parse(storedPosition);
+        this.cameraPosition[0] = d[0];
+        this.cameraPosition[1] = d[1];
+        this.cameraPosition[2] = d[2];
+      } catch (e) {
+        console.log("Failed to parsed stored camera position", e);
+      }
+    }
+  }
 
   width = $state(100);
   height = $state(100);
@@ -80,42 +97,24 @@ export class GraphState {
 
   isBodyFocused = () => document?.activeElement?.nodeName !== "INPUT";
 
-  setCameraTransform(
-    x = this.cameraPosition[0],
-    y = this.cameraPosition[1],
-    z = this.cameraPosition[2],
-  ) {
-    if (this.camera) {
-      this.camera.position.x = x;
-      this.camera.position.z = y;
-      this.camera.zoom = z;
-    }
-    this.cameraPosition = [x, y, z];
-    localStorage.setItem("cameraPosition", JSON.stringify(this.cameraPosition));
-  }
-
-
   updateNodePosition(node: NodeInstance) {
-    if (node.state.ref && node.state.mesh) {
-      if (node.state["x"] !== undefined && node.state["y"] !== undefined) {
+    if (
+      node.state.x === node.position[0] &&
+      node.state.y === node.position[1]
+    ) {
+      delete node.state.x;
+      delete node.state.y;
+    }
+
+    if (node.state["x"] !== undefined && node.state["y"] !== undefined) {
+      if (node.state.ref) {
         node.state.ref.style.setProperty("--nx", `${node.state.x * 10}px`);
         node.state.ref.style.setProperty("--ny", `${node.state.y * 10}px`);
-        node.state.mesh.position.x = node.state.x + 10;
-        node.state.mesh.position.z = node.state.y + this.getNodeHeight(node.type) / 2;
-        if (
-          node.state.x === node.position[0] &&
-          node.state.y === node.position[1]
-        ) {
-          delete node.state.x;
-          delete node.state.y;
-        }
-        this.graph.edges = [...this.graph.edges];
-      } else {
+      }
+    } else {
+      if (node.state.ref) {
         node.state.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
         node.state.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
-        node.state.mesh.position.x = node.position[0] + 10;
-        node.state.mesh.position.z =
-          node.position[1] + this.getNodeHeight(node.type) / 2;
       }
     }
   }

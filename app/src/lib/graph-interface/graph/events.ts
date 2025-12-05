@@ -455,7 +455,8 @@ export class MouseEventManager {
       this.state.cameraDown[1] -
       (my - this.state.mouseDown[1]) / this.state.cameraPosition[2];
 
-    this.state.setCameraTransform(newX, newY);
+    this.state.cameraPosition[0] = newX;
+    this.state.cameraPosition[1] = newY;
   }
 
 
@@ -486,15 +487,13 @@ export class MouseEventManager {
     const zoomRatio = newZoom / this.state.cameraPosition[2];
 
     // Update camera position and zoom level
-    this.state.setCameraTransform(
-      this.state.mousePosition[0] -
+    this.state.cameraPosition[0] = this.state.mousePosition[0] -
       (this.state.mousePosition[0] - this.state.cameraPosition[0]) /
-      zoomRatio,
-      this.state.mousePosition[1] -
+      zoomRatio;
+    this.state.cameraPosition[1] = this.state.mousePosition[1] -
       (this.state.mousePosition[1] - this.state.cameraPosition[1]) /
       zoomRatio,
-      newZoom,
-    );
+      this.state.cameraPosition[2] = newZoom;
   }
 
 }
