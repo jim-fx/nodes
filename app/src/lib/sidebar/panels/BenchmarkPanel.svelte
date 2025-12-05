@@ -1,9 +1,15 @@
+<script lang="ts" module>
+  let result:
+    | { stdev: number; avg: number; duration: number; samples: number[] }
+    | undefined = $state();
+</script>
+
 <script lang="ts">
-  import localStore from "$lib/helpers/localStore";
   import { Integer } from "@nodarium/ui";
   import { writable } from "svelte/store";
   import { humanizeDuration } from "$lib/helpers";
   import Monitor from "$lib/performance/Monitor.svelte";
+  import { localState } from "$lib/helpers/localState.svelte";
 
   function calculateStandardDeviation(array: number[]) {
     const n = array.length;
@@ -12,18 +18,18 @@
       array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,
     );
   }
+  type Props = {
+    run: () => Promise<any>;
+  };
 
-  export let run: () => Promise<any>;
+  const { run }: Props = $props();
 
-  let isRunning = false;
-  let amount = localStore<number>("nodes.benchmark.samples", 500);
-  let samples = 0;
+  let isRunning = $state(false);
+  let amount = localState<number>("nodes.benchmark.samples", 500);
+  let samples = $state(0);
   let warmUp = writable(0);
   let warmUpAmount = 10;
-  let state = "";
-  let result:
-    | { stdev: number; avg: number; duration: number; samples: number[] }
-    | undefined;
+  let status = "";
 
   const copyContent = async (text?: string | number) => {
     if (!text) return;
@@ -56,7 +62,7 @@
     let results = [];
 
     // perform run
-    for (let i = 0; i < $amount; i++) {
+    for (let i = 0; i < amount.value; i++) {
       const a = performance.now();
       await run();
       samples = i;
@@ -73,55 +79,53 @@
   }
 </script>
 
-{state}
+{status}
 
 <div class="wrapper" class:running={isRunning}>
-  {#if isRunning}
-    {#if result}
-      <h3>Finished ({humanizeDuration(result.duration)})</h3>
-      <div class="monitor-wrapper">
-        <Monitor points={result.samples} />
-      </div>
-      <label for="bench-avg">Average </label>
-      <button
-        id="bench-avg"
-        on:keydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
-        on:click={() => copyContent(result?.avg)}
-        >{Math.floor(result.avg * 100) / 100}</button
-      >
-      <i
-        role="button"
-        tabindex="0"
-        on:keydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
-        on:click={() => copyContent(result?.avg)}>(click to copy)</i
-      >
-      <label for="bench-stdev">Standard Deviation σ</label>
-      <button id="bench-stdev" on:click={() => copyContent(result?.stdev)}
-        >{Math.floor(result.stdev * 100) / 100}</button
-      >
-      <i
-        role="button"
-        tabindex="0"
-        on:keydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
-        on:click={() => copyContent(result?.stdev + "")}>(click to copy)</i
-      >
-      <div>
-        <button on:click={() => (isRunning = false)}>reset</button>
-      </div>
-    {:else}
-      <p>WarmUp ({$warmUp}/{warmUpAmount})</p>
-      <progress value={$warmUp} max={warmUpAmount}
-        >{Math.floor(($warmUp / warmUpAmount) * 100)}%</progress
-      >
-      <p>Progress ({samples}/{$amount})</p>
-      <progress value={samples} max={$amount}
-        >{Math.floor((samples / $amount) * 100)}%</progress
-      >
-    {/if}
+  {#if result}
+    <h3>Finished ({humanizeDuration(result.duration)})</h3>
+    <div class="monitor-wrapper">
+      <Monitor points={result.samples} />
+    </div>
+    <label for="bench-avg">Average </label>
+    <button
+      id="bench-avg"
+      onkeydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
+      onclick={() => copyContent(result?.avg)}
+      >{Math.floor(result.avg * 100) / 100}</button
+    >
+    <i
+      role="button"
+      tabindex="0"
+      onkeydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
+      onclick={() => copyContent(result?.avg)}>(click to copy)</i
+    >
+    <label for="bench-stdev">Standard Deviation σ</label>
+    <button id="bench-stdev" onclick={() => copyContent(result?.stdev)}
+      >{Math.floor(result.stdev * 100) / 100}</button
+    >
+    <i
+      role="button"
+      tabindex="0"
+      onkeydown={(ev) => ev.key === "Enter" && copyContent(result?.avg)}
+      onclick={() => copyContent(result?.stdev + "")}>(click to copy)</i
+    >
+    <div>
+      <button onclick={() => (isRunning = false)}>reset</button>
+    </div>
+  {:else if isRunning}
+    <p>WarmUp ({$warmUp}/{warmUpAmount})</p>
+    <progress value={$warmUp} max={warmUpAmount}
+      >{Math.floor(($warmUp / warmUpAmount) * 100)}%</progress
+    >
+    <p>Progress ({samples}/{amount.value})</p>
+    <progress value={samples} max={amount.value}
+      >{Math.floor((samples / amount.value) * 100)}%</progress
+    >
   {:else}
     <label for="bench-samples">Samples</label>
-    <Integer id="bench-sample" bind:value={$amount} max={1000} />
-    <button on:click={benchmark} disabled={isRunning}> start </button>
+    <Integer id="bench-sample" bind:value={amount.value} max={1000} />
+    <button onclick={benchmark} disabled={isRunning}> start </button>
   {/if}
 </div>
 

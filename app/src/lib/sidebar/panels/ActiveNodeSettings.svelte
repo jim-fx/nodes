@@ -20,5 +20,5 @@
     {/if}
   {/key}
 {:else}
-  <p class="mx-4">No active node</p>
+  <p class="mx-4">No node selected</p>
 {/if}
