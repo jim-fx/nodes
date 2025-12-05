@@ -254,7 +254,7 @@
           classes="text-blue-400"
           icon="i-tabler-adjustments"
         >
-          <ActiveNodeSettings {manager} node={activeNode} />
+          <ActiveNodeSettings {manager} bind:node={activeNode} />
         </Panel>
       </Sidebar>
     </Grid.Cell>

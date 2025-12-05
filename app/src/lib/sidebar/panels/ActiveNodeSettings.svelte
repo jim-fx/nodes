@@ -8,13 +8,13 @@
     node: NodeInstance | undefined;
   };
 
-  const { manager, node }: Props = $props();
+  let { manager, node = $bindable() }: Props = $props();
 </script>
 
 {#if node}
   {#key node.id}
     {#if node}
-      <ActiveNodeSelected {manager} {node} />
+      <ActiveNodeSelected {manager} bind:node />
     {:else}
       <p class="mx-4">Active Node has no Settings</p>
     {/if}

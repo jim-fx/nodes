@@ -64,6 +64,7 @@
     lastPropsHash = propsHash;
 
     if (needsUpdate) {
+      manager.save();
       manager.execute();
     }
   }
