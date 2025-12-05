@@ -1,19 +1,16 @@
 <script lang="ts">
-  import { writable } from "svelte/store";
   import BreadCrumbs from "./BreadCrumbs.svelte";
   import DraggableNode from "./DraggableNode.svelte";
   import type { RemoteNodeRegistry } from "@nodarium/registry";
 
-  export let registry: RemoteNodeRegistry;
+  const { registry }: { registry: RemoteNodeRegistry } = $props();
 
-  const activeId = writable("max/plantarium");
+  let activeId = $state("max/plantarium");
   let showBreadCrumbs = false;
 
-  // const activeId = localStore<
-  //   `${string}` | `${string}/${string}` | `${string}/${string}/${string}`
-  // >("nodes.store.activeId", "");
-
-  $: [activeUser, activeCollection, activeNode] = $activeId.split(`/`);
+  const [activeUser, activeCollection, activeNode] = $derived(
+    activeId.split(`/`),
+  );
 </script>
 
 {#if showBreadCrumbs}
@@ -27,8 +24,8 @@
     {:then users}
       {#each users as user}
         <button
-          on:click={() => {
-            $activeId = user.id;
+          onclick={() => {
+            activeId = user.id;
           }}>{user.id}</button
         >
       {/each}
@@ -41,8 +38,8 @@
     {:then user}
       {#each user.collections as collection}
         <button
-          on:click={() => {
-            $activeId = collection.id;
+          onclick={() => {
+            activeId = collection.id;
           }}
         >
           {collection.id.split(`/`)[1]}

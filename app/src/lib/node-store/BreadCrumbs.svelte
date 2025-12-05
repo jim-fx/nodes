@@ -1,10 +1,11 @@
 <script lang="ts">
   import { Select } from "@nodarium/ui";
-  import type { Writable } from "svelte/store";
 
-  let activeStore = 0;
-  export let activeId: Writable<string>;
-  $: [activeUser, activeCollection, activeNode] = $activeId.split(`/`);
+  let activeStore = $state(0);
+  let { activeId }: { activeId: string } = $props();
+  const [activeUser, activeCollection, activeNode] = $derived(
+    activeId.split(`/`),
+  );
 </script>
 
 <div class="breadcrumbs">
@@ -12,16 +13,16 @@
     <Select id="root" options={["root"]} bind:value={activeStore}></Select>
     {#if activeCollection}
       <button
-        on:click={() => {
-          $activeId = activeUser;
+        onclick={() => {
+          activeId = activeUser;
         }}
       >
         {activeUser}
       </button>
       {#if activeNode}
         <button
-          on:click={() => {
-            $activeId = `${activeUser}/${activeCollection}`;
+          onclick={() => {
+            activeId = `${activeUser}/${activeCollection}`;
           }}
         >
           {activeCollection}
