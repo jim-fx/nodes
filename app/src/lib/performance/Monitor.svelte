@@ -1,52 +1,59 @@
 <script lang="ts">
-  export let points: number[];
+  type Props = {
+    points: number[];
+    type?: string;
+    title?: string;
+    max?: number;
+    min?: number;
+  };
 
-  export let type = "ms";
-  export let title = "Performance";
-  export let max: number | undefined = undefined;
-  export let min: number | undefined = undefined;
+  let {
+    points,
+    type = "ms",
+    title = "Performance",
+    max,
+    min,
+  }: Props = $props();
 
-  function getMax(m?: number) {
+  let internalMax = $derived(max ?? Math.max(...points));
+  let internalMin = $derived(min ?? Math.min(...points))!;
+
+  const maxText = $derived.by(() => {
     if (type === "%") {
       return 100;
     }
 
-    if (m !== undefined) {
-      if (m < 1) {
-        return Math.floor(m * 100) / 100;
+    if (internalMax !== undefined) {
+      if (internalMax < 1) {
+        return Math.floor(internalMax * 100) / 100;
       }
-      if (m < 10) {
-        return Math.floor(m * 10) / 10;
+      if (internalMax < 10) {
+        return Math.floor(internalMax * 10) / 10;
       }
-      return Math.floor(m);
+      return Math.floor(internalMax);
     }
 
     return 1;
-  }
+  });
 
-  function constructPath() {
-    max = max !== undefined ? max : Math.max(...points);
-    min = min !== undefined ? min : Math.min(...points);
-    const mi = min as number;
-    const ma = max as number;
-    return points
+  const path = $derived(
+    points
       .map((point, i) => {
         const x = (i / (points.length - 1)) * 100;
-        const y = 100 - ((point - mi) / (ma - mi)) * 100;
+        const y =
+          100 - ((point - internalMin) / (internalMax - internalMin)) * 100;
         return `${x},${y}`;
       })
-      .join(" ");
-  }
+      .join(" "),
+  );
 </script>
 
 <div class="wrapper">
   <p>{title}</p>
-  <span class="min">{Math.floor(min || 0)}{type}</span>
-  <span class="max">{getMax(max)}{type}</span>
+  <span class="min">{Math.floor(internalMin || 0)}{type}</span>
+  <span class="max">{maxText}{type}</span>
   <svg preserveAspectRatio="none" viewBox="0 0 100 100">
-    {#key points}
-      <polyline vector-effect="non-scaling-stroke" points={constructPath()} />
-    {/key}
+    <polyline vector-effect="non-scaling-stroke" points={path} />
   </svg>
 </div>
 

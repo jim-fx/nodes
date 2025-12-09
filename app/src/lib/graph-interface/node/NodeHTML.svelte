@@ -2,7 +2,7 @@
   import type { NodeInstance } from "@nodarium/types";
   import NodeHeader from "./NodeHeader.svelte";
   import NodeParameter from "./NodeParameter.svelte";
-  import { getGraphState } from "../graph/state.svelte";
+  import { getGraphState } from "../graph-state.svelte";
 
   let ref: HTMLDivElement;
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { NodeInput, NodeInstance } from "@nodarium/types";
-  import { createNodePath } from "../helpers/index.js";
+  import { createNodePath } from "../helpers";
   import NodeInputEl from "./NodeInput.svelte";
-  import { getGraphManager, getGraphState } from "../graph/state.svelte.js";
+  import { getGraphManager, getGraphState } from "../graph-state.svelte";
 
   type Props = {
     node: NodeInstance;

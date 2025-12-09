@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let points: number[];
+  const { points }: { points: number[] } = $props();
 
-  function constructPath() {
+  const path = $derived.by(() => {
     const max = Math.max(...points);
     const min = Math.min(...points);
     return points
@@ -11,13 +11,11 @@
         return `${x},${y}`;
       })
       .join(" ");
-  }
+  });
 </script>
 
 <svg preserveAspectRatio="none" viewBox="0 0 100 100">
-  {#key points}
-    <polyline vector-effect="non-scaling-stroke" points={constructPath()} />
-  {/key}
+  <polyline vector-effect="non-scaling-stroke" points={path} />
 </svg>
 
 <style>

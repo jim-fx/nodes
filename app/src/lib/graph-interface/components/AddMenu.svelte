@@ -2,7 +2,7 @@
   import { HTML } from "@threlte/extras";
   import { onMount } from "svelte";
   import type { NodeInstance, NodeId } from "@nodarium/types";
-  import { getGraphManager, getGraphState } from "../graph/state.svelte";
+  import { getGraphManager, getGraphState } from "../graph-state.svelte";
 
   type Props = {
     onnode: (n: NodeInstance) => void;

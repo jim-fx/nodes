@@ -35,6 +35,9 @@
     scene = $bindable(),
   }: Props = $props();
 
+  let geometries = $state.raw<BufferGeometry[]>([]);
+  let center = $state(new Vector3(0, 4, 0));
+
   useTask(
     (delta) => {
       fps.push(1 / delta);
@@ -45,11 +48,13 @@
 
   export const invalidate = function () {
     if (scene) {
-      geometries = scene.children
-        .filter((child) => "geometry" in child && child.isObject3D)
-        .map((child) => {
-          return (child as Mesh).geometry;
-        });
+      const geos: BufferGeometry[] = [];
+      scene.traverse(function (child) {
+        if (isMesh(child)) {
+          geos.push(child.geometry);
+        }
+      });
+      geometries = geos;
     }
 
     if (geometries && scene && centerCamera) {
@@ -62,9 +67,6 @@
     _invalidate();
   };
 
-  let geometries = $state<BufferGeometry[]>();
-  let center = $state(new Vector3(0, 4, 0));
-
   function isMesh(child: Mesh | any): child is Mesh {
     return child.isObject3D && "material" in child;
   }
@@ -76,7 +78,7 @@
   $effect(() => {
     const wireframe = appSettings.value.debug.wireframe;
     scene.traverse(function (child) {
-      if (isMesh(child) && isMatCapMaterial(child.material)) {
+      if (isMesh(child) && isMatCapMaterial(child.material) && child.visible) {
         child.material.wireframe = wireframe;
       }
     });
@@ -90,6 +92,13 @@
       geo.attributes.position.array[i + 2],
     ] as Vector3Tuple;
   }
+
+  // $effect(() => {
+  //   console.log({
+  //     geometries: $state.snapshot(geometries),
+  //     indices: appSettings.value.debug.showIndices,
+  //   });
+  // });
 </script>
 
 <Camera {center} {centerCamera} />

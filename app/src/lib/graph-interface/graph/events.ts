@@ -1,6 +1,6 @@
 import { GraphSchema, type NodeId, type NodeInstance } from "@nodarium/types";
 import type { GraphManager } from "../graph-manager.svelte";
-import type { GraphState } from "./state.svelte";
+import type { GraphState } from "../graph-state.svelte";
 import { animate, lerp } from "$lib/helpers";
 import { snapToGrid as snapPointToGrid } from "../helpers";
 import { maxZoom, minZoom, zoomSpeed } from "./constants";

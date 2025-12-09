@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getGraphState } from "../graph/state.svelte.js";
+  import { getGraphState } from "../graph-state.svelte";
   import { createNodePath } from "../helpers/index.js";
   import type { NodeInstance } from "@nodarium/types";
 

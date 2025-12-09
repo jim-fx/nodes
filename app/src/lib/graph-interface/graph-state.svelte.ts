@@ -1,7 +1,7 @@
 import type { NodeInstance, Socket } from "@nodarium/types";
 import { getContext, setContext } from "svelte";
 import { SvelteSet } from "svelte/reactivity";
-import type { GraphManager } from "../graph-manager.svelte";
+import type { GraphManager } from "./graph-manager.svelte";
 import type { OrthographicCamera } from "three";
 
 

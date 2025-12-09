@@ -1,8 +1,12 @@
 <script lang="ts">
-  export let labels: string[] = [];
-  export let values: number[] = [];
+  type Props = {
+    labels: string[];
+    values: number[];
+  };
 
-  $: total = values.reduce((acc, v) => acc + v, 0);
+  const { labels, values }: Props = $props();
+
+  const total = $derived(values.reduce((acc, v) => acc + v, 0));
 
   let colors = ["red", "green", "blue"];
 </script>
@@ -21,10 +25,7 @@
       <div class="text-{colors[i]}">{labels[i]}</div>
     {/each}
   </div>
-
-  <span
-    class="bg-red bg-green bg-yellow bg-blue text-red text-green text-yellow text-blue"
-  ></span>
+  <span class="bg-red bg-green bg-blue text-red text-green text-blue"></span>
 </div>
 
 <style>

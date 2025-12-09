@@ -2,7 +2,7 @@ import { animate, lerp } from "$lib/helpers";
 import type { createKeyMap } from "$lib/helpers/createKeyMap";
 import FileSaver from "file-saver";
 import type { GraphManager } from "./graph-manager.svelte";
-import type { GraphState } from "./graph/state.svelte";
+import type { GraphState } from "./graph-state.svelte";
 
 type Keymap = ReturnType<typeof createKeyMap>;
 export function setupKeymaps(keymap: Keymap, graph: GraphManager, graphState: GraphState) {

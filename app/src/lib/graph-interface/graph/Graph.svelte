@@ -9,7 +9,7 @@
   import Camera from "../components/Camera.svelte";
   import { Canvas } from "@threlte/core";
   import HelpView from "../components/HelpView.svelte";
-  import { getGraphManager, getGraphState } from "./state.svelte";
+  import { getGraphManager, getGraphState } from "../graph-state.svelte";
   import { HTML } from "@threlte/extras";
   import { FileDropEventManager, MouseEventManager } from "./events";
   import { maxZoom, minZoom } from "./constants";

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { NodeInstance } from "@nodarium/types";
-  import { getGraphState } from "../graph/state.svelte";
+  import { getGraphState } from "../graph-state.svelte";
   import { T } from "@threlte/core";
   import { type Mesh } from "three";
   import NodeFrag from "./Node.frag";

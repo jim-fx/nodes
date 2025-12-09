@@ -54,7 +54,7 @@ export const AppSettingTypes = {
     },
     useWorker: {
       type: "boolean",
-      label: "Execute runtime in worker",
+      label: "Execute in WebWorker",
       value: true,
     },
     showIndices: {

@@ -3,7 +3,11 @@
   import GraphEl from "./Graph.svelte";
   import { GraphManager } from "../graph-manager.svelte";
   import { createKeyMap } from "$lib/helpers/createKeyMap";
-  import { GraphState, setGraphManager, setGraphState } from "./state.svelte";
+  import {
+    GraphState,
+    setGraphManager,
+    setGraphState,
+  } from "../graph-state.svelte";
   import { setupKeymaps } from "../keymaps";
 
   type Props = {
