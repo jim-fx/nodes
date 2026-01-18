@@ -12,7 +12,7 @@
         id="node-store"
         classes="text-green-400"
         title="Node Store"
-        icon="i-tabler-database"
+        icon="i-[tabler--database]"
       >
         <div class="p-4">
           <input type="text" class="bg-red rounded-sm p-2" />

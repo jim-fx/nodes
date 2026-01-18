@@ -55,7 +55,8 @@
         setActivePanel($activePanel ? false : keys[0]);
       }}
     >
-      <span class="absolute i-tabler-chevron-left w-6 h-6 block"></span>
+      <span class="icon-[tabler--settings]"></span>
+      <span class="absolute i-[tabler--chevron-left] w-6 h-6 block"></span>
     </button>
     {#each keys as panel (panels[panel].id)}
       {#if panels[panel].visible !== false}
@@ -65,7 +66,7 @@
           class:active={panel === $activePanel}
           on:click={() => setActivePanel(panel)}
         >
-          <span class={`block w-6 h-6 ${panels[panel].icon}`}></span>
+          <span class={`block w-6 h-6 iconify ${panels[panel].icon}`}></span>
         </button>
       {/if}
     {/each}

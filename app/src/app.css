@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@source "../../packages/ui/**/*.svelte";
+@plugin "@iconify/tailwind4" {
+  prefix: "i";
+  icon-sets: from-folder(custom, "./src/lib/icons")
+};

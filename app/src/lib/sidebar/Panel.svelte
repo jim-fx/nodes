@@ -37,7 +37,7 @@
 <style>
   header {
     border-bottom: solid thin var(--outline);
-    height: 69px;
+    height: 70px;
     display: flex;
     align-items: center;
     padding-left: 1em;

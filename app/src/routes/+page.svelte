@@ -178,7 +178,7 @@
         onsave={(graph) => handleSave(graph)}
       />
       <Sidebar>
-        <Panel id="general" title="General" icon="i-tabler-settings">
+        <Panel id="general" title="General" icon="i-[tabler--settings]">
           <NestedSettings
             id="general"
             bind:value={appSettings.value}
@@ -188,7 +188,7 @@
         <Panel
           id="shortcuts"
           title="Keyboard Shortcuts"
-          icon="i-tabler-keyboard"
+          icon="i-[tabler--keyboard]"
         >
           <Keymap
             keymaps={[
@@ -197,23 +197,21 @@
             ]}
           />
         </Panel>
-        <Panel id="exports" title="Exporter" icon="i-tabler-package-export">
+        <Panel id="exports" title="Exporter" icon="i-[tabler--package-export]">
           <ExportSettings {scene} />
         </Panel>
         <Panel
           id="node-store"
-          classes="text-green-400"
           title="Node Store"
-          icon="i-tabler-database"
+          icon="i-[tabler--database] bg-green-400"
         >
           <NodeStore registry={nodeRegistry} />
         </Panel>
         <Panel
           id="performance"
           title="Performance"
-          classes="text-red-400"
           hidden={!appSettings.value.debug.showPerformancePanel}
-          icon="i-tabler-brand-speedtest"
+          icon="i-[tabler--brand-speedtest] bg-red-400"
         >
           {#if $performanceStore}
             <PerformanceViewer data={$performanceStore} />
@@ -223,24 +221,22 @@
           id="graph-source"
           title="Graph Source"
           hidden={!appSettings.value.debug.showGraphJson}
-          icon="i-tabler-code"
+          icon="i-[tabler--code]"
         >
           <GraphSource {graph} />
         </Panel>
         <Panel
           id="benchmark"
           title="Benchmark"
-          classes="text-red-400"
           hidden={!appSettings.value.debug.showBenchmarkPanel}
-          icon="i-tabler-graph"
+          icon="i-[tabler--graph] bg-red-400"
         >
           <BenchmarkPanel run={randomGenerate} />
         </Panel>
         <Panel
           id="graph-settings"
           title="Graph Settings"
-          classes="text-blue-400"
-          icon="i-custom-graph"
+          icon="i-[custom--graph] bg-blue-400"
         >
           <NestedSettings
             id="graph-settings"
@@ -251,8 +247,7 @@
         <Panel
           id="active-node"
           title="Node Settings"
-          classes="text-blue-400"
-          icon="i-tabler-adjustments"
+          icon="i-[tabler--adjustments] bg-blue-400"
         >
           <ActiveNodeSettings {manager} bind:node={activeNode} />
         </Panel>
