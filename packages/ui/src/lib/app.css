@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* fira-code-300 - latin */
 @font-face {
   font-display: swap;
@@ -63,11 +65,9 @@ html {
 }
 
 body {
-  overflow: hidden;
-
-
   color: var(--text-color);
   background-color: var(--layer-0);
+  margin: 0;
 }
 
 body * {
@@ -138,10 +138,6 @@ html.theme-dracula {
   --layer-2: #32374D;
   --layer-3: #BD93F9;
   --connection: #6272A4;
-}
-
-body {
-  margin: 0;
 }
 
 button {

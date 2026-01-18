@@ -10,10 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@hey-api/client-fetch": "^0.13.1"
-  },
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.88.0"
+    "@hey-api/openapi-ts": "^0.90.4"
   }
 }

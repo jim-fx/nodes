@@ -4,15 +4,13 @@
 		step?: number;
 		min?: number;
 		max?: number;
-		id?: string;
 	}
 
 	let {
 		value = $bindable(0.5),
 		step = 0.01,
 		min = $bindable(0),
-		max = $bindable(1),
-		id = ''
+		max = $bindable(1)
 	}: Props = $props();
 
 	if (min > max) {
@@ -55,6 +53,7 @@
 		window.addEventListener('mousemove', handleMouseMove);
 		window.addEventListener('mouseup', handleMouseUp);
 		document.body.style.cursor = 'ew-resize';
+		(ev.target as HTMLElement)?.blur();
 	}
 
 	function handleMouseUp() {
@@ -93,6 +92,7 @@
 		} else {
 			value = Math.max(Math.min(min + (max - min) * vx, max), min);
 		}
+		(ev.target as HTMLElement)?.blur();
 	}
 	$effect(() => {
 		if ((value || 0).toString().length > 5) {
@@ -110,7 +110,6 @@
 	<input
 		bind:value
 		bind:this={inputEl}
-		{id}
 		{step}
 		{max}
 		{min}

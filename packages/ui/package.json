@@ -10,9 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest",
-    "lint": "eslint .",
-    "story:dev": "storybook dev -p 6006",
-    "story:build": "storybook build"
+    "lint": "eslint ."
   },
   "exports": {
     ".": {
@@ -30,36 +28,32 @@
     "svelte": "^4.0.0"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/addon-svelte-csf": "5.0.10",
-    "@storybook/addon-themes": "^10.0.8",
-    "@storybook/svelte": "^10.0.8",
-    "@storybook/sveltekit": "^10.0.8",
+    "@nodarium/types": "link:../types",
     "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.49.0",
-    "@sveltejs/package": "^2.5.6",
-    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@sveltejs/kit": "^2.50.0",
+    "@sveltejs/package": "^2.5.7",
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@types/eslint": "^9.6.1",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
-    "eslint": "^9.39.1",
-    "eslint-plugin-storybook": "^10.0.8",
-    "eslint-plugin-svelte": "^3.13.0",
-    "publint": "^0.3.15",
-    "storybook": "^10.0.8",
-    "svelte": "^5.43.14",
-    "svelte-check": "^4.3.4",
+    "@types/three": "^0.182.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-svelte": "^3.14.0",
+    "publint": "^0.3.16",
+    "svelte": "^5.46.4",
+    "svelte-check": "^4.3.5",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "vite": "^7.2.4",
-    "vitest": "^4.0.13",
-    "@nodarium/types": "link:../types"
+    "vite": "^7.3.1",
+    "vitest": "^4.0.17"
   },
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
   "dependencies": {
-    "@threlte/core": "^8.3.0",
-    "@threlte/extras": "^9.7.0"
+    "@tailwindcss/vite": "^4.1.18",
+    "@threlte/core": "^8.3.1",
+    "@threlte/extras": "^9.7.1",
+    "tailwindcss": "^4.1.18"
   }
 }
