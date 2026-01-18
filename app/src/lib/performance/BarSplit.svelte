@@ -14,7 +14,10 @@
 <div class="wrapper">
   <div class="bars">
     {#each values as value, i}
-      <div class="bar bg-{colors[i]}" style="width: {(value / total) * 100}%;">
+      <div
+        class="bar bg-{colors[i]}-400"
+        style="width: {(value / total) * 100}%;"
+      >
         {Math.round(value)}ms
       </div>
     {/each}
@@ -22,10 +25,12 @@
 
   <div class="labels mt-2">
     {#each values as _label, i}
-      <div class="text-{colors[i]}">{labels[i]}</div>
+      <div class="text-{colors[i]}-400">{labels[i]}</div>
     {/each}
   </div>
-  <span class="bg-red bg-green bg-blue text-red text-green text-blue"></span>
+  <span
+    class="bg-red-400 bg-green-400 bg-blue-400 text-red-400 text-green-400 text-blue-400"
+  ></span>
 </div>
 
 <style>
