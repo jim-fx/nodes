@@ -1,36 +1,39 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import type { Readable } from "svelte/store";
+  import { getContext, type Snippet } from "svelte";
+  import type { PanelState } from "./PanelState.svelte";
 
-  export let id: string;
-  export let icon: string = "";
-  export let title = "";
-  export let classes = "";
-  export let hidden: boolean | undefined = undefined;
+  const {
+    id,
+    icon = "",
+    title = "",
+    classes = "",
+    hidden,
+    children,
+  } = $props<{
+    id: string;
+    icon?: string;
+    title?: string;
+    classes?: string;
+    hidden?: boolean;
+    children?: Snippet;
+  }>();
 
-  const setVisibility =
-    getContext<(id: string, visible: boolean) => void>("setVisibility");
+  const panelState = getContext<PanelState>("panel-state");
 
-  $: if (typeof hidden === "boolean") {
-    setVisibility(id, !hidden);
-  }
-
-  const registerPanel =
-    getContext<
-      (id: string, icon: string, classes: string) => Readable<boolean>
-    >("registerPanel");
-
-  let visible = registerPanel(id, icon, classes);
+  const panel = panelState.registerPanel(id, icon, classes, hidden);
+  $effect(() => {
+    panel.hidden = hidden;
+  });
 </script>
 
-{#if $visible}
+{#if panelState.activePanel.value === id}
   <div class="wrapper" class:hidden>
     {#if title}
       <header>
         <h3>{title}</h3>
       </header>
     {/if}
-    <slot />
+    {@render children?.()}
   </div>
 {/if}
 

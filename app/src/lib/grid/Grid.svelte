@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { setContext } from "svelte";
+  import { setContext, type Snippet } from "svelte";
 
-  export let id = "grid-0";
+  const { children, id } = $props<{ children?: Snippet; id?: string }>();
 
   setContext("grid-id", id);
 </script>
 
-<slot {id} />
+{@render children({ id })}

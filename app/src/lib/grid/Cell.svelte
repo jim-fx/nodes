@@ -1,12 +1,16 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import { getContext, type Snippet } from "svelte";
 
-  let index = -1;
+  let index = $state(-1);
   let wrapper: HTMLDivElement;
 
-  $: if (index === -1) {
-    index = getContext<() => number>("registerCell")();
-  }
+  const { children } = $props<{ children?: Snippet }>();
+
+  $effect(() => {
+    if (index === -1) {
+      index = getContext<() => number>("registerCell")();
+    }
+  });
 
   const sizes = getContext<{ value: string[] }>("sizes");
 
@@ -31,8 +35,8 @@
 </script>
 
 <svelte:window
-  on:mouseup={() => (mouseDown = false)}
-  on:mousemove={handleMouseMove}
+  onmouseup={() => (mouseDown = false)}
+  onmousemove={handleMouseMove}
 />
 
 {#if index > 0}
@@ -40,12 +44,12 @@
     class="seperator"
     role="button"
     tabindex="0"
-    on:mousedown={handleMouseDown}
+    onmousedown={handleMouseDown}
   ></div>
 {/if}
 
 <div class="cell" bind:this={wrapper}>
-  <slot />
+  {@render children?.()}
 </div>
 
 <style>

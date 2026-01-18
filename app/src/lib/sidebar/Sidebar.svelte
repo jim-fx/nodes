@@ -1,78 +1,35 @@
 <script lang="ts">
-  import localStore from "$lib/helpers/localStore";
-  import { setContext } from "svelte";
-  import { derived } from "svelte/store";
+  import { setContext, type Snippet } from "svelte";
+  import { PanelState } from "./PanelState.svelte";
 
-  let panels: Record<
-    string,
-    {
-      icon: string;
-      id: string;
-      classes: string;
-      visible?: boolean;
-    }
-  > = {};
+  const state = new PanelState();
+  setContext("panel-state", state);
 
-  const activePanel = localStore<keyof typeof panels | false>(
-    "nodes.settings.activePanel",
-    false,
-  );
-
-  $: keys = panels
-    ? (Object.keys(panels) as unknown as (keyof typeof panels)[]).filter(
-        (key) => !!panels[key]?.id,
-      )
-    : [];
-
-  setContext("setVisibility", (id: string, visible: boolean) => {
-    panels[id].visible = visible;
-    panels = { ...panels };
-  });
-
-  setContext("registerPanel", (id: string, icon: string, classes: string) => {
-    panels[id] = { id, icon, classes };
-    return derived(activePanel, ($activePanel) => {
-      return $activePanel === id;
-    });
-  });
-
-  function setActivePanel(panel: keyof typeof panels | false) {
-    if (panel === $activePanel) {
-      $activePanel = false;
-    } else if (panel) {
-      $activePanel = panel;
-    } else {
-      $activePanel = false;
-    }
-  }
+  const { children } = $props<{ children?: Snippet }>();
 </script>
 
-<div class="wrapper" class:visible={$activePanel}>
+<div class="wrapper" class:visible={state.activePanel.value}>
   <div class="tabs">
-    <button
-      aria-label="Close"
-      on:click={() => {
-        setActivePanel($activePanel ? false : keys[0]);
-      }}
-    >
+    <button aria-label="Close" onclick={() => state.toggleOpen()}>
       <span class="icon-[tabler--settings]"></span>
       <span class="absolute i-[tabler--chevron-left] w-6 h-6 block"></span>
     </button>
-    {#each keys as panel (panels[panel].id)}
-      {#if panels[panel].visible !== false}
+    {#each state.keys as panelId (panelId)}
+      {#if !state.panels[panelId].hidden}
         <button
-          aria-label={panel}
-          class="tab {panels[panel].classes}"
-          class:active={panel === $activePanel}
-          on:click={() => setActivePanel(panel)}
+          aria-label={panelId}
+          class="tab {state.panels[panelId].classes}"
+          class:active={panelId === state.activePanel.value}
+          onclick={() => (state.activePanel.value = panelId)}
         >
-          <span class={`block w-6 h-6 iconify ${panels[panel].icon}`}></span>
+          <span class={`block w-6 h-6 iconify ${state.panels[panelId].icon}`}
+          ></span>
         </button>
       {/if}
     {/each}
   </div>
   <div class="content">
-    <slot />
+    {@render children?.()}
   </div>
 </div>
 

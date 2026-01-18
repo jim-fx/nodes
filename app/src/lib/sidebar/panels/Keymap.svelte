@@ -13,32 +13,34 @@
   let { keymaps }: Props = $props();
 </script>
 
-<table class="wrapper">
-  <tbody>
-    {#each keymaps as keymap}
-      <tr>
-        <td colspan="2">
-          <h3>{keymap.title}</h3>
-        </td>
-      </tr>
-      {#each get(keymap.keymap?.keys) as key}
+<div class="p-4">
+  <table class="wrapper">
+    <tbody>
+      {#each keymaps as keymap}
         <tr>
-          {#if key.description}
-            <td class="command-wrapper">
-              <ShortCut
-                alt={key.alt}
-                ctrl={key.ctrl}
-                shift={key.shift}
-                key={key.key}
-              />
-            </td>
-            <td>{key.description}</td>
-          {/if}
+          <td colspan="2">
+            <h3>{keymap.title}</h3>
+          </td>
         </tr>
+        {#each get(keymap.keymap?.keys) as key}
+          <tr>
+            {#if key.description}
+              <td class="command-wrapper">
+                <ShortCut
+                  alt={key.alt}
+                  ctrl={key.ctrl}
+                  shift={key.shift}
+                  key={key.key}
+                />
+              </td>
+              <td>{key.description}</td>
+            {/if}
+          </tr>
+        {/each}
       {/each}
-    {/each}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 
 <style>
   .wrapper {

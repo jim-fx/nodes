@@ -15,7 +15,7 @@
     FileSaver.saveAs(blob, name + "." + extension);
   };
 
-  export let scene: Group;
+  const { scene } = $props<{ scene: Group }>();
 
   let gltfExporter: GLTFExporter;
   async function exportGltf() {
@@ -53,7 +53,7 @@
   }
 </script>
 
-<div class="p-2">
-  <button on:click={exportObj}> export obj </button>
-  <button on:click={exportGltf}> export gltf </button>
+<div class="p-4">
+  <button onclick={exportObj}> export obj </button>
+  <button onclick={exportGltf}> export gltf </button>
 </div>
