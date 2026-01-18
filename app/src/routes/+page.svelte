@@ -223,7 +223,7 @@
           hidden={!appSettings.value.debug.showGraphJson}
           icon="i-[tabler--code]"
         >
-          <GraphSource {graph} />
+          <GraphSource graph={graph && manager.serialize()} />
         </Panel>
         <Panel
           id="benchmark"
