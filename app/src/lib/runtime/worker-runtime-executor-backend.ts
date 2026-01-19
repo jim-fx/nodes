@@ -13,6 +13,22 @@ const executor = new MemoryRuntimeExecutor(nodeRegistry, cache);
 const performanceStore = createPerformanceStore();
 executor.perf = performanceStore;
 
+export async function setUseRegistryCache(useCache: boolean) {
+  if (useCache) {
+    nodeRegistry.cache = indexDbCache;
+  } else {
+    nodeRegistry.cache = undefined;
+  }
+}
+
+export async function setUseRuntimeCache(useCache: boolean) {
+  if (useCache) {
+    executor.cache = cache;
+  } else {
+    executor.cache = undefined;
+  }
+}
+
 export async function executeGraph(
   graph: Graph,
   settings: Record<string, unknown>,

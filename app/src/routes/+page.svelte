@@ -42,6 +42,21 @@
     appSettings.value.debug.useWorker ? workerRuntime : memoryRuntime,
   );
 
+  $effect(() => {
+    if (appSettings.value.debug.cache.useRegistryCache) {
+      nodeRegistry.cache = registryCache;
+    } else {
+      nodeRegistry.cache = undefined;
+    }
+
+    workerRuntime.setUseCache(appSettings.value.debug.cache.useRuntimeCache);
+    if (appSettings.value.debug.cache.useRuntimeCache) {
+      memoryRuntime.cache = runtimeCache;
+    } else {
+      memoryRuntime.cache = undefined;
+    }
+  });
+
   let activeNode = $state<NodeInstance | undefined>(undefined);
   let scene = $state<Group>(null!);
 

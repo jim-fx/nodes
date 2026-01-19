@@ -87,6 +87,19 @@ export const AppSettingTypes = {
       label: "Show Graph Source",
       value: false,
     },
+    cache: {
+      title: "Cache",
+      useRuntimeCache: {
+        type: "boolean",
+        label: "Node Results",
+        value: true,
+      },
+      useRegistryCache: {
+        type: "boolean",
+        label: "Node Source",
+        value: true,
+      },
+    },
     stressTest: {
       title: "Stress Test",
       amount: {
