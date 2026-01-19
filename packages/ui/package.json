@@ -2,7 +2,7 @@
   "name": "@nodarium/ui",
   "version": "0.0.1",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "chokidar './src/**' --initial -c 'pnpm build'",
     "build": "vite build && npm run package",
     "preview": "vite preview",
     "package": "svelte-kit sync && svelte-package && publint",
@@ -37,6 +37,7 @@
     "@types/three": "^0.182.0",
     "@typescript-eslint/eslint-plugin": "^8.53.0",
     "@typescript-eslint/parser": "^8.53.0",
+    "chokidar-cli": "^3.0.0",
     "eslint": "^9.39.2",
     "eslint-plugin-svelte": "^3.14.0",
     "publint": "^0.3.16",
