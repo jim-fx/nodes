@@ -1,9 +1,10 @@
 <script lang="ts">
 	interface Props {
 		value: boolean;
+		id?: string;
 	}
 
-	let { value = $bindable(false) }: Props = $props();
+	let { value = $bindable(false), id }: Props = $props();
 
 	$effect(() => {
 		if (typeof value === 'string') {
@@ -23,6 +24,7 @@
 		type="checkbox"
 		bind:checked={value}
 		class="peer absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+		{id}
 	/>
 	<span
 		class="absolute opacity-0 peer-checked:opacity-100 transition-opacity duration-100 flex w-full h-full items-center justify-center"
