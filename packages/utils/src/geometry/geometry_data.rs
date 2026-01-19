@@ -61,7 +61,7 @@ pub fn create_geometry_data(vertex_amount: usize, face_amount: usize) -> Vec<i32
     geo
 }
 
-pub fn wrap_geometry_data(geometry: &mut [i32]) -> GeometryData {
+pub fn wrap_geometry_data(geometry: &mut [i32]) -> GeometryData<'_> {
     // Basic validity checks
     assert!(
         geometry.len() > GEOMETRY_HEADER_SIZE,

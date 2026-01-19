@@ -40,6 +40,30 @@
 
 }
 
+@theme {
+  --color-neutral-100: #E7E7E7;
+  --color-neutral-200: #CECECE;
+  --color-neutral-300: #7C7C7C;
+  --color-neutral-400: #2D2D2D;
+  --color-neutral-500: #171717;
+  --color-neutral-800: #111111;
+  --color-neutral-900: #060606;
+
+  --color-layer-0: var(--neutral-900);
+  --color-layer-1: var(--neutral-500);
+  --color-layer-2: var(--neutral-400);
+  --color-layer-3: var(--neutral-200);
+
+  --color-active: #ffffff;
+  --color-selected: #c65a19;
+
+  --color-outline: var(--neutral-400);
+  --color-connection: #333333;
+  --color-edge: var(--connection, var(--outline));
+
+  --color-text-color: var(--neutral-200);
+}
+
 html {
   --neutral-100: #E7E7E7;
   --neutral-200: #CECECE;

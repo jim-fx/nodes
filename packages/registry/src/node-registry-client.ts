@@ -13,7 +13,6 @@ export class RemoteNodeRegistry implements NodeRegistry {
   status: "loading" | "ready" | "error" = "loading";
   private nodes: Map<string, NodeDefinition> = new Map();
 
-
   constructor(
     private url: string,
     private cache?: AsyncCache<ArrayBuffer | string>,

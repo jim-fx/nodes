@@ -109,9 +109,11 @@ export function decodeNestedArray(dense: number[] | Int32Array) {
 }
 
 export function splitNestedArray(input: Int32Array) {
+
   let index = 0;
   const length = input.length;
   let res: Int32Array[] = [];
+
 
   let nextBracketIndex = 0;
   let argStartIndex = 0;

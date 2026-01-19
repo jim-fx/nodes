@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 
 export async function getWasm(id: `${string}/${string}/${string}`) {
-  const filePath = path.resolve(`../nodes/${id}/pkg/index_bg.wasm`);
+  const filePath = path.resolve(`../nodes/${id}/pkg/node.wasm`);
 
   try {
     await fs.access(filePath);

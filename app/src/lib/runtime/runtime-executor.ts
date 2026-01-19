@@ -244,13 +244,14 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         }
         this.perf?.addPoint("cache-hit", 0);
 
-        log.group(`executing ${node_type.id || node.id}`);
+        log.group(`executing ${node_type.id}-${node.id}`);
         log.log(`Inputs:`, inputs);
         a = performance.now();
         results[node.id] = node_type.execute(encoded_inputs);
+        log.log("Executed", node.type, node.id)
         b = performance.now();
 
-        if (this.cache) {
+        if (this.cache && node.id !== outputNode.id) {
           this.cache.set(inputHash, results[node.id]);
         }
 

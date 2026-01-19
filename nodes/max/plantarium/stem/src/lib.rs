@@ -1,17 +1,15 @@
-use nodarium_macros::include_definition_file;
+use nodarium_macros::nodarium_definition_file;
+use nodarium_macros::nodarium_execute;
 use nodarium_utils::{
     evaluate_float, evaluate_int, evaluate_vec3,
     geometry::{create_multiple_paths, wrap_multiple_paths},
-    log, reset_call_count, set_panic_hook, split_args,
+    log, reset_call_count, split_args,
 };
-use wasm_bindgen::prelude::*;
 
-include_definition_file!("src/input.json");
+nodarium_definition_file!("src/input.json");
 
-#[wasm_bindgen]
+#[nodarium_execute]
 pub fn execute(input: &[i32]) -> Vec<i32> {
-    set_panic_hook();
-
     reset_call_count();
 
     let args = split_args(input);

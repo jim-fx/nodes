@@ -1,9 +1,9 @@
-use nodarium_macros::include_definition_file;
-use wasm_bindgen::prelude::*;
+use nodarium_macros::nodarium_definition_file;
+use nodarium_macros::nodarium_execute;
 
-include_definition_file!("src/input.json");
+nodarium_definition_file!("src/input.json");
 
-#[wasm_bindgen]
+#[nodarium_execute]
 pub fn execute(args: &[i32]) -> Vec<i32> {
     args.into()
 }

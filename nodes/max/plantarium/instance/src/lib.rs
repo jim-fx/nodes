@@ -1,20 +1,18 @@
 use glam::{Mat4, Quat, Vec3};
-use nodarium_macros::include_definition_file;
+use nodarium_macros::nodarium_execute;
+use nodarium_macros::nodarium_definition_file;
 use nodarium_utils::{
-    concat_args, encode_float, evaluate_float, evaluate_int,
+    concat_args, evaluate_float, evaluate_int,
     geometry::{
-        calculate_normals, create_instance_data, wrap_geometry_data, wrap_instance_data, wrap_path,
+        create_instance_data, wrap_geometry_data, wrap_instance_data, wrap_path,
     },
-    log, set_panic_hook, split_args, wrap_arg,
+    log, split_args,
 };
-use wasm_bindgen::prelude::*;
 
-include_definition_file!("src/input.json");
+nodarium_definition_file!("src/input.json");
 
-#[wasm_bindgen]
+#[nodarium_execute]
 pub fn execute(input: &[i32]) -> Vec<i32> {
-    set_panic_hook();
-
     let args = split_args(input);
     let mut inputs = split_args(args[0]);
     log!("WASM(instance): inputs: {:?}", inputs);

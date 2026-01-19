@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "wasm-pack build --release --out-name index --no-default-features",
+    "build": "cargo build --target wasm32-unknown-unknown --release && mkdir -p pkg && cp ../../../../target/wasm32-unknown-unknown/release/vec3.wasm ./pkg/node.wasm",
     "dev": "cargo watch -s 'wasm-pack build --dev --out-name index --no-default-features'"
   }
 }
