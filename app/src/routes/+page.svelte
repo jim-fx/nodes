@@ -43,13 +43,17 @@
   );
 
   $effect(() => {
+    workerRuntime.useRegistryCache =
+      appSettings.value.debug.cache.useRuntimeCache;
+    workerRuntime.useRuntimeCache =
+      appSettings.value.debug.cache.useRegistryCache;
+
     if (appSettings.value.debug.cache.useRegistryCache) {
       nodeRegistry.cache = registryCache;
     } else {
       nodeRegistry.cache = undefined;
     }
 
-    workerRuntime.setUseCache(appSettings.value.debug.cache.useRuntimeCache);
     if (appSettings.value.debug.cache.useRuntimeCache) {
       memoryRuntime.cache = runtimeCache;
     } else {
