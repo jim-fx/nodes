@@ -112,16 +112,38 @@ export class FileDropEventManager {
 }
 
 
+class EdgeInteractionManager {
+  constructor(
+    private graph: GraphManager,
+    private state: GraphState) { };
+
+  handleMouseDown() {
+    const edges = this.graph.edges;
+    console.log(edges)
+  }
+
+  handleMouseMove() {
+  }
+
+  handleMouseUp() {
+  }
+}
+
+
 export class MouseEventManager {
 
+  edgeInteractionManager: EdgeInteractionManager
 
   constructor(
     private graph: GraphManager,
     private state: GraphState
-  ) { }
+  ) {
 
+    this.edgeInteractionManager = new EdgeInteractionManager(graph, state);
+  }
 
   handleMouseUp(event: MouseEvent) {
+    this.edgeInteractionManager.handleMouseUp();
     this.state.isPanning = false;
     if (!this.state.mouseDown) return;
 
@@ -312,6 +334,7 @@ export class MouseEventManager {
         this.state.activeNodeId = clickedNodeId;
         this.state.clearSelection();
       }
+      this.edgeInteractionManager.handleMouseDown();
     } else if (event.ctrlKey) {
       this.state.boxSelection = true;
     }
@@ -397,6 +420,7 @@ export class MouseEventManager {
 
     // here we are handling dragging of nodes
     if (this.state.activeNodeId !== -1 && this.state.mouseDownNodeId !== -1) {
+      this.edgeInteractionManager.handleMouseMove();
       const node = this.graph.getNode(this.state.activeNodeId);
       if (!node || event.buttons !== 1) return;
 

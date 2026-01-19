@@ -1,8 +1,8 @@
 import type { NodeInstance, Socket } from "@nodarium/types";
 import { getContext, setContext } from "svelte";
-import { SvelteSet } from "svelte/reactivity";
+import { SvelteMap, SvelteSet } from "svelte/reactivity";
 import type { GraphManager } from "./graph-manager.svelte";
-import type { OrthographicCamera } from "three";
+import type { Mesh, OrthographicCamera, Vector3 } from "three";
 
 
 const graphStateKey = Symbol("graph-state");
@@ -45,6 +45,8 @@ export class GraphState {
 
   width = $state(100);
   height = $state(100);
+
+  edgeGeometries = new SvelteMap<string, { geo: Mesh, points: Vector3[] }>();
 
   wrapper = $state<HTMLDivElement>(null!);
   rect: DOMRect = $derived(
@@ -96,6 +98,14 @@ export class GraphState {
   }
 
   isBodyFocused = () => document?.activeElement?.nodeName !== "INPUT";
+
+  setEdgeGeometry(edgeId: string, edgeGeometry: { geo: Mesh, points: Vector3[] }) {
+    this.edgeGeometries.set(edgeId, edgeGeometry);
+  }
+
+  removeEdgeGeometry(edgeId: string) {
+    this.edgeGeometries.delete(edgeId);
+  }
 
   updateNodePosition(node: NodeInstance) {
     if (
