@@ -15,7 +15,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   constructor(
     private url: string,
-    private cache?: AsyncCache<ArrayBuffer | string>,
+    public cache?: AsyncCache<ArrayBuffer | string>,
   ) { }
 
   async fetchJson(url: string, skipCache = false) {
