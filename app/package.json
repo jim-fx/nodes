@@ -22,7 +22,8 @@
     "idb": "^8.0.3",
     "jsondiffpatch": "^0.7.3",
     "tailwindcss": "^4.1.18",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "wabt": "^1.0.39"
   },
   "devDependencies": {
     "@iconify-json/tabler": "^1.2.26",

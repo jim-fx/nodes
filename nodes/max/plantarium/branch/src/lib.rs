@@ -1,20 +1,19 @@
-use nodarium_macros::include_definition_file;
+use nodarium_macros::nodarium_definition_file;
+use nodarium_macros::nodarium_execute;
 use nodarium_utils::{
     concat_arg_vecs, evaluate_float, evaluate_int,
     geometry::{
         create_path, interpolate_along_path, rotate_vector_by_angle, wrap_path, wrap_path_mut,
     },
-    log, set_panic_hook, split_args,
+    log, split_args,
 };
+
 use std::f32::consts::PI;
-use wasm_bindgen::prelude::*;
 
-include_definition_file!("src/input.json");
+nodarium_definition_file!("src/input.json");
 
-#[wasm_bindgen]
+#[nodarium_execute]
 pub fn execute(input: &[i32]) -> Vec<i32> {
-    set_panic_hook();
-
     let args = split_args(input);
 
     let paths = split_args(args[0]);

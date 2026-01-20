@@ -73,7 +73,7 @@ pub fn create_instance_data(
     geo
 }
 
-pub fn wrap_instance_data(instances: &mut [i32]) -> InstanceData {
+pub fn wrap_instance_data(instances: &mut [i32]) -> InstanceData<'_> {
     assert!(
         instances.len() > INSTANCE_HEADER_SIZE,
         "Instance vector does not contain enough data for a header."

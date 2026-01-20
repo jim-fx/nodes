@@ -1,17 +1,14 @@
-use nodarium_macros::include_definition_file;
+use nodarium_macros::nodarium_definition_file;
+use nodarium_macros::nodarium_execute;
 use nodarium_utils::{
-    concat_args, encode_float, evaluate_float, geometry::calculate_normals, log, set_panic_hook,
+    encode_float, evaluate_float, geometry::calculate_normals,log,
     split_args, wrap_arg,
 };
-use wasm_bindgen::prelude::*;
 
-include_definition_file!("src/input.json");
+nodarium_definition_file!("src/input.json");
 
-#[rustfmt::skip]
-#[wasm_bindgen]
+#[nodarium_execute]
 pub fn execute(input: &[i32]) -> Vec<i32> {
-
-    set_panic_hook();
 
     let args = split_args(input);
 
@@ -21,7 +18,6 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
 
     let p = encode_float(size);
     let n = encode_float(-size);
-
 
     // [[1,3, x, y, z, x, y,z,x,y,z]];
     let mut cube_geometry = [

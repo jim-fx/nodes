@@ -130,7 +130,7 @@ pub fn create_path(point_amount: usize, depth: i32) -> Vec<i32> {
     path
 }
 
-pub fn wrap_path(input: &[i32]) -> PathData {
+pub fn wrap_path(input: &[i32]) -> PathData<'_> {
     // Basic validity checks
     assert!(
         input.len() > PATH_HEADER_SIZE,

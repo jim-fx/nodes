@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "build": "wasm-pack build --release --out-name index --no-default-features",
-    "dev": "cargo watch -s 'wasm-pack build --dev --out-name index --no-default-features'"
-  }
-}
