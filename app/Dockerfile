@@ -1,14 +1,4 @@
-FROM node:24-alpine AS builder
-
-# Install system dependencies
-RUN apk add --no-cache curl g++ gcc make libc-dev
-
-ENV RUSTUP_HOME=/usr/local/rustup \
-  CARGO_HOME=/usr/local/cargo \
-  PATH=/usr/local/cargo/bin:$PATH
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile minimal \
-  && rustup target add wasm32-unknown-unknown
+FROM jimfx/nodes:latest AS builder
 
 WORKDIR /app
 
@@ -21,7 +11,6 @@ COPY app/package.json ./app/
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
   --mount=type=cache,target=/usr/local/cargo/registry \
   --mount=type=cache,target=/app/target \
-  npm install -g pnpm@latest && \
   pnpm install --frozen-lockfile
 
 COPY . .
