@@ -1,5 +1,7 @@
-import { Vector3 } from "three/src/math/Vector3.js";
-import { lines, points } from "./store";
+import type { Box } from '@nodarium/types';
+import { Vector3 } from 'three/src/math/Vector3.js';
+import Component from './Debug.svelte';
+import { lines, points, rects } from './store';
 
 export function debugPosition(x: number, y: number) {
   points.update((p) => {
@@ -8,18 +10,28 @@ export function debugPosition(x: number, y: number) {
   });
 }
 
+export function debugRect(rect: Box) {
+  console.log(rect);
+  rects.update((r) => {
+    r.push(rect);
+    return r;
+  });
+}
+
 export function clear() {
   points.set([]);
   lines.set([]);
+  rects.set([]);
 }
 
-export function debugLine(line: Vector3[]) {
+export function debugLine(points: Vector3[], color?: Color) {
   lines.update((l) => {
-    l.push(line);
+    l.push({ points, color });
     return l;
   });
 }
 
-import Component from "./Debug.svelte";
-
-export default Component
+export default Component;
+export function clearLines() {
+  lines.set([]);
+}

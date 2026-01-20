@@ -1,127 +1,23 @@
-import { GraphSchema, type NodeId, type NodeInstance } from "@nodarium/types";
-import type { GraphManager } from "../graph-manager.svelte";
-import type { GraphState } from "../graph-state.svelte";
-import { animate, lerp } from "$lib/helpers";
-import { snapToGrid as snapPointToGrid } from "../helpers";
-import { maxZoom, minZoom, zoomSpeed } from "./constants";
-
-
-export class FileDropEventManager {
-
-  constructor(
-    private graph: GraphManager,
-    private state: GraphState
-  ) { }
-
-  handleFileDrop(event: DragEvent) {
-    event.preventDefault();
-    this.state.isDragging = false;
-    if (!event.dataTransfer) return;
-    const nodeId = event.dataTransfer.getData("data/node-id") as NodeId;
-    let mx = event.clientX - this.state.rect.x;
-    let my = event.clientY - this.state.rect.y;
-
-    if (nodeId) {
-      let nodeOffsetX = event.dataTransfer.getData("data/node-offset-x");
-      let nodeOffsetY = event.dataTransfer.getData("data/node-offset-y");
-      if (nodeOffsetX && nodeOffsetY) {
-        mx += parseInt(nodeOffsetX);
-        my += parseInt(nodeOffsetY);
-      }
-
-      let props = {};
-      let rawNodeProps = event.dataTransfer.getData("data/node-props");
-      if (rawNodeProps) {
-        try {
-          props = JSON.parse(rawNodeProps);
-        } catch (e) { }
-      }
-
-      const pos = this.state.projectScreenToWorld(mx, my);
-      this.graph.registry.load([nodeId]).then(() => {
-        this.graph.createNode({
-          type: nodeId,
-          props,
-          position: pos,
-        });
-      });
-    } else if (event.dataTransfer.files.length) {
-      const file = event.dataTransfer.files[0];
-
-      if (file.type === "application/wasm") {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const buffer = e.target?.result;
-          if (buffer?.constructor === ArrayBuffer) {
-            const nodeType = await this.graph.registry.register(buffer);
-
-            this.graph.createNode({
-              type: nodeType.id,
-              props: {},
-              position: this.state.projectScreenToWorld(mx, my),
-            });
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      } else if (file.type === "application/json") {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const buffer = e.target?.result as ArrayBuffer;
-          if (buffer) {
-            const state = GraphSchema.parse(JSON.parse(buffer.toString()));
-            this.graph.load(state);
-          }
-        };
-        reader.readAsText(file);
-      }
-    }
-  }
-
-  handleMouseLeave() {
-    this.state.isDragging = false;
-    this.state.isPanning = false;
-  }
-
-  handleDragEnter(e: DragEvent) {
-    e.preventDefault();
-    this.state.isDragging = true;
-    this.state.isPanning = false;
-  }
-
-  handleDragOver(e: DragEvent) {
-    e.preventDefault();
-    this.state.isDragging = true;
-    this.state.isPanning = false;
-  }
-
-  handleDragEnd(e: DragEvent) {
-    e.preventDefault();
-    this.state.isDragging = true;
-    this.state.isPanning = false;
-  }
-
-  getEventListenerProps() {
-    return {
-      ondragenter: (ev: DragEvent) => this.handleDragEnter(ev),
-      ondragover: (ev: DragEvent) => this.handleDragOver(ev),
-      ondragexit: (ev: DragEvent) => this.handleDragEnd(ev),
-      ondrop: (ev: DragEvent) => this.handleFileDrop(ev),
-      onmouseleave: () => this.handleMouseLeave(),
-    }
-  }
-}
-
+import { animate, lerp } from '$lib/helpers';
+import { type NodeInstance } from '@nodarium/types';
+import type { GraphManager } from '../graph-manager.svelte';
+import type { GraphState } from '../graph-state.svelte';
+import { snapToGrid as snapPointToGrid } from '../helpers';
+import { maxZoom, minZoom, zoomSpeed } from './constants';
+import { EdgeInteractionManager } from './edge.events';
 
 export class MouseEventManager {
-
+  edgeInteractionManager: EdgeInteractionManager;
 
   constructor(
     private graph: GraphManager,
     private state: GraphState
-  ) { }
-
+  ) {
+    this.edgeInteractionManager = new EdgeInteractionManager(graph, state);
+  }
 
   handleMouseUp(event: MouseEvent) {
+    this.edgeInteractionManager.handleMouseUp();
     this.state.isPanning = false;
     if (!this.state.mouseDown) return;
 
@@ -145,25 +41,23 @@ export class MouseEventManager {
         const snapLevel = this.state.getSnapLevel();
         activeNode.position[0] = snapPointToGrid(
           activeNode?.state?.x ?? activeNode.position[0],
-          5 / snapLevel,
+          5 / snapLevel
         );
         activeNode.position[1] = snapPointToGrid(
           activeNode?.state?.y ?? activeNode.position[1],
-          5 / snapLevel,
+          5 / snapLevel
         );
       } else {
         activeNode.position[0] = activeNode?.state?.x ?? activeNode.position[0];
         activeNode.position[1] = activeNode?.state?.y ?? activeNode.position[1];
       }
       const nodes = [
-        ...[...(this.state.selectedNodes?.values() || [])].map((id) =>
-          this.graph.getNode(id),
-        ),
+        ...[...(this.state.selectedNodes?.values() || [])].map((id) => this.graph.getNode(id))
       ] as NodeInstance[];
 
       const vec = [
         activeNode.position[0] - (activeNode?.state.x || 0),
-        activeNode.position[1] - (activeNode?.state.y || 0),
+        activeNode.position[1] - (activeNode?.state.y || 0)
       ];
 
       for (const node of nodes) {
@@ -179,9 +73,9 @@ export class MouseEventManager {
       animate(500, (a: number) => {
         for (const node of nodes) {
           if (
-            node?.state &&
-            node.state["x"] !== undefined &&
-            node.state["y"] !== undefined
+            node?.state
+            && node.state['x'] !== undefined
+            && node.state['y'] !== undefined
           ) {
             node.state.x = lerp(node.state.x, node.position[0], a);
             node.state.y = lerp(node.state.y, node.position[1], a);
@@ -195,24 +89,24 @@ export class MouseEventManager {
       this.graph.save();
     } else if (this.state.hoveredSocket && this.state.activeSocket) {
       if (
-        typeof this.state.hoveredSocket.index === "number" &&
-        typeof this.state.activeSocket.index === "string"
+        typeof this.state.hoveredSocket.index === 'number'
+        && typeof this.state.activeSocket.index === 'string'
       ) {
         this.graph.createEdge(
           this.state.hoveredSocket.node,
           this.state.hoveredSocket.index || 0,
           this.state.activeSocket.node,
-          this.state.activeSocket.index,
+          this.state.activeSocket.index
         );
       } else if (
-        typeof this.state.activeSocket.index == "number" &&
-        typeof this.state.hoveredSocket.index === "string"
+        typeof this.state.activeSocket.index == 'number'
+        && typeof this.state.hoveredSocket.index === 'string'
       ) {
         this.graph.createEdge(
           this.state.activeSocket.node,
           this.state.activeSocket.index || 0,
           this.state.hoveredSocket.node,
-          this.state.hoveredSocket.index,
+          this.state.hoveredSocket.index
         );
       }
       this.graph.save();
@@ -220,18 +114,18 @@ export class MouseEventManager {
       // Handle automatic adding of nodes on ctrl+mouseUp
       this.state.edgeEndPosition = [
         this.state.mousePosition[0],
-        this.state.mousePosition[1],
+        this.state.mousePosition[1]
       ];
 
-      if (typeof this.state.activeSocket.index === "number") {
+      if (typeof this.state.activeSocket.index === 'number') {
         this.state.addMenuPosition = [
           this.state.mousePosition[0],
-          this.state.mousePosition[1] - 25 / this.state.cameraPosition[2],
+          this.state.mousePosition[1] - 25 / this.state.cameraPosition[2]
         ];
       } else {
         this.state.addMenuPosition = [
           this.state.mousePosition[0] - 155 / this.state.cameraPosition[2],
-          this.state.mousePosition[1] - 25 / this.state.cameraPosition[2],
+          this.state.mousePosition[1] - 25 / this.state.cameraPosition[2]
         ];
       }
       return;
@@ -239,11 +133,11 @@ export class MouseEventManager {
 
     // check if camera moved
     if (
-      clickedNodeId === -1 &&
-      !this.state.boxSelection &&
-      this.state.cameraDown[0] === this.state.cameraPosition[0] &&
-      this.state.cameraDown[1] === this.state.cameraPosition[1] &&
-      this.state.isBodyFocused()
+      clickedNodeId === -1
+      && !this.state.boxSelection
+      && this.state.cameraDown[0] === this.state.cameraPosition[0]
+      && this.state.cameraDown[1] === this.state.cameraPosition[1]
+      && this.state.isBodyFocused()
     ) {
       this.state.activeNodeId = -1;
       this.state.clearSelection();
@@ -257,16 +151,15 @@ export class MouseEventManager {
     this.state.addMenuPosition = null;
   }
 
-
   handleMouseDown(event: MouseEvent) {
     if (this.state.mouseDown) return;
     this.state.edgeEndPosition = null;
 
     if (event.target instanceof HTMLElement) {
       if (
-        event.target.nodeName !== "CANVAS" &&
-        !event.target.classList.contains("node") &&
-        !event.target.classList.contains("content")
+        event.target.nodeName !== 'CANVAS'
+        && !event.target.classList.contains('node')
+        && !event.target.classList.contains('content')
       ) {
         return;
       }
@@ -288,7 +181,7 @@ export class MouseEventManager {
         this.state.activeNodeId = clickedNodeId;
         // if the selected node is the same as the clicked node
       } else if (this.state.activeNodeId === clickedNodeId) {
-        //$activeNodeId = -1;
+        // $activeNodeId = -1;
         // if the clicked node is different from the selected node and secondary
       } else if (event.ctrlKey) {
         this.state.selectedNodes.add(this.state.activeNodeId);
@@ -312,6 +205,7 @@ export class MouseEventManager {
         this.state.activeNodeId = clickedNodeId;
         this.state.clearSelection();
       }
+      this.edgeInteractionManager.handleMouseDown();
     } else if (event.ctrlKey) {
       this.state.boxSelection = true;
     }
@@ -335,7 +229,6 @@ export class MouseEventManager {
     this.state.edgeEndPosition = null;
   }
 
-
   handleMouseMove(event: MouseEvent) {
     let mx = event.clientX - this.state.rect.x;
     let my = event.clientY - this.state.rect.y;
@@ -351,8 +244,8 @@ export class MouseEventManager {
       let _socket;
       for (const socket of this.state.possibleSockets) {
         const dist = Math.sqrt(
-          (socket.position[0] - this.state.mousePosition[0]) ** 2 +
-          (socket.position[1] - this.state.mousePosition[1]) ** 2,
+          (socket.position[0] - this.state.mousePosition[0]) ** 2
+          + (socket.position[1] - this.state.mousePosition[1]) ** 2
         );
         if (dist < smallestDist) {
           smallestDist = dist;
@@ -375,7 +268,7 @@ export class MouseEventManager {
       event.stopPropagation();
       const mouseD = this.state.projectScreenToWorld(
         this.state.mouseDown[0],
-        this.state.mouseDown[1],
+        this.state.mouseDown[1]
       );
       const x1 = Math.min(mouseD[0], this.state.mousePosition[0]);
       const x2 = Math.max(mouseD[0], this.state.mousePosition[0]);
@@ -397,6 +290,7 @@ export class MouseEventManager {
 
     // here we are handling dragging of nodes
     if (this.state.activeNodeId !== -1 && this.state.mouseDownNodeId !== -1) {
+      this.edgeInteractionManager.handleMouseMove();
       const node = this.graph.getNode(this.state.activeNodeId);
       if (!node || event.buttons !== 1) return;
 
@@ -405,10 +299,8 @@ export class MouseEventManager {
       const oldX = node.state.downX || 0;
       const oldY = node.state.downY || 0;
 
-      let newX =
-        oldX + (mx - this.state.mouseDown[0]) / this.state.cameraPosition[2];
-      let newY =
-        oldY + (my - this.state.mouseDown[1]) / this.state.cameraPosition[2];
+      let newX = oldX + (mx - this.state.mouseDown[0]) / this.state.cameraPosition[2];
+      let newY = oldY + (my - this.state.mouseDown[1]) / this.state.cameraPosition[2];
 
       if (event.ctrlKey) {
         const snapLevel = this.state.getSnapLevel();
@@ -448,23 +340,19 @@ export class MouseEventManager {
 
     // here we are handling panning of camera
     this.state.isPanning = true;
-    let newX =
-      this.state.cameraDown[0] -
-      (mx - this.state.mouseDown[0]) / this.state.cameraPosition[2];
-    let newY =
-      this.state.cameraDown[1] -
-      (my - this.state.mouseDown[1]) / this.state.cameraPosition[2];
+    let newX = this.state.cameraDown[0]
+      - (mx - this.state.mouseDown[0]) / this.state.cameraPosition[2];
+    let newY = this.state.cameraDown[1]
+      - (my - this.state.mouseDown[1]) / this.state.cameraPosition[2];
 
     this.state.cameraPosition[0] = newX;
     this.state.cameraPosition[1] = newY;
   }
 
-
   handleMouseScroll(event: WheelEvent) {
-    const bodyIsFocused =
-      document.activeElement === document.body ||
-      document.activeElement === this.state.wrapper ||
-      document?.activeElement?.id === "graph";
+    const bodyIsFocused = document.activeElement === document.body
+      || document.activeElement === this.state.wrapper
+      || document?.activeElement?.id === 'graph';
     if (!bodyIsFocused) return;
 
     // Define zoom speed and clamp it between -1 and 1
@@ -479,21 +367,19 @@ export class MouseEventManager {
         maxZoom,
         isNegative
           ? this.state.cameraPosition[2] / delta
-          : this.state.cameraPosition[2] * delta,
-      ),
+          : this.state.cameraPosition[2] * delta
+      )
     );
 
     // Calculate the ratio of the new zoom to the original zoom
     const zoomRatio = newZoom / this.state.cameraPosition[2];
 
     // Update camera position and zoom level
-    this.state.cameraPosition[0] = this.state.mousePosition[0] -
-      (this.state.mousePosition[0] - this.state.cameraPosition[0]) /
-      zoomRatio;
-    this.state.cameraPosition[1] = this.state.mousePosition[1] -
-      (this.state.mousePosition[1] - this.state.cameraPosition[1]) /
-      zoomRatio,
-      this.state.cameraPosition[2] = newZoom;
+    this.state.cameraPosition[0] = this.state.mousePosition[0]
+      - (this.state.mousePosition[0] - this.state.cameraPosition[0])
+      / zoomRatio;
+    this.state.cameraPosition[1] = this.state.mousePosition[1]
+      - (this.state.mousePosition[1] - this.state.cameraPosition[1])
+      / zoomRatio, this.state.cameraPosition[2] = newZoom;
   }
-
 }
