@@ -40,7 +40,7 @@
   },
   "excludes": [
     "**/node_modules",
-    "**/*-lock.json"
+    "**/*-lock.yaml"
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.95.13.wasm",

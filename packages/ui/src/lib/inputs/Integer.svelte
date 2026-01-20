@@ -112,23 +112,25 @@
 	onmousedown={handleMouseDown}
 	onmouseup={handleMouseUp}
 >
+	<div class="">
+		<button onclick={() => handleChange(-step)}>-</button>
+		<input
+			bind:value
+			bind:this={inputEl}
+			{id}
+			{step}
+			{max}
+			{min}
+			type="number"
+			style={`width:${width};`}
+		/>
+
+		<button onclick={() => handleChange(+step)}>+</button>
+	</div>
 	{#if typeof min !== 'undefined' && typeof max !== 'undefined'}
 		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`}
 		></span>
 	{/if}
-	<button onclick={() => handleChange(-step)}>-</button>
-	<input
-		bind:value
-		bind:this={inputEl}
-		{id}
-		{step}
-		{max}
-		{min}
-		type="number"
-		style={`width:${width};`}
-	/>
-
-	<button onclick={() => handleChange(+step)}>+</button>
 </div>
 
 <style>
