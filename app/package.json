@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nodarium/registry": "link:../packages/registry",
-    "@nodarium/ui": "link:../packages/ui",
-    "@nodarium/utils": "link:../packages/utils",
+    "@nodarium/registry": "workspace:*",
+    "@nodarium/ui": "workspace:*",
+    "@nodarium/utils": "workspace:*",
     "@sveltejs/kit": "^2.50.0",
     "@tailwindcss/vite": "^4.1.18",
     "@threlte/core": "8.3.1",
