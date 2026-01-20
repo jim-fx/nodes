@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "build": "cargo build --target wasm32-unknown-unknown --release && mkdir -p pkg && cp ../../../../target/wasm32-unknown-unknown/release/math.wasm ./pkg/node.wasm",
-    "dev": "cargo watch -s 'wasm-pack build --dev --out-name index --no-default-features'"
-  }
-}

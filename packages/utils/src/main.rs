@@ -1,5 +1,5 @@
 use nodarium_utils::{
-    geometry::{create_multiple_paths, create_path, wrap_multiple_paths},
+    geometry::{create_multiple_paths, wrap_multiple_paths},
     split_args,
 };
 

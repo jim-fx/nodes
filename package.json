@@ -3,7 +3,7 @@
     "build": "pnpm build:nodes && pnpm build:app",
     "build:story": "pnpm -r --filter 'ui' story:build",
     "build:app": "BASE_PATH=/ui pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
-    "build:nodes": "pnpm -r --filter './nodes/**' build",
+    "build:nodes": "cargo build --workspace --target wasm32-unknown-unknown --release && rm -rf ./app/static/nodes/max/plantarium/ && mkdir -p ./app/static/nodes/max/plantarium/ && cp -R ./target/wasm32-unknown-unknown/release/*.wasm ./app/static/nodes/max/plantarium/",
     "build:deploy": "pnpm build",
     "dev:all": "pnpm -r dev",
     "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
