@@ -1,41 +1,48 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
-
 	interface Props {
+		value?: number;
+		step?: number;
 		min?: number | undefined;
 		max?: number | undefined;
-		step?: number;
-		value?: number;
 		id?: string;
+		change?: (arg: number) => void;
 	}
 
 	let {
-		min = undefined,
-		max = undefined,
-		step = 1,
 		value = $bindable(0),
-		id = ''
+		step = 1,
+		min = $bindable(0),
+		max = $bindable(1),
+		id,
+		change
 	}: Props = $props();
 
-	if (!value) {
-		value = 0;
+	if (min > max) {
+		[min, max] = [max, min];
+	}
+	if (value > max) {
+		max = value;
 	}
 
-	let inputEl: HTMLInputElement | undefined = $state();
-	let wrapper: HTMLDivElement | undefined = $state();
+	function strip(input: number) {
+		return +parseFloat(input + '').toPrecision(2);
+	}
+
+	let inputEl = $state() as HTMLInputElement;
+	let wrapper = $state() as HTMLDivElement;
 
 	let prev = -1;
 	function update() {
 		if (prev === value) return;
 		prev = value;
-		dispatch('change', parseFloat(value + ''));
+		change?.(value);
 	}
 
 	function handleChange(change: number) {
 		value = Math.max(min ?? -Infinity, Math.min(+value + change, max ?? Infinity));
 	}
 
+	let isMouseDown = $state(false);
 	let downX = 0;
 	let downV = 0;
 	let rect: DOMRect;
@@ -65,6 +72,13 @@
 		window.removeEventListener('mousemove', handleMouseMove);
 	}
 
+	function handleKeyDown(ev: KeyboardEvent) {
+		if (ev.key === 'Escape' || ev.key === 'Enter') {
+			handleMouseUp();
+			inputEl?.blur();
+		}
+	}
+
 	function handleMouseMove(ev: MouseEvent) {
 		if (!ev.ctrlKey && typeof min === 'number' && typeof max === 'number') {
 			const vx = (ev.clientX - rect.left) / rect.width;
@@ -76,8 +90,12 @@
 	}
 
 	$effect(() => {
+		if ((value || 0).toString().length > 5) {
+			value = strip(value || 0);
+		}
 		value !== undefined && update();
 	});
+
 	let width = $derived(
 		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 30) + 'px' : '20px'
 	);
@@ -86,29 +104,33 @@
 <div
 	class="component-wrapper"
 	bind:this={wrapper}
+	class:is-down={isMouseDown}
 	role="slider"
 	tabindex="0"
 	aria-valuenow={value}
+	onkeydown={handleKeyDown}
 	onmousedown={handleMouseDown}
 	onmouseup={handleMouseUp}
 >
+	<div class="">
+		<button onclick={() => handleChange(-step)}>-</button>
+		<input
+			bind:value
+			bind:this={inputEl}
+			{id}
+			{step}
+			{max}
+			{min}
+			type="number"
+			style={`width:${width};`}
+		/>
+
+		<button onclick={() => handleChange(+step)}>+</button>
+	</div>
 	{#if typeof min !== 'undefined' && typeof max !== 'undefined'}
 		<span class="overlay" style={`width: ${Math.min((value - min) / (max - min), 1) * 100}%`}
 		></span>
 	{/if}
-	<button onclick={() => handleChange(-step)}>-</button>
-	<input
-		bind:value
-		bind:this={inputEl}
-		{id}
-		{step}
-		{max}
-		{min}
-		type="number"
-		style={`width:${width};`}
-	/>
-
-	<button onclick={() => handleChange(+step)}>+</button>
 </div>
 
 <style>
@@ -124,21 +146,32 @@
 		border-radius: var(--border-radius, 2px);
 	}
 
+	input[type='number']::-webkit-inner-spin-button,
+	input[type='number']::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+	}
+
 	input[type='number'] {
 		-webkit-appearance: textfield;
 		-moz-appearance: textfield;
 		appearance: textfield;
 		cursor: pointer;
-		font-size: 1em;
 		font-family: var(--font-family);
-		padding-top: 8px;
+		font-variant-numeric: tabular-nums;
+		color: var(--text-color);
+		background-color: transparent;
+		padding: var(--padding, 6px);
+		font-size: 1em;
+		padding-inline: 10px;
+		text-align: center;
+		border: none;
+		border-style: none;
 		flex: 1;
 		width: 72%;
 	}
 
-	input[type='number']::-webkit-inner-spin-button,
-	input[type='number']::-webkit-outer-spin-button {
-		-webkit-appearance: none;
+	.is-down > input {
+		cursor: ew-resize !important;
 	}
 
 	.overlay {
@@ -149,6 +182,10 @@
 		background-color: var(--layer-3);
 		opacity: 0.3;
 		pointer-events: none;
+	}
+
+	.is-down > .overlay {
+		transition: none !important;
 	}
 
 	button {

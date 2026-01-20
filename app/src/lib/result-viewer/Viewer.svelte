@@ -95,12 +95,14 @@
   <SmallPerformanceViewer {fps} store={perf} />
 {/if}
 
-<Canvas>
-  <Scene
-    bind:this={sceneComponent}
-    {lines}
-    {centerCamera}
-    bind:scene
-    bind:fps
-  />
-</Canvas>
+<div style="height: 100vh">
+  <Canvas>
+    <Scene
+      bind:this={sceneComponent}
+      {lines}
+      {centerCamera}
+      bind:scene
+      bind:fps
+    />
+  </Canvas>
+</div>

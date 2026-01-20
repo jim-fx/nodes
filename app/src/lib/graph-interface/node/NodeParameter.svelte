@@ -73,8 +73,14 @@
   {#key id && graphId}
     <div class="content" class:disabled={graph?.inputSockets?.has(socketId)}>
       {#if inputType.label !== ""}
-        <label for={elementId}>{input.label || id}</label>
+        <label for={elementId} title={input.description}
+          >{input.label || id}</label
+        >
       {/if}
+      <span
+        class="absolute i-[tabler--help-circle] size-4 block top-2 right-2 opacity-30"
+        title={JSON.stringify(input, null, 2)}
+      ></span>
       {#if inputType.external !== true}
         <NodeInputEl {graph} {elementId} bind:node {input} {id} />
       {/if}
@@ -180,9 +186,6 @@
 
   .content.disabled {
     opacity: 0.2;
-  }
-  .content.disabled > * {
-    pointer-events: none;
   }
 
   .disabled svg path {

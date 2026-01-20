@@ -11,8 +11,10 @@
   import HelpView from "../components/HelpView.svelte";
   import { getGraphManager, getGraphState } from "../graph-state.svelte";
   import { HTML } from "@threlte/extras";
-  import { FileDropEventManager, MouseEventManager } from "./events";
   import { maxZoom, minZoom } from "./constants";
+  import Debug from "../debug/Debug.svelte";
+  import { FileDropEventManager } from "./drop.events";
+  import { MouseEventManager } from "./mouse.events";
 
   const {
     keymap,
@@ -103,6 +105,7 @@
   onwheel={(ev) => mouseEvents.handleMouseScroll(ev)}
   bind:this={graphState.wrapper}
   class="graph-wrapper"
+  style="height: 100vh;"
   class:is-panning={graphState.isPanning}
   class:is-hovering={graphState.hoveredNodeId !== -1}
   aria-label="Graph"
@@ -174,8 +177,17 @@
 
       {#each graph.edges as edge}
         {@const [x1, y1, x2, y2] = getEdgePosition(edge)}
-        <EdgeEl z={graphState.cameraPosition[2]} {x1} {y1} {x2} {y2} />
+        <EdgeEl
+          id={graph.getEdgeId(edge)}
+          z={graphState.cameraPosition[2]}
+          {x1}
+          {y1}
+          {x2}
+          {y2}
+        />
       {/each}
+
+      <Debug />
 
       <HTML transform={false}>
         <div

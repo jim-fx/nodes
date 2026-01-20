@@ -4,9 +4,10 @@
     "build:story": "pnpm -r --filter 'ui' story:build",
     "build:app": "BASE_PATH=/ui pnpm -r --filter 'ui' build && pnpm -r --filter 'app' build",
     "build:nodes": "pnpm -r --filter './nodes/**' build",
-    "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
     "build:deploy": "pnpm build",
-    "dev": "pnpm -r --filter 'app' --filter './packages/node-registry' dev"
+    "dev:all": "pnpm -r dev",
+    "dev:nodes": "pnpm -r --parallel  --filter './nodes/**' dev",
+    "dev": "pnpm -r --filter 'app' --filter './packages/ui' dev"
   },
   "packageManager": "pnpm@10.24.0"
 }

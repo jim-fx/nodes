@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { setContext, type Snippet } from "svelte";
-  import { PanelState } from "./PanelState.svelte";
-
-  const state = new PanelState();
-  setContext("panel-state", state);
+  import { type Snippet } from "svelte";
+  import { panelState as state } from "./PanelState.svelte";
 
   const { children } = $props<{ children?: Snippet }>();
 </script>

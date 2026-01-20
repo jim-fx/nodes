@@ -4,7 +4,7 @@ This guide will help you developing your first Nodarium Node written in Rust. As
 
 ## Prerequesites
 
-You need to have [Rust](https://www.rust-lang.org/tools/install) and [wasm-pack](https://rustwasm.github.io/wasm-pack/book/) installed. Rust is the language we are going to develop our node in and wasm-pack helps us compile our rust code into a webassembly file.
+You need to have [Rust](https://www.rust-lang.org/tools/install) and [wasm-pack](https://rustwasm.github.io/docs/wasm-pack/) installed. Rust is the language we are going to develop our node in and wasm-pack helps us compile our rust code into a webassembly file.
 
 ```bash
 # install rust
@@ -22,11 +22,12 @@ cd my-new-node
 
 ## Setup Definition
 
-Now we create the definition file of the node. 
+Now we create the definition file of the node.
 Here we define what kind of inputs our node will expect and what kind of output it produces. If you want to dive deeper into this topic, have a look at [NODE_DEFINITION.md](./NODE_DEFINITION.md).
 
 `src/definition.json`
-```json 
+
+```json
 {
   "id": "my-name/my-namespace/zylinder-node",
   "outputs": [
@@ -35,7 +36,7 @@ Here we define what kind of inputs our node will expect and what kind of output 
   "inputs": {
     "height": {
       "type": "float",
-      "value": 2,
+      "value": 2
     },
     "radius": {
       "type": "float",
@@ -44,6 +45,7 @@ Here we define what kind of inputs our node will expect and what kind of output 
   }
 }
 ```
+
 If we take a look at the `src/lib.rs` file we see that `src/definition.json` is included with the following line:
 
 ```rust

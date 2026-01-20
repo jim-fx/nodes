@@ -1,15 +1,14 @@
-import { localState } from "$lib/helpers/localState.svelte";
+import { localState } from '$lib/helpers/localState.svelte';
 
 type Panel = {
   icon: string;
   classes: string;
   hidden?: boolean;
-}
+};
 
-export class PanelState {
-
+class PanelState {
   panels = $state<Record<string, Panel>>({});
-  activePanel = localState<string | boolean>("node.activePanel", "")
+  activePanel = localState<string | boolean>('node.activePanel', '');
 
   get keys() {
     return Object.keys(this.panels);
@@ -19,7 +18,7 @@ export class PanelState {
     const state = $state({
       icon: icon,
       classes: classes,
-      hidden: hidden,
+      hidden: hidden
     });
     this.panels[id] = state;
     return state;
@@ -29,7 +28,13 @@ export class PanelState {
     if (this.activePanel.value) {
       this.activePanel.value = false;
     } else {
-      this.activePanel.value = this.keys[0]
+      this.activePanel.value = this.keys[0];
     }
   }
+
+  public setActivePanel(panelId: string) {
+    this.activePanel.value = panelId;
+  }
 }
+
+export const panelState = new PanelState();

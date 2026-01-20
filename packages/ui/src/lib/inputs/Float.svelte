@@ -4,13 +4,15 @@
 		step?: number;
 		min?: number;
 		max?: number;
+		id?: string;
 	}
 
 	let {
 		value = $bindable(0.5),
 		step = 0.01,
 		min = $bindable(0),
-		max = $bindable(1)
+		max = $bindable(1),
+		id
 	}: Props = $props();
 
 	if (min > max) {
@@ -110,6 +112,7 @@
 	<input
 		bind:value
 		bind:this={inputEl}
+		{id}
 		{step}
 		{max}
 		{min}
