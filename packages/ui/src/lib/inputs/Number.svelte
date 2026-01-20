@@ -12,8 +12,10 @@
 		step = 1,
 		min = $bindable(0),
 		max = $bindable(1),
-		id
+		id: _id
 	}: Props = $props();
+	const uid = $props.id();
+	const id = $derived(_id || uid);
 
 	if (min > max) {
 		[min, max] = [max, min];
@@ -26,7 +28,7 @@
 		return +parseFloat(input + '').toPrecision(2);
 	}
 
-	let inputEl: HTMLInputElement | undefined = $state();
+	let inputEl = $state() as HTMLInputElement;
 
 	let prev = -1;
 	function update() {
@@ -82,6 +84,10 @@
 </div>
 
 <style>
+	:root {
+		--slider-height: 4px;
+	}
+
 	.component-wrapper {
 		display: flex;
 		background-color: var(--layer-2, #4b4b4b);
@@ -145,7 +151,7 @@
 		position: absolute;
 		appearance: none;
 		width: 100%;
-		height: 3px;
+		height: var(--slider-height);
 		background: var(--layer-2, #4b4b4b);
 		cursor: pointer;
 	}
@@ -154,16 +160,18 @@
 	input[type='range']::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
-		width: 0px;
-		height: 0px;
+		width: 12px;
+		height: var(--slider-height);
+		background: var(--text-color);
 		box-shadow: none;
 	}
 
 	/* Thumb: for Firefox */
 	input[type='range']::-moz-range-thumb {
 		border: none;
-		width: 0px;
-		height: 0px;
+		width: 12px;
+		height: var(--slider-height);
+		background: var(--text-color);
 		box-shadow: none;
 	}
 </style>
