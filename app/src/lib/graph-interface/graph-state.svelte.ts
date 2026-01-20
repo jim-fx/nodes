@@ -1,36 +1,43 @@
-import type { NodeInstance, Socket } from "@nodarium/types";
-import { getContext, setContext } from "svelte";
-import { SvelteMap, SvelteSet } from "svelte/reactivity";
-import type { GraphManager } from "./graph-manager.svelte";
-import type { Mesh, OrthographicCamera, Vector3 } from "three";
+import type { NodeInstance, Socket } from '@nodarium/types';
+import { getContext, setContext } from 'svelte';
+import { SvelteSet } from 'svelte/reactivity';
+import type { OrthographicCamera, Vector3 } from 'three';
+import type { GraphManager } from './graph-manager.svelte';
 
-
-const graphStateKey = Symbol("graph-state");
+const graphStateKey = Symbol('graph-state');
 export function getGraphState() {
   return getContext<GraphState>(graphStateKey);
 }
 export function setGraphState(graphState: GraphState) {
-  return setContext(graphStateKey, graphState)
+  return setContext(graphStateKey, graphState);
 }
 
-const graphManagerKey = Symbol("graph-manager");
+const graphManagerKey = Symbol('graph-manager');
 export function getGraphManager() {
-  return getContext<GraphManager>(graphManagerKey)
+  return getContext<GraphManager>(graphManagerKey);
 }
 
 export function setGraphManager(manager: GraphManager) {
   return setContext(graphManagerKey, manager);
 }
 
-export class GraphState {
+type EdgeData = {
+  x1: number;
+  y1: number;
+  points: Vector3[];
+};
 
+export class GraphState {
   constructor(private graph: GraphManager) {
     $effect.root(() => {
       $effect(() => {
-        localStorage.setItem("cameraPosition", `[${this.cameraPosition[0]},${this.cameraPosition[1]},${this.cameraPosition[2]}]`)
-      })
-    })
-    const storedPosition = localStorage.getItem("cameraPosition")
+        localStorage.setItem(
+          'cameraPosition',
+          `[${this.cameraPosition[0]},${this.cameraPosition[1]},${this.cameraPosition[2]}]`
+        );
+      });
+    });
+    const storedPosition = localStorage.getItem('cameraPosition');
     if (storedPosition) {
       try {
         const d = JSON.parse(storedPosition);
@@ -38,7 +45,7 @@ export class GraphState {
         this.cameraPosition[1] = d[1];
         this.cameraPosition[2] = d[2];
       } catch (e) {
-        console.log("Failed to parsed stored camera position", e);
+        console.log('Failed to parsed stored camera position', e);
       }
     }
   }
@@ -46,15 +53,16 @@ export class GraphState {
   width = $state(100);
   height = $state(100);
 
-  edgeGeometries = new SvelteMap<string, { geo: Mesh, points: Vector3[] }>();
+  hoveredEdgeId = $state<string | null>(null);
+  edges = new Map<string, EdgeData>();
 
   wrapper = $state<HTMLDivElement>(null!);
   rect: DOMRect = $derived(
-    (this.wrapper && this.width && this.height) ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0),
+    (this.wrapper && this.width && this.height) ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0)
   );
 
   camera = $state<OrthographicCamera>(null!);
-  cameraPosition: [number, number, number] = $state([0, 0, 4]);
+  cameraPosition: [number, number, number] = $state([0, 0, 100]);
 
   clipboard: null | {
     nodes: NodeInstance[];
@@ -65,7 +73,7 @@ export class GraphState {
     this.cameraPosition[0] - this.width / this.cameraPosition[2] / 2,
     this.cameraPosition[0] + this.width / this.cameraPosition[2] / 2,
     this.cameraPosition[1] - this.height / this.cameraPosition[2] / 2,
-    this.cameraPosition[1] + this.height / this.cameraPosition[2] / 2,
+    this.cameraPosition[1] + this.height / this.cameraPosition[2] / 2
   ]);
 
   boxSelection = $state(false);
@@ -73,8 +81,8 @@ export class GraphState {
   addMenuPosition = $state<[number, number] | null>(null);
 
   snapToGrid = $state(false);
-  showGrid = $state(true)
-  showHelp = $state(false)
+  showGrid = $state(true);
+  showHelp = $state(false);
 
   cameraDown = [0, 0];
   mouseDownNodeId = -1;
@@ -90,41 +98,49 @@ export class GraphState {
   hoveredSocket = $state<Socket | null>(null);
   possibleSockets = $state<Socket[]>([]);
   possibleSocketIds = $derived(
-    new Set(this.possibleSockets.map((s) => `${s.node.id}-${s.index}`)),
+    new Set(this.possibleSockets.map((s) => `${s.node.id}-${s.index}`))
   );
+
+  getEdges() {
+    return $state.snapshot(this.edges);
+  }
 
   clearSelection() {
     this.selectedNodes.clear();
   }
 
-  isBodyFocused = () => document?.activeElement?.nodeName !== "INPUT";
+  isBodyFocused = () => document?.activeElement?.nodeName !== 'INPUT';
 
-  setEdgeGeometry(edgeId: string, edgeGeometry: { geo: Mesh, points: Vector3[] }) {
-    this.edgeGeometries.set(edgeId, edgeGeometry);
+  setEdgeGeometry(edgeId: string, x1: number, y1: number, points: Vector3[]) {
+    this.edges.set(edgeId, { x1, y1, points });
   }
 
   removeEdgeGeometry(edgeId: string) {
-    this.edgeGeometries.delete(edgeId);
+    this.edges.delete(edgeId);
+  }
+
+  getEdgeData() {
+    return this.edges;
   }
 
   updateNodePosition(node: NodeInstance) {
     if (
-      node.state.x === node.position[0] &&
-      node.state.y === node.position[1]
+      node.state.x === node.position[0]
+      && node.state.y === node.position[1]
     ) {
       delete node.state.x;
       delete node.state.y;
     }
 
-    if (node.state["x"] !== undefined && node.state["y"] !== undefined) {
+    if (node.state['x'] !== undefined && node.state['y'] !== undefined) {
       if (node.state.ref) {
-        node.state.ref.style.setProperty("--nx", `${node.state.x * 10}px`);
-        node.state.ref.style.setProperty("--ny", `${node.state.y * 10}px`);
+        node.state.ref.style.setProperty('--nx', `${node.state.x * 10}px`);
+        node.state.ref.style.setProperty('--ny', `${node.state.y * 10}px`);
       }
     } else {
       if (node.state.ref) {
-        node.state.ref.style.setProperty("--nx", `${node.position[0] * 10}px`);
-        node.state.ref.style.setProperty("--ny", `${node.position[1] * 10}px`);
+        node.state.ref.style.setProperty('--nx', `${node.position[0] * 10}px`);
+        node.state.ref.style.setProperty('--ny', `${node.position[1] * 10}px`);
       }
     }
   }
@@ -144,18 +160,18 @@ export class GraphState {
 
   getSocketPosition(
     node: NodeInstance,
-    index: string | number,
+    index: string | number
   ): [number, number] {
-    if (typeof index === "number") {
+    if (typeof index === 'number') {
       return [
         (node?.state?.x ?? node.position[0]) + 20,
-        (node?.state?.y ?? node.position[1]) + 2.5 + 10 * index,
+        (node?.state?.y ?? node.position[1]) + 2.5 + 10 * index
       ];
     } else {
       const _index = Object.keys(node.state?.type?.inputs || {}).indexOf(index);
       return [
         node?.state?.x ?? node.position[0],
-        (node?.state?.y ?? node.position[1]) + 10 + 10 * _index,
+        (node?.state?.y ?? node.position[1]) + 10 + 10 * _index
       ];
     }
   }
@@ -169,26 +185,26 @@ export class GraphState {
     if (!node?.inputs) {
       return 5;
     }
-    const height =
-      5 +
-      10 *
-      Object.keys(node.inputs).filter(
+    const height = 5
+      + 10
+      * Object.keys(node.inputs).filter(
         (p) =>
-          p !== "seed" &&
-          node?.inputs &&
-          !("setting" in node?.inputs?.[p]) &&
-          node.inputs[p].hidden !== true,
+          p !== 'seed'
+          && node?.inputs
+          && !('setting' in node?.inputs?.[p])
+          && node.inputs[p].hidden !== true
       ).length;
     this.nodeHeightCache[nodeTypeId] = height;
     return height;
   }
 
   copyNodes() {
-    if (this.activeNodeId === -1 && !this.selectedNodes?.size)
+    if (this.activeNodeId === -1 && !this.selectedNodes?.size) {
       return;
+    }
     let nodes = [
       this.activeNodeId,
-      ...(this.selectedNodes?.values() || []),
+      ...(this.selectedNodes?.values() || [])
     ]
       .map((id) => this.graph.getNode(id))
       .filter(b => !!b);
@@ -198,14 +214,14 @@ export class GraphState {
       ...node,
       position: [
         this.mousePosition[0] - node.position[0],
-        this.mousePosition[1] - node.position[1],
+        this.mousePosition[1] - node.position[1]
       ],
-      tmp: undefined,
+      tmp: undefined
     }));
 
     this.clipboard = {
       nodes: nodes,
-      edges: edges,
+      edges: edges
     };
   }
 
@@ -227,14 +243,13 @@ export class GraphState {
     }
   }
 
-
   setDownSocket(socket: Socket) {
     this.activeSocket = socket;
 
     let { node, index, position } = socket;
 
     // remove existing edge
-    if (typeof index === "string") {
+    if (typeof index === 'string') {
       const edges = this.graph.getEdgesToNode(node);
       for (const edge of edges) {
         if (edge[3] === index) {
@@ -251,7 +266,7 @@ export class GraphState {
     this.activeSocket = {
       node,
       index,
-      position,
+      position
     };
 
     this.possibleSockets = this.graph
@@ -260,18 +275,17 @@ export class GraphState {
         return {
           node,
           index,
-          position: this.getSocketPosition(node, index),
+          position: this.getSocketPosition(node, index)
         };
       });
-  };
-
+  }
 
   projectScreenToWorld(x: number, y: number): [number, number] {
     return [
-      this.cameraPosition[0] +
-      (x - this.width / 2) / this.cameraPosition[2],
-      this.cameraPosition[1] +
-      (y - this.height / 2) / this.cameraPosition[2],
+      this.cameraPosition[0]
+      + (x - this.width / 2) / this.cameraPosition[2],
+      this.cameraPosition[1]
+      + (y - this.height / 2) / this.cameraPosition[2]
     ];
   }
 
@@ -284,8 +298,8 @@ export class GraphState {
     if (event.button === 0) {
       // check if the clicked element is a node
       if (event.target instanceof HTMLElement) {
-        const nodeElement = event.target.closest(".node");
-        const nodeId = nodeElement?.getAttribute?.("data-node-id");
+        const nodeElement = event.target.closest('.node');
+        const nodeId = nodeElement?.getAttribute?.('data-node-id');
         if (nodeId) {
           clickedNodeId = parseInt(nodeId, 10);
         }
@@ -313,10 +327,10 @@ export class GraphState {
     const height = this.getNodeHeight(node.type);
     const width = 20;
     return (
-      node.position[0] > this.cameraBounds[0] - width &&
-      node.position[0] < this.cameraBounds[1] &&
-      node.position[1] > this.cameraBounds[2] - height &&
-      node.position[1] < this.cameraBounds[3]
+      node.position[0] > this.cameraBounds[0] - width
+      && node.position[0] < this.cameraBounds[1]
+      && node.position[1] > this.cameraBounds[2] - height
+      && node.position[1] < this.cameraBounds[3]
     );
-  };
+  }
 }

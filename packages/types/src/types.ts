@@ -1,9 +1,16 @@
-import { z } from "zod";
-import { NodeInputSchema } from "./inputs";
+import { z } from 'zod';
+import { NodeInputSchema } from './inputs';
+
+export type Box = {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
 
 export const NodeIdSchema = z
   .string()
-  .regex(/^[^/]+\/[^/]+\/[^/]+$/, "Invalid NodeId format")
+  .regex(/^[^/]+\/[^/]+\/[^/]+$/, 'Invalid NodeId format')
   .transform((value) => value as `${string}/${string}/${string}`);
 
 export type NodeId = z.infer<typeof NodeIdSchema>;
@@ -35,9 +42,9 @@ export const NodeDefinitionSchema = z.object({
   meta: z
     .object({
       description: z.string().optional(),
-      title: z.string().optional(),
+      title: z.string().optional()
     })
-    .optional(),
+    .optional()
 });
 
 export const NodeSchema = z.object({
@@ -49,12 +56,11 @@ export const NodeSchema = z.object({
   meta: z
     .object({
       title: z.string().optional(),
-      lastModified: z.string().optional(),
+      lastModified: z.string().optional()
     })
     .optional(),
-  position: z.tuple([z.number(), z.number()]),
+  position: z.tuple([z.number(), z.number()])
 });
-
 
 export type SerializedNode = z.infer<typeof NodeSchema>;
 
@@ -75,12 +81,12 @@ export const GraphSchema = z.object({
   meta: z
     .object({
       title: z.string().optional(),
-      lastModified: z.string().optional(),
+      lastModified: z.string().optional()
     })
     .optional(),
   settings: z.record(z.string(), z.any()).optional(),
   nodes: z.array(NodeSchema),
-  edges: z.array(z.tuple([z.number(), z.number(), z.number(), z.string()])),
+  edges: z.array(z.tuple([z.number(), z.number(), z.number(), z.string()]))
 });
 
 export type Graph = z.infer<typeof GraphSchema>;

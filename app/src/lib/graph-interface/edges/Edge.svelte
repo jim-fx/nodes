@@ -31,6 +31,10 @@
   import { CubicBezierCurve } from "three/src/extras/curves/CubicBezierCurve.js";
   import { Vector2 } from "three/src/math/Vector2.js";
   import { appSettings } from "$lib/settings/app-settings.svelte";
+  import { getGraphState } from "../graph-state.svelte";
+  import { onDestroy } from "svelte";
+
+  const graphState = getGraphState();
 
   type Props = {
     x1: number;
@@ -38,20 +42,21 @@
     x2: number;
     y2: number;
     z: number;
+    id?: string;
   };
 
-  const { x1, y1, x2, y2, z }: Props = $props();
+  const { x1, y1, x2, y2, z, id }: Props = $props();
 
   const thickness = $derived(Math.max(0.001, 0.00082 * Math.exp(0.055 * z)));
 
   let points = $state<Vector3[]>([]);
 
   let lastId: string | null = null;
+  const curveId = $derived(`${x1}-${y1}-${x2}-${y2}`);
 
   function update() {
     const new_x = x2 - x1;
     const new_y = y2 - y1;
-    const curveId = `${x1}-${y1}-${x2}-${y2}`;
     if (lastId === curveId) {
       return;
     }
@@ -72,12 +77,25 @@
       .getPoints(samples)
       .map((p) => new Vector3(p.x, 0, p.y))
       .flat();
+
+    if (id) {
+      graphState.setEdgeGeometry(
+        id,
+        x1,
+        y1,
+        $state.snapshot(points) as unknown as Vector3[],
+      );
+    }
   }
 
   $effect(() => {
     if (x1 || x2 || y1 || y2) {
       update();
     }
+  });
+
+  onDestroy(() => {
+    if (id) graphState.removeEdgeGeometry(id);
   });
 </script>
 
@@ -100,6 +118,18 @@
 >
   <T.CircleGeometry args={[0.5, 16]} />
 </T.Mesh>
+
+{#if graphState.hoveredEdgeId === id}
+  <T.Mesh position.x={x1} position.z={y1} position.y={0.1}>
+    <MeshLineGeometry {points} />
+    <MeshLineMaterial
+      width={thickness * 5}
+      color={lineColor}
+      opacity={0.5}
+      transparent
+    />
+  </T.Mesh>
+{/if}
 
 <T.Mesh position.x={x1} position.z={y1} position.y={0.1}>
   <MeshLineGeometry {points} />
