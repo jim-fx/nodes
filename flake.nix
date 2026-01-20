@@ -33,6 +33,7 @@
           pkgs.typescript-language-server
           pkgs.prettier
           pkgs.tailwindcss-language-server
+          pkgs.svelte-language-server
         ];
       };
     });
