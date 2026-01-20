@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getContext, type Snippet } from "svelte";
-  import type { PanelState } from "./PanelState.svelte";
+  import { type Snippet } from "svelte";
+  import { panelState } from "./PanelState.svelte";
 
   const {
     id,
@@ -17,8 +17,6 @@
     hidden?: boolean;
     children?: Snippet;
   }>();
-
-  const panelState = getContext<PanelState>("panel-state");
 
   const panel = panelState.registerPanel(id, icon, classes, hidden);
   $effect(() => {
