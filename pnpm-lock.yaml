@@ -11,13 +11,13 @@ importers:
   app:
     dependencies:
       '@nodarium/registry':
-        specifier: link:../packages/registry
+        specifier: workspace:*
         version: link:../packages/registry
       '@nodarium/ui':
-        specifier: link:../packages/ui
+        specifier: workspace:*
         version: link:../packages/ui
       '@nodarium/utils':
-        specifier: link:../packages/utils
+        specifier: workspace:*
         version: link:../packages/utils
       '@sveltejs/kit':
         specifier: ^2.50.0
@@ -104,32 +104,6 @@ importers:
       vitest:
         specifier: ^4.0.17
         version: 4.0.17(@types/node@22.8.6)(jiti@2.6.1)(jsdom@25.0.1)(less@4.2.0)(lightningcss@1.30.2)(sass@1.80.6)(terser@5.36.0)(tsx@4.19.2)
-
-  nodes/max/plantarium/box: {}
-
-  nodes/max/plantarium/branch: {}
-
-  nodes/max/plantarium/float: {}
-
-  nodes/max/plantarium/gravity: {}
-
-  nodes/max/plantarium/instance: {}
-
-  nodes/max/plantarium/math: {}
-
-  nodes/max/plantarium/noise: {}
-
-  nodes/max/plantarium/output: {}
-
-  nodes/max/plantarium/random: {}
-
-  nodes/max/plantarium/rotate: {}
-
-  nodes/max/plantarium/stem: {}
-
-  nodes/max/plantarium/triangle: {}
-
-  nodes/max/plantarium/vec3: {}
 
   packages/registry:
     dependencies:
