@@ -95,7 +95,7 @@
   <SmallPerformanceViewer {fps} store={perf} />
 {/if}
 
-<div style="height: 100vh">
+<div style="height: 100%">
   <Canvas>
     <Scene
       bind:this={sceneComponent}

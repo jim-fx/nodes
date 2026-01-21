@@ -172,7 +172,7 @@
 <svelte:document onkeydown={applicationKeymap.handleKeyboardEvent} />
 
 <div class="wrapper manager-{manager?.status}">
-  <header></header>
+  <header class="h-[40px] border-b-1 border-[var(--outline)]"></header>
   <Grid.Row>
     <Grid.Cell>
       <Viewer
@@ -285,7 +285,7 @@
     width: 100vw;
     color: white;
     display: grid;
-    grid-template-rows: 0px 1fr;
+    grid-template-rows: 40px 1fr;
   }
 
   .wrapper :global(canvas) {
