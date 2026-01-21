@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nodarium/types": "link:../types"
+    "@nodarium/types": "workspace:"
   },
   "devDependencies": {
     "vite": "^7.3.1",

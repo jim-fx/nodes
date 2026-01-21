@@ -28,7 +28,7 @@
   "devDependencies": {
     "@iconify-json/tabler": "^1.2.26",
     "@iconify/tailwind4": "^1.2.1",
-    "@nodarium/types": "link:../packages/types",
+    "@nodarium/types": "workspace:",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tsconfig/svelte": "^5.0.6",

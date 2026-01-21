@@ -10,8 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nodarium/types": "link:../types",
-    "@nodarium/utils": "link:../utils",
+    "@nodarium/types": "workspace:",
+    "@nodarium/utils": "workspace:",
     "idb": "^8.0.3"
   }
 }
