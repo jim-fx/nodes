@@ -109,6 +109,7 @@ export class GraphManager extends EventEmitter<{
     const serialized = {
       id: this.graph.id,
       settings: $state.snapshot(this.settings),
+      meta: this.graph.meta,
       nodes,
       edges
     };
@@ -304,7 +305,7 @@ export class GraphManager extends EventEmitter<{
     this.status = 'loading';
     this.id = graph.id;
 
-    logger.info('loading graph', $state.snapshot(graph));
+    logger.info('loading graph', graph);
 
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);

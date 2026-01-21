@@ -28,6 +28,8 @@
   import BenchmarkPanel from "$lib/sidebar/panels/BenchmarkPanel.svelte";
   import { debounceAsyncFunction } from "$lib/helpers";
   import GraphSource from "$lib/sidebar/panels/GraphSource.svelte";
+  import { ProjectManager } from "$lib/project-manager/project-manager.svelte";
+  import ProjectManagerEl from "$lib/project-manager/ProjectManager.svelte";
 
   let performanceStore = createPerformanceStore();
 
@@ -37,6 +39,7 @@
   const runtimeCache = new MemoryRuntimeCache();
   const memoryRuntime = new MemoryRuntimeExecutor(nodeRegistry, runtimeCache);
   memoryRuntime.perf = performanceStore;
+  const pm = new ProjectManager();
 
   const runtime = $derived(
     appSettings.value.debug.useWorker ? workerRuntime : memoryRuntime,
@@ -63,15 +66,6 @@
 
   let activeNode = $state<NodeInstance | undefined>(undefined);
   let scene = $state<Group>(null!);
-
-  let graph = $state(
-    localStorage.getItem("graph")
-      ? JSON.parse(localStorage.getItem("graph")!)
-      : templates.defaultPlant,
-  );
-  function handleSave(graph: Graph) {
-    localStorage.setItem("graph", JSON.stringify(graph));
-  }
 
   let graphInterface = $state<ReturnType<typeof GraphInterface>>(null!);
   let viewerComponent = $state<ReturnType<typeof Viewer>>();
@@ -172,7 +166,7 @@
 <svelte:document onkeydown={applicationKeymap.handleKeyboardEvent} />
 
 <div class="wrapper manager-{manager?.status}">
-  <header class="h-[40px] border-b-1 border-[var(--outline)]"></header>
+  <header></header>
   <Grid.Row>
     <Grid.Cell>
       <Viewer
@@ -183,19 +177,21 @@
       />
     </Grid.Cell>
     <Grid.Cell>
-      <GraphInterface
-        {graph}
-        bind:this={graphInterface}
-        registry={nodeRegistry}
-        showGrid={appSettings.value.nodeInterface.showNodeGrid}
-        snapToGrid={appSettings.value.nodeInterface.snapToGrid}
-        bind:activeNode
-        bind:showHelp={appSettings.value.nodeInterface.showHelp}
-        bind:settings={graphSettings}
-        bind:settingTypes={graphSettingTypes}
-        onresult={(result) => handleUpdate(result)}
-        onsave={(graph) => handleSave(graph)}
-      />
+      {#if pm.graph}
+        <GraphInterface
+          graph={pm.graph}
+          bind:this={graphInterface}
+          registry={nodeRegistry}
+          showGrid={appSettings.value.nodeInterface.showNodeGrid}
+          snapToGrid={appSettings.value.nodeInterface.snapToGrid}
+          bind:activeNode
+          bind:showHelp={appSettings.value.nodeInterface.showHelp}
+          bind:settings={graphSettings}
+          bind:settingTypes={graphSettingTypes}
+          onsave={(g) => pm.saveGraph(g)}
+          onresult={(result) => handleUpdate(result)}
+        />
+      {/if}
       <Sidebar>
         <Panel id="general" title="General" icon="i-[tabler--settings]">
           <NestedSettings
@@ -236,13 +232,16 @@
             <PerformanceViewer data={$performanceStore} />
           {/if}
         </Panel>
+        <Panel id="projects" icon="i-[tabler--folder-open]">
+          <ProjectManagerEl projectManager={pm} />
+        </Panel>
         <Panel
           id="graph-source"
           title="Graph Source"
           hidden={!appSettings.value.debug.showGraphJson}
           icon="i-[tabler--code]"
         >
-          <GraphSource graph={graph && manager.serialize()} />
+          <GraphSource graph={pm.graph ?? manager?.serialize()} />
         </Panel>
         <Panel
           id="benchmark"
@@ -285,7 +284,7 @@
     width: 100vw;
     color: white;
     display: grid;
-    grid-template-rows: 40px 1fr;
+    grid-template-rows: 0px 1fr;
   }
 
   .wrapper :global(canvas) {
