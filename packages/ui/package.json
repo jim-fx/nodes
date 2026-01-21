@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "chokidar './src/**' --initial -c 'pnpm build'",
+    "dev:ui": "vite",
     "build": "vite build && npm run package",
     "preview": "vite preview",
     "package": "svelte-kit sync && svelte-package && publint",
@@ -10,6 +11,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest",
+    "lint-dprint": "dprint check -c '../../.dprint.jsonc' .",
     "lint": "eslint ."
   },
   "exports": {

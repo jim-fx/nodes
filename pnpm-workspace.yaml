@@ -1,6 +1,9 @@
 packages:
-  - app
-  - packages/*
-  - nodes/**/**/**/*
-  - '!nodes/**/**/**/pkg'
-  - '!**/.template'
+  - "app"
+  - "packages/*"
+  - "nodes/**"
+  - "!**/.template/**"
+  - "!**/pkg/**"
+
+catalog:
+  chokidar-cli: github:open-cli-tools/chokidar-cli#semver:v4.0.0

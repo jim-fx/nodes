@@ -1,12 +1,14 @@
 {
   "$schema": "https://dprint.dev/schemas/v0.json",
   "indentWidth": 2,
+  "lineWidth": 100,
   "typescript": {
     // https://dprint.dev/plugins/typescript/config/
     "quoteStyle": "preferSingle",
-    "trailingCommas": "never"
+    "trailingCommas": "never",
   },
   "json": {
+    // https://dprint.dev/plugins/json/config/
   },
   "markdown": {
   },
@@ -21,6 +23,9 @@
   "malva": {
   },
   "markup": {
+    // https://dprint.dev/plugins/markup_fmt/config/
+    "scriptIndent": true,
+    "styleIndent": true,
   },
   "yaml": {
   },
@@ -28,19 +33,24 @@
   },
   "exec": {
     "cwd": "${configDir}",
+
     "commands": [{
-      "command": "rustfmt --edition 2024",
+      "command": "rustfmt",
       "exts": ["rs"],
-      // add the config files for automatic cache invalidation when the rust version or rustfmt config changes
       "cacheKeyFiles": [
         "rustfmt.toml",
-        "rust-toolchain.toml"
-      ]
-    }]
+        "rust-toolchain.toml",
+      ],
+    }],
   },
   "excludes": [
     "**/node_modules",
-    "**/*-lock.yaml"
+    "**/build",
+    "**/.svelte-kit",
+    "**/package",
+    "**/*-lock.yaml",
+    "**/yaml.lock",
+    "**/.DS_Store",
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.95.13.wasm",
@@ -54,6 +64,7 @@
     "https://plugins.dprint.dev/g-plane/markup_fmt-v0.25.3.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_graphql-v0.2.3.wasm",
-    "https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364"
-  ]
+    "https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364",
+    "https://plugins.dprint.dev/biome-0.11.10.wasm",
+  ],
 }
