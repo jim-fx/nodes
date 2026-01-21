@@ -5,11 +5,11 @@
 </script>
 
 <script lang="ts">
-  import { Integer } from "@nodarium/ui";
-  import { writable } from "svelte/store";
   import { humanizeDuration } from "$lib/helpers";
-  import Monitor from "$lib/performance/Monitor.svelte";
   import { localState } from "$lib/helpers/localState.svelte";
+  import Monitor from "$lib/performance/Monitor.svelte";
+  import { Number } from "@nodarium/ui";
+  import { writable } from "svelte/store";
 
   function calculateStandardDeviation(array: number[]) {
     const n = array.length;
@@ -124,7 +124,7 @@
     >
   {:else}
     <label for="bench-samples">Samples</label>
-    <Integer id="bench-sample" bind:value={amount.value} max={1000} />
+    <Number id="bench-sample" bind:value={amount.value} max={1000} />
     <button onclick={benchmark} disabled={isRunning}> start </button>
   {/if}
 </div>

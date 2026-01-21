@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '$lib/app.css';
-	import { Checkbox, Details, Float, Integer, Select, ShortCut, Vec3 } from '$lib/index.js';
+	import { Checkbox, Details, Float, Integer, Number, Select, ShortCut, Vec3 } from '$lib/index.js';
 	import Section from './Section.svelte';
 
 	let intValue = $state(0);
@@ -36,6 +36,14 @@
 
 	<Section title="Float" value={floatValue}>
 		<Float bind:value={floatValue} />
+	</Section>
+
+	<Section title="Number" value={intValue}>
+		<Number bind:value={intValue} />
+	</Section>
+
+	<Section title="Number (float)" value={floatValue}>
+		<Number bind:value={floatValue} />
 	</Section>
 
 	<Section title="Vec3" value={JSON.stringify(vecValue)}>
