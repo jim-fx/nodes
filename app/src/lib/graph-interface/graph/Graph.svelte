@@ -105,7 +105,7 @@
   onwheel={(ev) => mouseEvents.handleMouseScroll(ev)}
   bind:this={graphState.wrapper}
   class="graph-wrapper"
-  style="height: 100vh;"
+  style="height: 100%;"
   class:is-panning={graphState.isPanning}
   class:is-hovering={graphState.hoveredNodeId !== -1}
   aria-label="Graph"

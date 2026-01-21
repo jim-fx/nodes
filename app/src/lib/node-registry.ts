@@ -4,7 +4,6 @@ import path from 'path';
 
 export async function getWasm(id: `${string}/${string}/${string}`) {
   const filePath = path.resolve(`./static/nodes/${id}`);
-  console.log({ filePath });
 
   try {
     await fs.access(filePath);

@@ -26,7 +26,6 @@
   let nodeWasmWrapper = $state<ReturnType<typeof createWasmWrapper>>();
 
   async function fetchNodeData(nodeId?: NodeId) {
-    console.log("FETCHING", { nodeId });
     nodeWasm = undefined;
     nodeInstance = undefined;
 

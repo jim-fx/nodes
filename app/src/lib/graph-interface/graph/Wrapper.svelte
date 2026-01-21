@@ -11,7 +11,7 @@
   import { setupKeymaps } from "../keymaps";
 
   type Props = {
-    graph: Graph;
+    graph?: Graph;
     registry: NodeRegistry;
 
     settings?: Record<string, any>;
@@ -70,12 +70,6 @@
     }
   });
 
-  $effect(() => {
-    if (settingTypes && settings) {
-      manager.setSettings(settings);
-    }
-  });
-
   manager.on("settings", (_settings) => {
     settingTypes = { ...settingTypes, ..._settings.types };
     settings = _settings.values;
@@ -85,7 +79,11 @@
 
   manager.on("save", (save) => onsave?.(save));
 
-  manager.load(graph);
+  $effect(() => {
+    if (graph) {
+      manager.load(graph);
+    }
+  });
 </script>
 
 <GraphEl {keymap} />
