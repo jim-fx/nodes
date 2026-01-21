@@ -77,7 +77,7 @@ export type Socket = {
 export type Edge = [NodeInstance, number, NodeInstance, string];
 
 export const GraphSchema = z.object({
-  id: z.number().optional(),
+  id: z.number(),
   meta: z
     .object({
       title: z.string().optional(),

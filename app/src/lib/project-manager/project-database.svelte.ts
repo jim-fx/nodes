@@ -32,7 +32,6 @@ export async function getGraph(id: number): Promise<Graph | undefined> {
 export async function saveGraph(graph: Graph): Promise<Graph> {
   const db = await getDB();
   graph.meta = { ...graph.meta, lastModified: new Date().toISOString() };
-  console.log('SAVING GRAPH', { graph });
   await db.put(STORE_NAME, graph);
   return graph;
 }
@@ -40,7 +39,6 @@ export async function saveGraph(graph: Graph): Promise<Graph> {
 export async function deleteGraph(id: number): Promise<void> {
   const db = await getDB();
   await db.delete(STORE_NAME, id);
-  console.log('DELETE GRAPH', { id });
 }
 
 export async function getGraphs(): Promise<Graph[]> {

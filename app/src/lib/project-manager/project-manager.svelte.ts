@@ -24,22 +24,14 @@ export class ProjectManager {
     await db.getDB();
     this.projects = await db.getGraphs();
 
-    console.log('PM: INIT', {
-      projects: this.projects,
-      activeProjectId: this.activeProjectId.value
-    });
-
     if (this.activeProjectId.value !== undefined) {
       let loadedGraph = await db.getGraph(this.activeProjectId.value);
-      console.log('PM: LOAD ACTIVE PROJECT', { loadedGraph });
       if (loadedGraph) {
-        console.log('Load active project');
         this.graph = loadedGraph;
       }
     }
 
     if (!this.graph) {
-      console.log('Load first active project', { projectsAmount: this.projects.length });
       if (this.projects?.length && this.projects[0]?.id !== undefined) {
         this.graph = this.projects[0];
         this.activeProjectId.value = this.graph.id;
@@ -47,7 +39,6 @@ export class ProjectManager {
     }
 
     if (!this.graph) {
-      console.log('Create default project');
       this.handleCreateProject();
     }
   }
@@ -60,8 +51,6 @@ export class ProjectManager {
     while (this.projects.find((p) => p.id === id)) {
       id++;
     }
-
-    console.log('CREATE PROJECT', { id, title });
 
     g.id = id;
     if (!g.meta) g.meta = {};
@@ -79,7 +68,10 @@ export class ProjectManager {
       this.projects = [];
     } else {
       this.projects = this.projects.filter((p) => p.id !== projectId);
-      this.handleSelectProject(this.projects[0].id);
+      const id = this.projects[0].id;
+      if (id !== undefined) {
+        this.handleSelectProject(id);
+      }
     }
   }
 

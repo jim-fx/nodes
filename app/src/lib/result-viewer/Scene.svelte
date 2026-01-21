@@ -92,13 +92,6 @@
       geo.attributes.position.array[i + 2],
     ] as Vector3Tuple;
   }
-
-  // $effect(() => {
-  //   console.log({
-  //     geometries: $state.snapshot(geometries),
-  //     indices: appSettings.value.debug.showIndices,
-  //   });
-  // });
 </script>
 
 <Camera {center} {centerCamera} />

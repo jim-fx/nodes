@@ -70,12 +70,6 @@
     }
   });
 
-  $effect(() => {
-    if (settingTypes && settings) {
-      manager.setSettings(settings);
-    }
-  });
-
   manager.on("settings", (_settings) => {
     settingTypes = { ...settingTypes, ..._settings.types };
     settings = _settings.values;

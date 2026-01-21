@@ -85,20 +85,15 @@
       callback: () => randomGenerate(),
     },
   ]);
+
   let graphSettings = $state<Record<string, any>>({});
+  let graphSettingTypes = $state({
+    randomSeed: { type: "boolean", value: false },
+  });
   $effect(() => {
-    if (graphSettings) {
+    if (graphSettings && graphSettingTypes) {
       manager?.setSettings($state.snapshot(graphSettings));
     }
-  });
-  type BooleanSchema = {
-    [key: string]: {
-      type: "boolean";
-      value: false;
-    };
-  };
-  let graphSettingTypes = $state<BooleanSchema>({
-    randomSeed: { type: "boolean", value: false },
   });
 
   async function update(

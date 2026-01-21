@@ -1,18 +1,32 @@
 <script lang="ts">
   import type { Graph } from "$lib/types";
-  import { defaultPlant } from "$lib/graph-templates";
+  import { defaultPlant, plant, lottaFaces } from "$lib/graph-templates";
   import type { ProjectManager } from "./project-manager.svelte";
 
   const { projectManager } = $props<{ projectManager: ProjectManager }>();
 
   let showNewProject = $state(false);
   let newProjectName = $state("");
+  let selectedTemplate = $state("defaultPlant");
+
+  const templates = [
+    {
+      name: "Default Plant",
+      value: "defaultPlant",
+      graph: defaultPlant as unknown as Graph,
+    },
+    { name: "Plant", value: "plant", graph: plant as unknown as Graph },
+    {
+      name: "Lotta Faces",
+      value: "lottaFaces",
+      graph: lottaFaces as unknown as Graph,
+    },
+  ];
 
   function handleCreate() {
-    projectManager.handleCreateProject(
-      defaultPlant as unknown as Graph,
-      newProjectName,
-    );
+    const template =
+      templates.find((t) => t.value === selectedTemplate) || templates[0];
+    projectManager.handleCreateProject(template.graph, newProjectName);
     newProjectName = "";
     showNewProject = false;
   }
@@ -31,17 +45,26 @@
 </header>
 
 {#if showNewProject}
-  <div
-    class="flex justify-between px-4 h-[70px] border-b-1 border-[var(--outline)] items-center gap-2"
-  >
+  <div class="flex flex-col px-4 py-3 border-b-1 border-[var(--outline)] gap-2">
     <input
       type="text"
       bind:value={newProjectName}
       placeholder="Project name"
-      class="flex-1 min-w-0 px-2 py-2 bg-gray-800 border border-gray-700 rounded"
+      class="w-full px-2 py-2 bg-gray-800 border border-gray-700 rounded"
       onkeydown={(e) => e.key === "Enter" && handleCreate()}
     />
-    <button class="cursor-pointer" onclick={() => handleCreate()}>
+    <select
+      bind:value={selectedTemplate}
+      class="w-full px-2 py-2 bg-gray-800 border border-gray-700 rounded"
+    >
+      {#each templates as template}
+        <option value={template.value}>{template.name}</option>
+      {/each}
+    </select>
+    <button
+      class="cursor-pointer self-end px-3 py-1 bg-blue-600 rounded"
+      onclick={() => handleCreate()}
+    >
       Create
     </button>
   </div>

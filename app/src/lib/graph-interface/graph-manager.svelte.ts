@@ -109,7 +109,7 @@ export class GraphManager extends EventEmitter<{
     const serialized = {
       id: this.graph.id,
       settings: $state.snapshot(this.settings),
-      meta: this.graph.meta,
+      meta: $state.snapshot(this.graph.meta),
       nodes,
       edges
     };
@@ -274,7 +274,7 @@ export class GraphManager extends EventEmitter<{
       })
     );
 
-    const edges = graph.edges.map((edge) => {
+    this.edges = graph.edges.map((edge) => {
       const from = nodes.get(edge[0]);
       const to = nodes.get(edge[2]);
       if (!from || !to) {
@@ -286,8 +286,6 @@ export class GraphManager extends EventEmitter<{
       to.state.parents.push(from);
       return [from, edge[1], to, edge[3]] as Edge;
     });
-
-    this.edges = [...edges];
 
     this.nodes.clear();
     for (const [id, node] of nodes) {
@@ -305,7 +303,7 @@ export class GraphManager extends EventEmitter<{
     this.status = 'loading';
     this.id = graph.id;
 
-    logger.info('loading graph', graph);
+    logger.info('loading graph', { nodes: graph.nodes, edges: graph.edges, id: graph.id });
 
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);
@@ -645,6 +643,13 @@ export class GraphManager extends EventEmitter<{
     if (this.currentUndoGroup) return;
     const state = this.serialize();
     this.history.save(state);
+
+    // This is some stupid race condition where the graph-manager emits a save event
+    // when the graph is not fully loaded
+    if (this.nodes.size === 0 && this.edges.length === 0) {
+      return;
+    }
+
     this.emit('save', state);
     logger.log('saving graphs', state);
   }
