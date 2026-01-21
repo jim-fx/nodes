@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Graph } from "$lib/types";
 
-  const { graph }: { graph: Graph } = $props();
+  const { graph }: { graph?: Graph } = $props();
 
   function convert(g: Graph): string {
     return JSON.stringify(
@@ -16,5 +16,5 @@
 </script>
 
 <pre>
-  {convert(graph)}
+  {graph ? convert(graph) : 'No graph loaded'}
 </pre>

@@ -43,7 +43,4 @@
     align-items: center;
     padding-left: 1em;
   }
-  h3 {
-    margin: 0px;
-  }
 </style>
