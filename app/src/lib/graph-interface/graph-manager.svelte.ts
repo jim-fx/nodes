@@ -1,4 +1,5 @@
 import throttle from '$lib/helpers/throttle';
+import { RemoteNodeRegistry } from '@nodarium/registry';
 import type {
   Edge,
   Graph,
@@ -17,6 +18,8 @@ import { HistoryManager } from './history-manager';
 
 const logger = createLogger('graph-manager');
 logger.mute();
+
+const remoteRegistry = new RemoteNodeRegistry('');
 
 const clone = 'structuredClone' in self
   ? self.structuredClone
@@ -173,7 +176,9 @@ export class GraphManager extends EventEmitter<{
       return areSocketsCompatible(edgeOutputSocketType, accepted);
     });
 
-    const bestOutputIdx = draggedOutputs.findIndex(outputType => areSocketsCompatible(outputType, targetAcceptedTypes));
+    const bestOutputIdx = draggedOutputs.findIndex(outputType =>
+      areSocketsCompatible(outputType, targetAcceptedTypes)
+    );
 
     if (!bestInputEntry || bestOutputIdx === -1) {
       logger.error('Could not find compatible sockets for drop');
@@ -307,6 +312,21 @@ export class GraphManager extends EventEmitter<{
 
     const nodeIds = Array.from(new Set([...graph.nodes.map((n) => n.type)]));
     await this.registry.load(nodeIds);
+
+    // Fetch all nodes from all collections of the loaded nodes
+    const allCollections = new Set<`${string}/${string}`>();
+    for (const id of nodeIds) {
+      const [user, collection] = id.split('/');
+      allCollections.add(`${user}/${collection}`);
+    }
+    for (const collection of allCollections) {
+      remoteRegistry
+        .fetchCollection(collection)
+        .then((collection: { nodes: { id: NodeId }[] }) => {
+          const ids = collection.nodes.map((n) => n.id);
+          return this.registry.load(ids);
+        });
+    }
 
     logger.info('loaded node types', this.registry.getAllNodes());
 
