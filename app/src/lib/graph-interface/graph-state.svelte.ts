@@ -62,7 +62,7 @@ export class GraphState {
   );
 
   camera = $state<OrthographicCamera>(null!);
-  cameraPosition: [number, number, number] = $state([0, 0, 100]);
+  cameraPosition: [number, number, number] = $state([140, 100, 3.5]);
 
   clipboard: null | {
     nodes: NodeInstance[];
