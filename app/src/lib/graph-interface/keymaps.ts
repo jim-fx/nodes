@@ -59,9 +59,7 @@ export function setupKeymaps(keymap: Keymap, graph: GraphManager, graphState: Gr
     key: 'A',
     shift: true,
     description: 'Add new Node',
-    callback: () => {
-      graphState.addMenuPosition = [graphState.mousePosition[0], graphState.mousePosition[1]];
-    }
+    callback: () => graphState.openNodePalette()
   });
 
   keymap.addShortcut({

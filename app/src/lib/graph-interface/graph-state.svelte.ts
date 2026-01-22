@@ -58,7 +58,9 @@ export class GraphState {
 
   wrapper = $state<HTMLDivElement>(null!);
   rect: DOMRect = $derived(
-    (this.wrapper && this.width && this.height) ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0)
+    (this.wrapper && this.width && this.height)
+      ? this.wrapper.getBoundingClientRect()
+      : new DOMRect(0, 0, 0, 0)
   );
 
   camera = $state<OrthographicCamera>(null!);
@@ -187,13 +189,13 @@ export class GraphState {
     }
     const height = 5
       + 10
-      * Object.keys(node.inputs).filter(
-        (p) =>
-          p !== 'seed'
-          && node?.inputs
-          && !('setting' in node?.inputs?.[p])
-          && node.inputs[p].hidden !== true
-      ).length;
+        * Object.keys(node.inputs).filter(
+          (p) =>
+            p !== 'seed'
+            && node?.inputs
+            && !('setting' in node?.inputs?.[p])
+            && node.inputs[p].hidden !== true
+        ).length;
     this.nodeHeightCache[nodeTypeId] = height;
     return height;
   }
@@ -332,5 +334,9 @@ export class GraphState {
       && node.position[1] > this.cameraBounds[2] - height
       && node.position[1] < this.cameraBounds[3]
     );
+  }
+
+  openNodePalette() {
+    this.addMenuPosition = [this.mousePosition[0], this.mousePosition[1]];
   }
 }
