@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { HTML } from "@threlte/extras";
-  import { onMount } from "svelte";
-  import type { NodeInstance, NodeId } from "@nodarium/types";
-  import { getGraphManager, getGraphState } from "../graph-state.svelte";
+  import type { NodeId, NodeInstance } from '@nodarium/types';
+  import { HTML } from '@threlte/extras';
+  import { onMount } from 'svelte';
+  import { getGraphManager, getGraphState } from '../graph-state.svelte';
 
   type Props = {
     onnode: (n: NodeInstance) => void;
@@ -14,6 +14,7 @@
   const graphState = getGraphState();
 
   let input: HTMLInputElement;
+  let wrapper: HTMLDivElement;
   let value = $state<string>();
   let activeNodeId = $state<NodeId>();
 
@@ -22,10 +23,10 @@
     : graph.getNodeDefinitions();
 
   function filterNodes() {
-    return allNodes.filter((node) => node.id.includes(value ?? ""));
+    return allNodes.filter((node) => node.id.includes(value ?? ''));
   }
 
-  const nodes = $derived(value === "" ? allNodes : filterNodes());
+  const nodes = $derived(value === '' ? allNodes : filterNodes());
   $effect(() => {
     if (nodes) {
       if (activeNodeId === undefined) {
@@ -39,38 +40,38 @@
     }
   });
 
-  function handleNodeCreation(nodeType: NodeInstance["type"]) {
+  function handleNodeCreation(nodeType: NodeInstance['type']) {
     if (!graphState.addMenuPosition) return;
     onnode?.({
       id: -1,
       type: nodeType,
       position: [...graphState.addMenuPosition],
       props: {},
-      state: {},
+      state: {}
     });
   }
 
   function handleKeyDown(event: KeyboardEvent) {
     event.stopImmediatePropagation();
 
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       graphState.addMenuPosition = null;
       return;
     }
 
-    if (event.key === "ArrowDown") {
+    if (event.key === 'ArrowDown') {
       const index = nodes.findIndex((node) => node.id === activeNodeId);
       activeNodeId = nodes[(index + 1) % nodes.length].id;
       return;
     }
 
-    if (event.key === "ArrowUp") {
+    if (event.key === 'ArrowUp') {
       const index = nodes.findIndex((node) => node.id === activeNodeId);
       activeNodeId = nodes[(index - 1 + nodes.length) % nodes.length].id;
       return;
     }
 
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       if (activeNodeId && graphState.addMenuPosition) {
         handleNodeCreation(activeNodeId);
       }
@@ -81,6 +82,16 @@
   onMount(() => {
     input.disabled = false;
     setTimeout(() => input.focus(), 50);
+
+    const rect = wrapper.getBoundingClientRect();
+    const deltaY = rect.bottom - window.innerHeight;
+    const deltaX = rect.right - window.innerWidth;
+    if (deltaY > 0) {
+      wrapper.style.marginTop = `-${deltaY + 30}px`;
+    }
+    if (deltaX > 0) {
+      wrapper.style.marginLeft = `-${deltaX + 30}px`;
+    }
   });
 </script>
 
@@ -89,7 +100,7 @@
   position.z={graphState.addMenuPosition?.[1]}
   transform={false}
 >
-  <div class="add-menu-wrapper">
+  <div class="add-menu-wrapper" bind:this={wrapper}>
     <div class="header">
       <input
         id="add-menu"
@@ -112,7 +123,7 @@
           tabindex="0"
           aria-selected={node.id === activeNodeId}
           onkeydown={(event) => {
-            if (event.key === "Enter") {
+            if (event.key === 'Enter') {
               handleNodeCreation(node.id);
             }
           }}
@@ -125,7 +136,7 @@
             activeNodeId = node.id;
           }}
         >
-          {node.id.split("/").at(-1)}
+          {node.id.split('/').at(-1)}
         </div>
       {/each}
     </div>
@@ -167,6 +178,8 @@
     min-height: none;
     width: 100%;
     color: var(--text-color);
+    max-height: 300px;
+    overflow-y: auto;
   }
 
   .result {
