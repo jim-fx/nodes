@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { NodeInput } from '@nodarium/types';
 
-	import Checkbox from './inputs/Checkbox.svelte';
-	import Number from './inputs/Number.svelte';
-	import Select from './inputs/Select.svelte';
-	import Vec3 from './inputs/Vec3.svelte';
+	import { Checkbox, Number, Select, Vec3 } from './index.js';
 
 	interface Props {
 		input: NodeInput;
@@ -16,7 +13,7 @@
 </script>
 
 {#if input.type === 'float'}
-	<Number bind:value min={input?.min} max={input?.max} step={0.01} />
+	<Number bind:value min={input?.min} max={input?.max} step={input?.step} />
 {:else if input.type === 'integer'}
 	<Number bind:value min={input?.min} max={input?.max} />
 {:else if input.type === 'boolean'}

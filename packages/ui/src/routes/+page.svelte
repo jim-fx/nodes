@@ -1,10 +1,12 @@
 <script lang="ts">
 	import '$lib/app.css';
-	import { Checkbox, Details, Float, Integer, Number, Select, ShortCut, Vec3 } from '$lib/index.js';
+	import { Checkbox, Details, Number, Select, ShortCut, Vec3 } from '$lib/index.js';
 	import Section from './Section.svelte';
 
 	let intValue = $state(0);
 	let floatValue = $state(0.2);
+	let float2Value = $state(0.02);
+	let float3Value = $state(1);
 	let vecValue = $state([0.2, 0.3, 0.4]);
 	const options = ['strawberry', 'raspberry', 'chickpeas'];
 	let selectValue = $state(0);
@@ -30,20 +32,20 @@
 		<Select bind:value={themeIndex} options={themes}></Select>
 	</div>
 
-	<Section title="Integer" value={intValue}>
-		<Integer bind:value={intValue} />
+	<Section title="Integer (step inherit)" value={intValue}>
+		<Number bind:value={intValue} max={2} />
 	</Section>
 
-	<Section title="Float" value={floatValue}>
-		<Float bind:value={floatValue} />
-	</Section>
-
-	<Section title="Number" value={intValue}>
-		<Number bind:value={intValue} />
-	</Section>
-
-	<Section title="Number (float)" value={floatValue}>
+	<Section title="Float (step inherit)" value={floatValue}>
 		<Number bind:value={floatValue} />
+	</Section>
+
+	<Section title="Float 2 (step inherit)" value={intValue}>
+		<Number bind:value={float2Value} />
+	</Section>
+
+	<Section title="Float (0.01 step)" value={floatValue}>
+		<Number bind:value={float3Value} step={0.01} max={3} />
 	</Section>
 
 	<Section title="Vec3" value={JSON.stringify(vecValue)}>
