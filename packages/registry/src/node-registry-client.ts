@@ -1,32 +1,31 @@
 import {
-  NodeDefinitionSchema,
   type AsyncCache,
   type NodeDefinition,
-  type NodeRegistry,
-} from "@nodarium/types";
-import { createLogger, createWasmWrapper } from "@nodarium/utils";
+  NodeDefinitionSchema,
+  type NodeRegistry
+} from '@nodarium/types';
+import { createLogger, createWasmWrapper } from '@nodarium/utils';
 
-const log = createLogger("node-registry");
+const log = createLogger('node-registry');
 log.mute();
 
 export class RemoteNodeRegistry implements NodeRegistry {
-  status: "loading" | "ready" | "error" = "loading";
+  status: 'loading' | 'ready' | 'error' = 'loading';
   private nodes: Map<string, NodeDefinition> = new Map();
 
   constructor(
     private url: string,
-    public cache?: AsyncCache<ArrayBuffer | string>,
+    public cache?: AsyncCache<ArrayBuffer | string>
   ) { }
 
   async fetchJson(url: string, skipCache = false) {
-
     const finalUrl = `${this.url}/${url}`;
 
     if (!skipCache && this.cache) {
       const cachedValue = await this.cache?.get<string>(finalUrl);
       if (cachedValue) {
         // fetch again in the background, maybe implement that only refetch after a certain time
-        this.fetchJson(url, true)
+        this.fetchJson(url, true);
         return JSON.parse(cachedValue);
       }
     }
@@ -46,14 +45,13 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async fetchArrayBuffer(url: string, skipCache = false) {
-
     const finalUrl = `${this.url}/${url}`;
 
     if (!skipCache && this.cache) {
       const cachedNode = await this.cache?.get<ArrayBuffer>(finalUrl);
       if (cachedNode) {
         // fetch again in the background, maybe implement that only refetch after a certain time
-        this.fetchArrayBuffer(url, true)
+        this.fetchArrayBuffer(url, true);
         return cachedNode;
       }
     }
@@ -79,7 +77,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
   async fetchCollection(userCollectionId: `${string}/${string}`) {
     const col = await this.fetchJson(`nodes/${userCollectionId}.json`);
-    return col
+    return col;
   }
 
   async fetchNodeDefinition(nodeId: `${string}/${string}/${string}`) {
@@ -87,7 +85,6 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   private async fetchNodeWasm(nodeId: `${string}/${string}/${string}`) {
-
     const node = await this.fetchArrayBuffer(`nodes/${nodeId}.wasm`);
     if (!node) {
       throw new Error(`Failed to load node wasm ${nodeId}`);
@@ -99,7 +96,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
   async load(nodeIds: `${string}/${string}/${string}`[]) {
     const a = performance.now();
 
-    const nodes = await Promise.all(
+    const nodes = (await Promise.all(
       [...new Set(nodeIds).values()].map(async (id) => {
         if (this.nodes.has(id)) {
           return this.nodes.get(id)!;
@@ -107,17 +104,23 @@ export class RemoteNodeRegistry implements NodeRegistry {
 
         const wasmBuffer = await this.fetchNodeWasm(id);
 
-        return this.register(wasmBuffer);
-      }),
-    );
+        try {
+          return await this.register(wasmBuffer);
+        } catch (e) {
+          console.log('Failed to register: ', id);
+          console.error(e);
+          return;
+        }
+      })
+    )).filter(Boolean) as NodeDefinition[];
 
     const duration = performance.now() - a;
 
-    log.group("loaded nodes in", duration, "ms");
+    log.group('loaded nodes in', duration, 'ms');
     log.info(nodeIds);
     log.info(nodes);
     log.groupEnd();
-    this.status = "ready";
+    this.status = 'ready';
 
     return nodes;
   }
@@ -128,17 +131,16 @@ export class RemoteNodeRegistry implements NodeRegistry {
     const definition = NodeDefinitionSchema.safeParse(wrapper.get_definition());
 
     if (definition.error) {
-      console.error(definition.error);
       throw definition.error;
     }
 
     if (this.cache) {
-      await this.cache.set(definition.data.id, wasmBuffer);
+      this.cache.set(definition.data.id, wasmBuffer);
     }
 
     let node = {
       ...definition.data,
-      execute: wrapper.execute,
+      execute: wrapper.execute
     };
 
     this.nodes.set(definition.data.id, node);
