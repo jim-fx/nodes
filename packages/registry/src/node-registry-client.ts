@@ -13,6 +13,7 @@ log.mute();
 export class RemoteNodeRegistry implements NodeRegistry {
   status: 'loading' | 'ready' | 'error' = 'loading';
   private nodes: Map<string, NodeDefinition> = new Map();
+  private memory = new WebAssembly.Memory({ initial: 1024, maximum: 8192 });
 
   constructor(
     private url: string,
@@ -127,7 +128,10 @@ export class RemoteNodeRegistry implements NodeRegistry {
   }
 
   async register(wasmBuffer: ArrayBuffer) {
-    const wrapper = createWasmWrapper(wasmBuffer);
+    const wrapper = createWasmWrapper(
+      wasmBuffer,
+      this.memory
+    );
 
     const definition = NodeDefinitionSchema.safeParse(wrapper.get_definition());
 
@@ -139,10 +143,7 @@ export class RemoteNodeRegistry implements NodeRegistry {
       this.cache.set(definition.data.id, wasmBuffer);
     }
 
-    let node = {
-      ...definition.data,
-      execute: wrapper.execute
-    };
+    let node = { ...definition.data, execute: wrapper.execute };
 
     this.nodes.set(definition.data.id, node);
 
