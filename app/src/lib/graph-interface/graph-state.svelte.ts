@@ -58,7 +58,9 @@ export class GraphState {
 
   wrapper = $state<HTMLDivElement>(null!);
   rect: DOMRect = $derived(
-    (this.wrapper && this.width && this.height) ? this.wrapper.getBoundingClientRect() : new DOMRect(0, 0, 0, 0)
+    (this.wrapper && this.width && this.height)
+      ? this.wrapper.getBoundingClientRect()
+      : new DOMRect(0, 0, 0, 0)
   );
 
   camera = $state<OrthographicCamera>(null!);
@@ -168,11 +170,14 @@ export class GraphState {
         (node?.state?.y ?? node.position[1]) + 2.5 + 10 * index
       ];
     } else {
-      const _index = Object.keys(node.state?.type?.inputs || {}).indexOf(index);
-      return [
+      const inputs = node.state.type?.inputs || this.graph.registry.getNode(node.type)?.inputs
+        || {};
+      const _index = Object.keys(inputs).indexOf(index);
+      const pos = [
         node?.state?.x ?? node.position[0],
         (node?.state?.y ?? node.position[1]) + 10 + 10 * _index
-      ];
+      ] as [number, number];
+      return pos;
     }
   }
 
@@ -248,7 +253,7 @@ export class GraphState {
 
     let { node, index, position } = socket;
 
-    // remove existing edge
+    // if the socket is an input socket -> remove existing edges
     if (typeof index === 'string') {
       const edges = this.graph.getEdgesToNode(node);
       for (const edge of edges) {

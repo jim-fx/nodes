@@ -29,11 +29,11 @@
   let {
     graph,
     registry,
-    settings = $bindable(),
     activeNode = $bindable(),
     showGrid = $bindable(true),
     snapToGrid = $bindable(true),
     showHelp = $bindable(false),
+    settings = $bindable(),
     settingTypes = $bindable(),
     onsave,
     onresult,

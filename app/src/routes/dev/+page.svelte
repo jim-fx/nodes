@@ -1,88 +1,73 @@
 <script lang="ts">
-  import NodeHTML from "$lib/graph-interface/node/NodeHTML.svelte";
-  import { localState } from "$lib/helpers/localState.svelte";
+  import * as templates from "$lib/graph-templates";
   import Panel from "$lib/sidebar/Panel.svelte";
   import Sidebar from "$lib/sidebar/Sidebar.svelte";
-  import { IndexDBCache, RemoteNodeRegistry } from "@nodarium/registry";
-  import { type NodeId, type NodeInstance } from "@nodarium/types";
-  import Code from "./Code.svelte";
+  import GraphInterface from "$lib/graph-interface";
+  import { RemoteNodeRegistry } from "@nodarium/registry";
+  import { type Graph } from "@nodarium/types";
   import Grid from "$lib/grid";
-  import {
-    concatEncodedArrays,
-    createWasmWrapper,
-    encodeNestedArray,
-  } from "@nodarium/utils";
+  import { MemoryRuntimeExecutor } from "$lib/runtime";
+  import devPlant from "./dev-graph.json";
+  import { decodeNestedArray } from "@nodarium/utils";
 
-  const registryCache = new IndexDBCache("node-registry");
-  const nodeRegistry = new RemoteNodeRegistry("", registryCache);
+  let result = $state<Int32Array>();
 
-  let activeNode = localState<NodeId | undefined>(
-    "node.dev.activeNode",
-    undefined,
-  );
-
-  let nodeWasm = $state<ArrayBuffer>();
-  let nodeInstance = $state<NodeInstance>();
-  let nodeWasmWrapper = $state<ReturnType<typeof createWasmWrapper>>();
-
-  async function fetchNodeData(nodeId?: NodeId) {
-    nodeWasm = undefined;
-    nodeInstance = undefined;
-
-    if (!nodeId) return;
-
-    const data = await nodeRegistry.fetchNodeDefinition(nodeId);
-    nodeWasm = await nodeRegistry.fetchArrayBuffer("nodes/" + nodeId + ".wasm");
-    nodeInstance = {
-      id: 0,
-      type: nodeId,
-      position: [0, 0] as [number, number],
-      props: {},
-      state: {
-        type: data,
+  const nodeRegistry = new RemoteNodeRegistry("");
+  nodeRegistry.overwriteNode("max/plantarium/output", {
+    id: "max/plantarium/output",
+    meta: {
+      title: "Debug View",
+      description: "",
+    },
+    inputs: {
+      out: {
+        type: "*",
       },
-    };
-    nodeWasmWrapper = createWasmWrapper(nodeWasm);
+    },
+    execute(input: Int32Array) {
+      result = input;
+      return input;
+    },
+  });
+
+  const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
+
+  let graph = $state(
+    localStorage.getItem("nodes.dev.graph")
+      ? JSON.parse(localStorage.getItem("nodes.dev.graph")!)
+      : devPlant,
+  );
+  function handleSave(graph: Graph) {
+    localStorage.setItem("nodes.dev.graph", JSON.stringify(graph));
   }
 
-  $effect(() => {
-    fetchNodeData(activeNode.value);
+  let graphSettings = $state<Record<string, any>>({});
+  let graphSettingTypes = $state({
+    randomSeed: { type: "boolean", value: false },
   });
 
-  $effect(() => {
-    if (nodeInstance?.props && nodeWasmWrapper) {
-      const keys = Object.keys(nodeInstance.state.type?.inputs || {});
-      let ins = Object.values(nodeInstance.props) as number[];
-      if (keys[0] === "plant") {
-        ins = [[0, 0, 0, 0, 0, 0, 0, 0], ...ins];
-      }
-      const inputs = concatEncodedArrays(encodeNestedArray(ins));
-      nodeWasmWrapper?.execute(inputs);
-    }
-  });
+  async function handleResult(res: unknown) {
+    const result = await runtimeExecutor.execute(graph, graphSettings);
+    console.log({ res, result });
+  }
 </script>
-
-<div class="node-wrapper absolute bottom-8 left-8">
-  {#if nodeInstance}
-    <NodeHTML inView position="relative" z={5} bind:node={nodeInstance} />
-  {/if}
-</div>
 
 <Grid.Row>
   <Grid.Cell>
-    <pre>
-      <code>
-        {JSON.stringify(nodeInstance?.props)}
-      </code>
-    </pre>
+    {#if result}
+      <pre><code>{JSON.stringify(decodeNestedArray(result))}</code></pre>
+    {/if}
   </Grid.Cell>
 
   <Grid.Cell>
-    <div class="h-screen w-[80vw] overflow-y-auto">
-      {#if nodeWasm}
-        <Code wasm={nodeWasm} />
-      {/if}
-    </div>
+    <GraphInterface
+      {graph}
+      registry={nodeRegistry}
+      bind:settings={graphSettings}
+      bind:settingTypes={graphSettingTypes}
+      onsave={(g) => handleSave(g)}
+      onresult={(result) => handleResult(result)}
+    />
   </Grid.Cell>
 </Grid.Row>
 
@@ -92,22 +77,7 @@
     classes="text-green-400"
     title="Node Store"
     icon="i-[tabler--database]"
-  >
-    <div class="p-4 flex flex-col gap-2">
-      {#await nodeRegistry.fetchCollection("max/plantarium")}
-        <p>Loading Nodes...</p>
-      {:then result}
-        {#each result.nodes as n}
-          <button
-            class="cursor-pointer p-2 bg-layer-1 {activeNode.value === n.id
-              ? 'outline outline-offset-1'
-              : ''}"
-            onclick={() => (activeNode.value = n.id)}>{n.id}</button
-          >
-        {/each}
-      {/await}
-    </div>
-  </Panel>
+  ></Panel>
 </Sidebar>
 
 <style>

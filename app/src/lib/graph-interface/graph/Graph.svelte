@@ -57,7 +57,7 @@
           ];
 
         const input = Object.entries(newNode?.state?.type?.inputs || {}).find(
-          (inp) => inp[1].type === socketType,
+          (inp) => inp[1].type === socketType || inp[1].type === "*",
         );
 
         if (input) {
