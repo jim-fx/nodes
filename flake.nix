@@ -4,7 +4,7 @@
   };
 
   outputs = {nixpkgs, ...}: let
-    systems = ["aarch64-darwin" "x86_64-linux"];
+    systems = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
     eachSystem = function:
       nixpkgs.lib.genAttrs systems (system:
         function {
@@ -19,14 +19,14 @@
           pkgs.nodejs_24
           pkgs.pnpm_10
 
-          # wasm/rust stuff
+          # wasm stuff
           pkgs.rustc
           pkgs.cargo
           pkgs.rust-analyzer
           pkgs.rustfmt
-          pkgs.wasm-bindgen-cli
-          pkgs.wasm-pack
           pkgs.lld
+          pkgs.zig
+          pkgs.zls
 
           # frontend
           pkgs.vscode-langservers-extracted
