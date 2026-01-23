@@ -1,0 +1,27 @@
+{
+    "id": "niklas/zig/math",
+    "outputs": [
+        "float"
+    ],
+    "inputs": {
+        "op_type": {
+            "label": "type",
+            "type": "select",
+            "options": [
+                "add",
+                "subtract",
+                "multiply",
+                "divide"
+            ],
+            "internal": true
+        },
+        "a": {
+            "type": "float",
+            "value": 2
+        },
+        "b": {
+            "type": "float",
+            "value": 2
+        }
+    }
+}

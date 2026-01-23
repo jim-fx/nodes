@@ -35,6 +35,10 @@
           pkgs.tailwindcss-language-server
           pkgs.svelte-language-server
         ];
+
+        shellHook = ''
+          unset ZIG_GLOBAL_CACHE_DIR
+        '';
       };
     });
   };

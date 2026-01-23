@@ -6,7 +6,10 @@ members = [
   "packages/types",
   "packages/utils",
 ]
-exclude = ["nodes/max/plantarium/.template"]
+exclude = [
+    "nodes/max/plantarium/.template",
+    "nodes/max/plantarium/zig"
+]
 
 [profile.release]
 lto = true
