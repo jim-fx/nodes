@@ -1,18 +1,18 @@
 <script lang="ts">
   import type { Edge, NodeInstance } from "@nodarium/types";
-  import { createKeyMap } from "../../helpers/createKeyMap";
-  import AddMenu from "../components/AddMenu.svelte";
-  import Background from "../background/Background.svelte";
-  import BoxSelection from "../components/BoxSelection.svelte";
-  import EdgeEl from "../edges/Edge.svelte";
-  import NodeEl from "../node/Node.svelte";
-  import Camera from "../components/Camera.svelte";
   import { Canvas } from "@threlte/core";
-  import HelpView from "../components/HelpView.svelte";
-  import { getGraphManager, getGraphState } from "../graph-state.svelte";
   import { HTML } from "@threlte/extras";
-  import { maxZoom, minZoom } from "./constants";
+  import { createKeyMap } from "../../helpers/createKeyMap";
+  import Background from "../background/Background.svelte";
+  import AddMenu from "../components/AddMenu.svelte";
+  import BoxSelection from "../components/BoxSelection.svelte";
+  import Camera from "../components/Camera.svelte";
+  import HelpView from "../components/HelpView.svelte";
   import Debug from "../debug/Debug.svelte";
+  import EdgeEl from "../edges/Edge.svelte";
+  import { getGraphManager, getGraphState } from "../graph-state.svelte";
+  import NodeEl from "../node/Node.svelte";
+  import { maxZoom, minZoom } from "./constants";
   import { FileDropEventManager } from "./drop.events";
   import { MouseEventManager } from "./mouse.events";
 
@@ -97,15 +97,15 @@
 </script>
 
 <svelte:window
-  onmousemove={(ev) => mouseEvents.handleMouseMove(ev)}
-  onmouseup={(ev) => mouseEvents.handleMouseUp(ev)}
+  onmousemove={(ev) => mouseEvents.handleWindowMouseMove(ev)}
+  onmouseup={(ev) => mouseEvents.handleWindowMouseUp(ev)}
 />
 
 <div
   onwheel={(ev) => mouseEvents.handleMouseScroll(ev)}
   bind:this={graphState.wrapper}
   class="graph-wrapper"
-  style="height: 100%;"
+  style="height: 100%"
   class:is-panning={graphState.isPanning}
   class:is-hovering={graphState.hoveredNodeId !== -1}
   aria-label="Graph"
@@ -115,6 +115,7 @@
   bind:clientHeight={graphState.height}
   onkeydown={(ev) => keymap.handleKeyboardEvent(ev)}
   onmousedown={(ev) => mouseEvents.handleMouseDown(ev)}
+  oncontextmenu={(ev) => mouseEvents.handleContextMenu(ev)}
   {...fileDropEvents.getEventListenerProps()}
 >
   <input

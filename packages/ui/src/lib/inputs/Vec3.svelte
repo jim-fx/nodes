@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Number from './Number.svelte';
+	import { Number } from '$lib/index.js';
 
 	interface Props {
 		value?: any;

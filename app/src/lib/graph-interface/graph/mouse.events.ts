@@ -1,7 +1,7 @@
 import { animate, lerp } from '$lib/helpers';
 import { type NodeInstance } from '@nodarium/types';
 import type { GraphManager } from '../graph-manager.svelte';
-import type { GraphState } from '../graph-state.svelte';
+import { type GraphState } from '../graph-state.svelte';
 import { snapToGrid as snapPointToGrid } from '../helpers';
 import { maxZoom, minZoom, zoomSpeed } from './constants';
 import { EdgeInteractionManager } from './edge.events';
@@ -16,7 +16,7 @@ export class MouseEventManager {
     this.edgeInteractionManager = new EdgeInteractionManager(graph, state);
   }
 
-  handleMouseUp(event: MouseEvent) {
+  handleWindowMouseUp(event: MouseEvent) {
     this.edgeInteractionManager.handleMouseUp();
     this.state.isPanning = false;
     if (!this.state.mouseDown) return;
@@ -151,7 +151,19 @@ export class MouseEventManager {
     this.state.addMenuPosition = null;
   }
 
+  handleContextMenu(event: MouseEvent) {
+    if (!this.state.addMenuPosition) {
+      event.preventDefault();
+      this.state.openNodePalette();
+    }
+  }
+
   handleMouseDown(event: MouseEvent) {
+    // Right click
+    if (event.button === 2) {
+      return;
+    }
+
     if (this.state.mouseDown) return;
     this.state.edgeEndPosition = null;
 
@@ -229,7 +241,7 @@ export class MouseEventManager {
     this.state.edgeEndPosition = null;
   }
 
-  handleMouseMove(event: MouseEvent) {
+  handleWindowMouseMove(event: MouseEvent) {
     let mx = event.clientX - this.state.rect.x;
     let my = event.clientY - this.state.rect.y;
 
@@ -245,7 +257,7 @@ export class MouseEventManager {
       for (const socket of this.state.possibleSockets) {
         const dist = Math.sqrt(
           (socket.position[0] - this.state.mousePosition[0]) ** 2
-          + (socket.position[1] - this.state.mousePosition[1]) ** 2
+            + (socket.position[1] - this.state.mousePosition[1]) ** 2
         );
         if (dist < smallestDist) {
           smallestDist = dist;
@@ -377,9 +389,9 @@ export class MouseEventManager {
     // Update camera position and zoom level
     this.state.cameraPosition[0] = this.state.mousePosition[0]
       - (this.state.mousePosition[0] - this.state.cameraPosition[0])
-      / zoomRatio;
+        / zoomRatio;
     this.state.cameraPosition[1] = this.state.mousePosition[1]
       - (this.state.mousePosition[1] - this.state.cameraPosition[1])
-      / zoomRatio, this.state.cameraPosition[2] = newZoom;
+        / zoomRatio, this.state.cameraPosition[2] = newZoom;
   }
 }

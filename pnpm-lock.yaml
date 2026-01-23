@@ -70,7 +70,7 @@ importers:
         specifier: ^1.2.1
         version: 1.2.1(tailwindcss@4.1.18)
       '@nodarium/types':
-        specifier: link:../packages/types
+        specifier: 'workspace:'
         version: link:../packages/types
       '@sveltejs/adapter-static':
         specifier: ^3.0.10
@@ -118,10 +118,10 @@ importers:
   packages/registry:
     dependencies:
       '@nodarium/types':
-        specifier: link:../types
+        specifier: 'workspace:'
         version: link:../types
       '@nodarium/utils':
-        specifier: link:../utils
+        specifier: 'workspace:'
         version: link:../utils
       idb:
         specifier: ^8.0.3
@@ -155,7 +155,7 @@ importers:
         version: 4.1.18
     devDependencies:
       '@nodarium/types':
-        specifier: link:../types
+        specifier: 'workspace:'
         version: link:../types
       '@sveltejs/adapter-static':
         specifier: ^3.0.10
@@ -215,7 +215,7 @@ importers:
   packages/utils:
     dependencies:
       '@nodarium/types':
-        specifier: link:../types
+        specifier: 'workspace:'
         version: link:../types
     devDependencies:
       vite:

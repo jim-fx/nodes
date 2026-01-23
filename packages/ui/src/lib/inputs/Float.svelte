@@ -9,7 +9,7 @@
 
 	let {
 		value = $bindable(0.5),
-		step = 0.01,
+		step,
 		min = $bindable(0),
 		max = $bindable(1),
 		id
@@ -22,8 +22,11 @@
 		max = value;
 	}
 
+	// svelte-ignore state_referenced_locally only use initial values
+	const precision = ((step || value).toString().split('.')[1] || '').length;
+
 	function strip(input: number) {
-		return +parseFloat(input + '').toPrecision(2);
+		return +parseFloat(input + '').toFixed(precision);
 	}
 
 	let inputEl: HTMLInputElement | undefined = $state();
@@ -94,14 +97,22 @@
 		} else {
 			value = Math.max(Math.min(min + (max - min) * vx, max), min);
 		}
-		(ev.target as HTMLElement)?.blur();
+
+		value = strip(value);
+
+		// With ctrl + outside of input ev.target becomes HTMLDocument
+		if (ev.target instanceof HTMLElement) {
+			ev.target?.blur();
+		}
 	}
+
 	$effect(() => {
-		if ((value || 0).toString().length > 5) {
-			value = strip(value || 0);
+		if (value.toString().length > 5) {
+			value = strip(value);
 		}
 		value !== undefined && handleChange();
 	});
+
 	let width = $derived(
 		Number.isFinite(value) ? Math.max((value?.toString().length ?? 1) * 8, 50) + 'px' : '20px'
 	);
@@ -137,12 +148,12 @@
 		border-radius: var(--border-radius, 2px);
 	}
 
-	input[type='number']::-webkit-inner-spin-button,
-	input[type='number']::-webkit-outer-spin-button {
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
 		-webkit-appearance: none;
 	}
 
-	input[type='number'] {
+	input[type="number"] {
 		box-sizing: border-box;
 		-webkit-appearance: textfield;
 		-moz-appearance: textfield;
