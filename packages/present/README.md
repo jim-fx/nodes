@@ -28,6 +28,8 @@ What
 
 ## Unified Memory Runtime
 
+- [Demo](https://27.nodes.app.max-richter.dev/dev)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        Shared WebAssembly.Memory                    │
