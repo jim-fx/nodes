@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "postinstall": "cargo install --locked presenterm",
-    "dev": "presenterm README.md"
+    "dev": "presenterm --config-file ./config.yaml README.md"
   },
   "keywords": [],
   "author": "",

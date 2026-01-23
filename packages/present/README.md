@@ -1,42 +1,102 @@
 ---
-title: dynaweek 2026 v1 Project Nodarium
-author: Max, Niklas, Felix
+title: Project **Nodarium**
+sub_title: dynaweek 2026
+authors:
+  - Max
+  - Niklas
+  - Felix
+options:
+  end_slide_shorthand: true
 ---
 
-## Hello World
+## Recap
 
-_presenterm_ allows configuring almost anything about your presentation:
+What
 
-- The colors used.
-- Layouts.
-- Footers, including images in the footer.
+---
 
-<!-- pause -->
+## Project Manager
 
-This is an example on how to configure a footer:
+---
 
-```yaml
-footer:
-  style: template
-  left:
-    image: doge.png
-  center: '<span class="noice">Colored</span> _footer_'
-  right: "{current_slide} / {total_slides}"
-  height: 5
+## UI Goodies
 
-palette:
-  classes:
-    noice:
-      foreground: red
+- Drop node on connection
+- Node add context menu
+
+---
+
+## Zufunkt
+
+- Animation
+- Materials
+- Wachstum über Zeit
+
+---
+
+## Praxis Tip 1 - Preview Deployments mit Coolify
+
+---
+
+## Praxis Tip 2 - Universal Formatter
+
+[dprint](dprint.dev)
+
+<!-- column_layout: [1, 3] -->
+
+<!-- column: 0 -->
+
+- Typescript
+- Javascript
+- JSON
+- Markdown
+- TOML
+- YAML
+- Dockerfile
+- C#
+- CSS
+- HTML
+- Vue
+- Svelte
+- Astro
+- Oxc
+- GraphQL
+- PHP
+- Python
+- Jupyter
+- **Und alles was eine CLI hat**
+
+<!-- column: 1 -->
+
+Beispiel config:
+
+```jsonc
+{
+  "lineWidth": 80,
+  "typescript": {
+    // This applies to both JavaScript & TypeScript
+    "quoteStyle": "preferSingle",
+    "binaryExpression.operatorPosition": "sameLine",
+  },
+  "json": {
+    "indentWidth": 2,
+  },
+  "excludes": [
+    "**/*-lock.json",
+  ],
+  "plugins": [
+    // You may specify any urls or file paths here that you wish.
+    "https://plugins.dprint.dev/typescript-x.x.x.wasm",
+    "https://plugins.dprint.dev/json-x.x.x.wasm",
+    "https://plugins.dprint.dev/markdown-x.x.x.wasm",
+  ],
+}
 ```
 
-<!-- end_slide -->
+<!-- reset_layout -->
 
-## Formatter
+---
 
-```diff
-+ dprint w/ rustfmt
-- eslint
-- prettier
-- svelte-
-```
+## Demo Time 🚀
+
+[Open](http://localhost:5173/)
