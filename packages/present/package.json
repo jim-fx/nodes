@@ -1,0 +1,14 @@
+{
+  "name": "present",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cargo install --locked presenterm",
+    "dev": "presenterm README.md"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.1"
+}
