@@ -16,22 +16,6 @@
   } from "$lib/settings/app-settings.svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("");
-  nodeRegistry.overwriteNode("max/plantarium/output", {
-    id: "max/plantarium/output",
-    meta: {
-      title: "Debug View",
-      description: "",
-    },
-    inputs: {
-      out: {
-        type: "*",
-      },
-    },
-    execute(outputPos: number, args: number[]) {
-      console.log({ outputPos, args });
-      return 0;
-    },
-  });
 
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
@@ -162,12 +146,13 @@
             <tr class="h-[40px] odd:bg-[var(--layer-1)]">
               <td class="px-4 border-b border-[var(--outline)] w-8">{index}</td>
               <td
-                class="w-[50px] border-b border-[var(--outline)]
+                class="border-b border-[var(--outline)] overflow-hidden text-ellipsis pl-2
                         {ptr?._title?.includes('->')
                   ? 'bg-red-500'
                   : 'bg-blue-500'}"
+                style="width: 100px; min-width: 100px; max-width: 100px;"
               >
-                <span>{ptr?._title}</span>
+                {ptr?._title}
               </td>
               <td
                 class="px-4 border-b border-[var(--outline)] cursor-pointer text-blue-600 hover:text-blue-800"

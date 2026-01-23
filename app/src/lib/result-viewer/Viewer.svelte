@@ -64,6 +64,7 @@
   }
 
   export const update = function update(result: Int32Array) {
+    console.log({ result });
     perf.addPoint("split-result");
     const inputs = splitNestedArray(result);
     perf.endPoint();
