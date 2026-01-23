@@ -20,7 +20,10 @@ export async function getNodeWasm(id: `${string}/${string}/${string}`) {
   const wasmBytes = await getWasm(id);
   if (!wasmBytes) return null;
 
-  const wrapper = createWasmWrapper(wasmBytes.buffer);
+  const wrapper = createWasmWrapper(
+    wasmBytes.buffer,
+    new WebAssembly.Memory({ initial: 1024, maximum: 8192 })
+  );
 
   return wrapper;
 }
