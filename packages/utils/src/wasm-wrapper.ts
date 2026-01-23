@@ -3,6 +3,8 @@ interface NodariumExports extends WebAssembly.Exports {
   execute: (ptr: number, len: number) => number;
   __free: (ptr: number, len: number) => void;
   __alloc: (len: number) => number;
+  getDefinitionPtr: () => number;
+  getDefinitionLen: () => number;
 }
 
 export function createWasmWrapper(buffer: ArrayBuffer) {
@@ -19,8 +21,8 @@ export function createWasmWrapper(buffer: ArrayBuffer) {
         if (!exports) return;
         const view = new Uint8Array(exports.memory.buffer, ptr, len);
         console.log("RUST:", new TextDecoder().decode(view));
-      }
-    }
+      },
+    },
   };
 
   const module = new WebAssembly.Module(buffer);
@@ -43,12 +45,22 @@ export function createWasmWrapper(buffer: ArrayBuffer) {
   }
 
   function get_definition() {
-    const sections = WebAssembly.Module.customSections(module, "nodarium_definition");
+    const decoder = new TextDecoder();
+    const sections = WebAssembly.Module.customSections(
+      module,
+      "nodarium_definition",
+    );
     if (sections.length > 0) {
-      const decoder = new TextDecoder();
       const jsonString = decoder.decode(sections[0]);
       return JSON.parse(jsonString);
     }
+
+    const ptr = exports.getDefinitionPtr();
+    const len = exports.getDefinitionLen();
+
+    const view = new Uint8Array(exports.memory.buffer, ptr, len);
+    const jsonString = decoder.decode(view);
+    return JSON.parse(jsonString);
   }
 
   return { execute, get_definition };

@@ -24,6 +24,7 @@
           pkgs.cargo
           pkgs.rust-analyzer
           pkgs.rustfmt
+          pkgs.binaryen
           pkgs.lld
           pkgs.zig
           pkgs.zls

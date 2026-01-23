@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const def linksection("nodarium_definition") = @embedFile("input.json");
+const def = @embedFile("input.json");
 
 export fn execute(ptr: *anyopaque, len: c_int) c_int {
     _ = ptr; // autofix
@@ -18,4 +18,12 @@ export fn __free(ptr: *anyopaque, len: c_int) void {
     if (len < 1) return;
     const mem: [*]u8 = @ptrCast(@alignCast(ptr));
     std.heap.wasm_allocator.free(mem[0..@intCast(len)]);
+}
+
+export fn getDefinitionPtr() *const anyopaque {
+    return def.ptr;
+}
+
+export fn getDefinitionLen() usize {
+    return def.len;
 }
