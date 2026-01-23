@@ -1,23 +1,29 @@
 use glam::{Mat4, Quat, Vec3};
-use nodarium_macros::nodarium_execute;
 use nodarium_macros::nodarium_definition_file;
+use nodarium_macros::nodarium_execute;
+use nodarium_utils::read_i32_slice;
 use nodarium_utils::{
     concat_args, evaluate_float, evaluate_int,
-    geometry::{
-        create_instance_data, wrap_geometry_data, wrap_instance_data, wrap_path,
-    },
+    geometry::{create_instance_data, wrap_geometry_data, wrap_instance_data, wrap_path},
     log, split_args,
 };
 
 nodarium_definition_file!("src/input.json");
 
 #[nodarium_execute]
-pub fn execute(input: &[i32]) -> Vec<i32> {
-    let args = split_args(input);
-    let mut inputs = split_args(args[0]);
+pub fn execute(
+    plant: (i32, i32),
+    geometry: (i32, i32),
+    amount: (i32, i32),
+    lowest_instance: (i32, i32),
+    highest_instance: (i32, i32),
+    depth: (i32, i32),
+) -> Vec<i32> {
+    let arg = read_i32_slice(plant);
+    let mut inputs = split_args(arg.as_slice());
     log!("WASM(instance): inputs: {:?}", inputs);
 
-    let mut geo_data = args[1].to_vec();
+    let mut geo_data = read_i32_slice(geometry);
     let geo = wrap_geometry_data(&mut geo_data);
 
     let mut transforms: Vec<Mat4> = Vec::new();
@@ -30,17 +36,17 @@ pub fn execute(input: &[i32]) -> Vec<i32> {
         max_depth = max_depth.max(path_data[3]);
     }
 
-    let depth = evaluate_int(args[5]);
+    let depth = evaluate_int(read_i32_slice(depth).as_slice());
 
     for path_data in inputs.iter() {
         if path_data[3] < (max_depth - depth + 1) {
             continue;
         }
 
-        let amount = evaluate_int(args[2]);
+        let amount = evaluate_int(read_i32_slice(amount).as_slice());
 
-        let lowest_instance = evaluate_float(args[3]);
-        let highest_instance = evaluate_float(args[4]);
+        let lowest_instance = evaluate_float(read_i32_slice(lowest_instance).as_slice());
+        let highest_instance = evaluate_float(read_i32_slice(highest_instance).as_slice());
 
         let path = wrap_path(path_data);
 

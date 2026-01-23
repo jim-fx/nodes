@@ -57,9 +57,18 @@ function getValue(input: NodeInput, value?: unknown) {
   throw new Error(`Unknown input type ${input.type}`);
 }
 
-type Pointer = {
+function compareInt32(a: Int32Array, b: Int32Array) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+export type Pointer = {
   start: number;
   end: number;
+  _title?: string;
 };
 
 export class MemoryRuntimeExecutor implements RuntimeExecutor {
@@ -69,14 +78,23 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
   > = new Map();
 
   private offset = 0;
+  private isRunning = false;
   private memory = new WebAssembly.Memory({
     initial: 1024,
     maximum: 8192
   });
+  private memoryView = new Int32Array();
+
+  results: Record<number, Pointer> = {};
+  inputPtrs: Record<number, Pointer[]> = {};
 
   seed = 123123;
 
   perf?: PerformanceStore;
+
+  public getMemory() {
+    return new Int32Array(this.memory.buffer);
+  }
 
   constructor(
     private registry: NodeRegistry,
@@ -129,7 +147,8 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     const outputNode = graphNodes.find((node) => node.type.endsWith('/output'));
     if (!outputNode) {
-      throw new Error('No output node found');
+      // throw new Error('No output node found');
+      console.log('No output node found');
     }
 
     const nodeMap = new Map(
@@ -151,7 +170,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     const nodes = [];
 
     // loop through all the nodes and assign each nodes its depth
-    const stack = [outputNode];
+    const stack = [outputNode || graphNodes[0]];
     while (stack.length) {
       const node = stack.pop();
       if (!node) continue;
@@ -166,14 +185,15 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     return [outputNode, nodes] as const;
   }
 
-  private writeToMemory(v: number | number[] | Int32Array) {
+  private writeToMemory(v: number | number[] | Int32Array, title?: string) {
     let length = 1;
-    const view = new Int32Array(this.memory.buffer);
+
     if (typeof v === 'number') {
-      view[this.offset] = v;
+      this.memoryView[this.offset] = v;
+      console.log('MEM: writing number', v, ' to', this.offset);
       length = 1;
     } else {
-      view.set(v, this.offset);
+      this.memoryView.set(v, this.offset);
       length = v.length;
     }
 
@@ -184,15 +204,25 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     return {
       start,
-      end
+      end,
+      _title: title
     };
+  }
+
+  private printMemory() {
+    this.memoryView = new Int32Array(this.memory.buffer);
+    console.log('MEMORY', this.memoryView.slice(0, 10));
   }
 
   async execute(graph: Graph, _settings: Record<string, unknown>) {
     this.offset = 0;
+    this.inputPtrs = {};
+    this.results = {};
+    if (this.isRunning) return undefined as unknown as Int32Array;
+    this.isRunning = true;
 
     // Then we add some metadata to the graph
-    const [outputNode, nodes] = await this.addMetaData(graph);
+    const [_outputNode, nodes] = await this.addMetaData(graph);
 
     /*
      * Here we sort the nodes into buckets, which we then execute one by one
@@ -210,20 +240,22 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       (a, b) => (b.state?.depth || 0) - (a.state?.depth || 0)
     );
 
-    // here we store the intermediate results of the nodes
-    const results: Record<number, Pointer> = {};
-
     for (const node of sortedNodes) {
       const node_type = this.nodes.get(node.type)!;
 
-      console.log('EXECUTING NODE', node_type.definition.id);
-      console.log(node_type.definition.inputs);
+      console.log('---------------');
+      console.log('STARTING NODE EXECUTION', node_type.definition.id);
+      this.printMemory();
+
+      // console.log(node_type.definition.inputs);
       const inputs = Object.entries(node_type.definition.inputs || {}).map(
         ([key, input]) => {
           // We should probably initially write this to memory
           if (input.type === 'seed') {
             return this.writeToMemory(this.seed);
           }
+
+          const title = `${node.id}.${key}`;
 
           // We should probably initially write this to memory
           // If the input is linked to a setting, we use that value
@@ -234,56 +266,85 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
           // check if the input is connected to another node
           const inputNode = node.state.inputNodes[key];
           if (inputNode) {
-            if (results[inputNode.id] === undefined) {
+            if (this.results[inputNode.id] === undefined) {
               throw new Error(
                 `Node ${node.type} is missing input from node ${inputNode.type}`
               );
             }
-            return results[inputNode.id];
+            return this.results[inputNode.id];
           }
 
           // If the value is stored in the node itself, we use that value
           if (node.props?.[key] !== undefined) {
-            return this.writeToMemory(getValue(input, node.props[key]));
+            const value = getValue(input, node.props[key]);
+            console.log(`Writing prop for ${node.id} -> ${key} to memory`, node.props[key], value);
+            return this.writeToMemory(value, title);
           }
 
-          return this.writeToMemory(getValue(input));
+          return this.writeToMemory(getValue(input), title);
         }
       );
+
+      this.printMemory();
 
       if (!node_type || !node.state || !node_type.execute) {
         log.warn(`Node ${node.id} has no definition`);
         continue;
       }
 
+      this.inputPtrs[node.id] = inputs;
       const args = inputs.map(s => [s.start, s.end]).flat();
-      console.log('ARGS', args);
+      console.log('ARGS', inputs);
 
+      this.printMemory();
       try {
-        const bytesWritten = node_type.execute(this.offset, args);
-        results[node.id] = {
-          start: this.offset,
-          end: this.offset + bytesWritten
-        };
-        this.offset += bytesWritten;
+        console.log('EXECUTING NODE, writing output of node to ->', this.offset);
+        const bytesWritten = node_type.execute(this.offset * 4, args.map(a => a * 4));
+        const view = new Int32Array(this.memory.buffer);
+
+        const input = view.slice(args[0], args[1]);
+        const output = view.slice(this.offset, this.offset + bytesWritten / 4);
+        console.log('RESULT', { args, input, output });
+
+        // Optimization
+        // If the input arg is the same length as the output arg
+        if (
+          args.length === 2 && args[1] - args[0] == bytesWritten / 4 && compareInt32(input, output)
+        ) {
+          console.log('INPUT === OUTPUT');
+          this.results[node.id] = {
+            start: args[0],
+            end: args[1],
+            _title: `${node.id} ->`
+          };
+        } else {
+          this.results[node.id] = {
+            start: this.offset,
+            end: this.offset + bytesWritten / 4,
+            _title: `${node.id} ->`
+          };
+          this.offset += bytesWritten / 4;
+        }
         console.log('FINISHED EXECUTION', {
           bytesWritten,
           offset: this.offset
         });
       } catch (e) {
-        console.error(e);
+        console.error(`Failed to execute node ${node.type}/${node.id}`, e);
+        this.isRunning = false;
       }
     }
 
-    const mem = new Int32Array(this.memory.buffer);
-    console.log('OUT', mem.slice(0, 10));
+    // const mem = new Int32Array(this.memory.buffer);
+    // console.log('OUT', mem.slice(0, 10));
 
     // return the result of the parent of the output node
-    const res = results[outputNode.id];
+    // const res = this.results[outputNode.id];
 
     this.perf?.endPoint('runtime');
 
-    return res as unknown as Int32Array;
+    this.isRunning = false;
+    return undefined as unknown as Int32Array;
   }
 
   getPerformanceData() {

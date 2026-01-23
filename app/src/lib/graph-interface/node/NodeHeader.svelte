@@ -43,7 +43,7 @@
 
 <div class="wrapper" data-node-id={node.id} data-node-type={node.type}>
   <div class="content">
-    {node.type.split("/").pop()}
+    {node.type.split("/").pop()} ({node.id})
   </div>
   <div
     class="click-target"

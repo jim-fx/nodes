@@ -39,5 +39,6 @@ server {
 EOF
 
 COPY --from=builder /app/app/build /app
+COPY --from=builder /app/packages/ui/build /app/ui
 
 EXPOSE 80
