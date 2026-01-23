@@ -6,9 +6,14 @@
   import { type Graph, type NodeInstance } from "@nodarium/types";
   import Grid from "$lib/grid";
   import { MemoryRuntimeExecutor, type Pointer } from "$lib/runtime";
-  import devPlant from "./dev-graph.json";
   import { decodeFloat } from "@nodarium/utils";
   import { localState } from "$lib/helpers/localState.svelte";
+  import * as templates from "$lib/graph-templates";
+  import NestedSettings from "$lib/settings/NestedSettings.svelte";
+  import {
+    appSettings,
+    AppSettingTypes,
+  } from "$lib/settings/app-settings.svelte";
 
   const nodeRegistry = new RemoteNodeRegistry("");
   nodeRegistry.overwriteNode("max/plantarium/output", {
@@ -23,29 +28,30 @@
       },
     },
     execute(outputPos: number, args: number[]) {
+      console.log({ outputPos, args });
       return 0;
     },
   });
 
   const runtimeExecutor = new MemoryRuntimeExecutor(nodeRegistry);
 
-  let inputPtrs: Record<number, Pointer[]>;
+  let allPtrs = $state<Pointer[]>([]);
   let activeNode = $state<NodeInstance>();
   let isCalculating = $state<boolean>(false);
   let windowHeight = $state(500);
-  let start = $state(0);
+  const start = localState("nodes.dev.scroll", 0);
 
   const rowHeight = 40;
   const numRows = $derived(Math.floor(windowHeight / rowHeight));
 
   let memory = $state<Int32Array>();
-  const visibleRows = $derived(memory?.slice(start, start + numRows));
+  const visibleRows = $derived(
+    memory?.slice(start.value, start.value + numRows),
+  );
 
-  const ptrs = $derived.by(() => {
-    if (!inputPtrs) return [];
+  const sortedPtrs = $derived.by(() => {
     const seen = new Set();
-    const ptrs = [...Object.values(inputPtrs)]
-      .flat()
+    const _ptrs = [...allPtrs]
       .sort((a, b) => (a.start > b.start ? 1 : -1))
       .filter((ptr) => {
         const id = `${ptr.start}-${ptr.end}`;
@@ -53,12 +59,15 @@
         seen.add(id);
         return true;
       });
-    if (!ptrs) return [];
+    if (!_ptrs) return [];
+    return _ptrs;
+  });
 
+  const ptrs = $derived.by(() => {
     let out = [];
     for (let i = 0; i < numRows; i++) {
-      let rowIndex = start + i;
-      const activePtr = ptrs.find(
+      let rowIndex = start.value + i;
+      const activePtr = sortedPtrs.find(
         (ptr) => ptr.start < rowIndex && ptr.end >= rowIndex,
       );
       if (activePtr) {
@@ -75,7 +84,7 @@
   let graph = $state(
     localStorage.getItem("nodes.dev.graph")
       ? JSON.parse(localStorage.getItem("nodes.dev.graph")!)
-      : devPlant,
+      : templates.defaultPlant,
   );
   function handleSave(g: Graph) {
     localStorage.setItem("nodes.dev.graph", JSON.stringify(g));
@@ -92,12 +101,16 @@
     isCalculating = true;
     if (res) handleSave(res);
     try {
-      await runtimeExecutor.execute(res || graph, graphSettings);
+      await runtimeExecutor.execute(
+        res || graph,
+        $state.snapshot(graphSettings),
+      );
     } catch (e) {
       console.log(e);
     }
     memory = runtimeExecutor.getMemory();
-    inputPtrs = runtimeExecutor.inputPtrs;
+    allPtrs = runtimeExecutor.allPtrs;
+
     clearTimeout(calcTimeout);
     calcTimeout = setTimeout(() => {
       isCalculating = false;
@@ -120,7 +133,11 @@
   <Grid.Cell>
     {#if visibleRows?.length}
       <table
-        class="min-w-full select-none overflow-hidden text-left text-sm flex-1"
+        class="min-w-full select-none overflow-auto text-left text-sm flex-1"
+        onscroll={(e) => {
+          const scrollTop = e.currentTarget.scrollTop;
+          start.value = Math.floor(scrollTop / rowHeight);
+        }}
       >
         <thead class="">
           <tr>
@@ -133,9 +150,14 @@
             <th class="px-4 py-2 border-b border-[var(--outline)]">Float</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody
+          onscroll={(e) => {
+            const scrollTop = e.currentTarget.scrollTop;
+            start.value = Math.floor(scrollTop / rowHeight);
+          }}
+        >
           {#each visibleRows as r, i}
-            {@const index = i + start}
+            {@const index = i + start.value}
             {@const ptr = ptrs[i]}
             <tr class="h-[40px] odd:bg-[var(--layer-1)]">
               <td class="px-4 border-b border-[var(--outline)] w-8">{index}</td>
@@ -168,7 +190,7 @@
       </table>
       <input
         class="absolute bottom-4 left-4 bg-white"
-        bind:value={start}
+        bind:value={start.value}
         min="0"
         type="number"
         step="1"
@@ -201,6 +223,13 @@
 </Grid.Row>
 
 <Sidebar>
+  <Panel id="general" title="General" icon="i-[tabler--settings]">
+    <NestedSettings
+      id="general"
+      bind:value={appSettings.value}
+      type={AppSettingTypes}
+    />
+  </Panel>
   <Panel
     id="node-store"
     classes="text-green-400"

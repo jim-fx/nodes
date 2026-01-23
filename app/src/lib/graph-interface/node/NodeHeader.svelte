@@ -2,6 +2,7 @@
   import { getGraphState } from "../graph-state.svelte";
   import { createNodePath } from "../helpers/index.js";
   import type { NodeInstance } from "@nodarium/types";
+  import { appSettings } from "$lib/settings/app-settings.svelte";
 
   const graphState = getGraphState();
 
@@ -43,7 +44,12 @@
 
 <div class="wrapper" data-node-id={node.id} data-node-type={node.type}>
   <div class="content">
-    {node.type.split("/").pop()} ({node.id})
+    {#if appSettings.value.nodeInterface.showNodeIds}
+      <span class="bg-white text-black! mr-2 px-1 rounded-sm opacity-30"
+        >{node.id}</span
+      >
+    {/if}
+    {node.type.split("/").pop()}
   </div>
   <div
     class="click-target"

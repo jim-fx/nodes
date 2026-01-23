@@ -87,8 +87,9 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
   results: Record<number, Pointer> = {};
   inputPtrs: Record<number, Pointer[]> = {};
+  allPtrs: Pointer[] = [];
 
-  seed = 123123;
+  seed = 42424242;
 
   perf?: PerformanceStore;
 
@@ -202,11 +203,13 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
 
     this.offset += length;
 
-    return {
+    const ptr = {
       start,
       end,
       _title: title
     };
+    this.allPtrs.push(ptr);
+    return ptr;
   }
 
   private printMemory() {
@@ -214,10 +217,13 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
     console.log('MEMORY', this.memoryView.slice(0, 10));
   }
 
-  async execute(graph: Graph, _settings: Record<string, unknown>) {
+  async execute(graph: Graph, settings: Record<string, unknown>) {
     this.offset = 0;
     this.inputPtrs = {};
+    this.seed = this.seed += 2;
     this.results = {};
+    this.allPtrs = [];
+
     if (this.isRunning) return undefined as unknown as Int32Array;
     this.isRunning = true;
 
@@ -240,11 +246,22 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
       (a, b) => (b.state?.depth || 0) - (a.state?.depth || 0)
     );
 
+    console.log({ settings });
+
+    this.printMemory();
+    const seedPtr = this.writeToMemory(this.seed, 'seed');
+
+    const settingPtrs = new Map<string, Pointer>(
+      Object.entries(settings).map((
+        [key, value]
+      ) => [key as string, this.writeToMemory(value as number, `setting.${key}`)])
+    );
+
     for (const node of sortedNodes) {
       const node_type = this.nodes.get(node.type)!;
 
       console.log('---------------');
-      console.log('STARTING NODE EXECUTION', node_type.definition.id);
+      console.log('STARTING NODE EXECUTION', node_type.definition.id + '/' + node.id);
       this.printMemory();
 
       // console.log(node_type.definition.inputs);
@@ -252,23 +269,24 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
         ([key, input]) => {
           // We should probably initially write this to memory
           if (input.type === 'seed') {
-            return this.writeToMemory(this.seed);
+            return seedPtr;
           }
 
           const title = `${node.id}.${key}`;
 
           // We should probably initially write this to memory
           // If the input is linked to a setting, we use that value
-          // if (input.setting) {
-          //   return getValue(input, settings[input.setting]);
-          // }
+          // TODO: handle nodes which reference undefined settings
+          if (input.setting) {
+            return settingPtrs.get(input.setting)!;
+          }
 
           // check if the input is connected to another node
           const inputNode = node.state.inputNodes[key];
           if (inputNode) {
             if (this.results[inputNode.id] === undefined) {
               throw new Error(
-                `Node ${node.type} is missing input from node ${inputNode.type}`
+                `Node ${node.type}/${node.id} is missing input from node ${inputNode.type}/${inputNode.id}`
               );
             }
             return this.results[inputNode.id];
@@ -317,6 +335,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
             end: args[1],
             _title: `${node.id} ->`
           };
+          this.allPtrs.push(this.results[node.id]);
         } else {
           this.results[node.id] = {
             start: this.offset,
@@ -324,6 +343,7 @@ export class MemoryRuntimeExecutor implements RuntimeExecutor {
             _title: `${node.id} ->`
           };
           this.offset += bytesWritten / 4;
+          this.allPtrs.push(this.results[node.id]);
         }
         console.log('FINISHED EXECUTION', {
           bytesWritten,
